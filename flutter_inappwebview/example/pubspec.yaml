@@ -23,9 +23,18 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.4
   flutter_downloader: 1.10.2
-  path_provider: 2.0.15
-  permission_handler: 10.2.0
-  url_launcher: 6.1.11
+  path_provider:
+    git:
+      url: https://gitee.com/openharmony-sig/flutter_packages.git
+      path: packages/path_provider/path_provider
+  permission_handler: 
+    git:
+      url: https://gitee.com/openharmony-sig/flutter_permission_handler.git
+      path: permission_handler
+  url_launcher: 
+    git:
+      url: https://gitee.com/openharmony-sig/flutter_packages.git
+      path: packages/url_launcher/url_launcher
   pointer_interceptor: ^0.9.3+4
   # mime: ^1.0.4
   # connectivity: ^0.4.5+6
@@ -43,6 +52,8 @@ dependency_overrides:
     path: ../../flutter_inappwebview_macos
   flutter_inappwebview_web:
     path: ../../flutter_inappwebview_web
+  flutter_inappwebview_ohos:
+    path: ../../flutter_inappwebview_ohos
 
 dev_dependencies:
   flutter_test:
