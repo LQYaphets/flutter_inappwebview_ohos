@@ -33,6 +33,7 @@ import '../in_app_webview/platform_inappwebview_controller.dart';
 import '../context_menu/context_menu.dart';
 import '../in_app_browser/platform_in_app_browser.dart';
 import 'platform_webview.dart';
+import '../types/layout_mode.dart';
 
 part 'in_app_webview_settings.g.dart';
 
@@ -122,6 +123,10 @@ class InAppWebViewSettings_ {
         apiName: "WebSettings.setJavaScriptEnabled",
         apiUrl:
             "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setJavaScriptEnabled(boolean)"),
+    OhosPlatform(
+        apiName: "javaScriptAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#javascriptaccess"),
     IOSPlatform(
         apiName: "WKWebpagePreferences.allowsContentJavaScript",
         apiUrl:
@@ -140,6 +145,10 @@ class InAppWebViewSettings_ {
         apiName: "WebSettings.setJavaScriptCanOpenWindowsAutomatically",
         apiUrl:
             "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setJavaScriptCanOpenWindowsAutomatically(boolean)"),
+    OhosPlatform(
+        apiName: "allowWindowOpenMethod",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#allowwindowopenmethod10"),
     IOSPlatform(
         apiName: "WKPreferences.javaScriptCanOpenWindowsAutomatically",
         apiUrl:
@@ -158,6 +167,10 @@ class InAppWebViewSettings_ {
         apiName: "WebSettings.setMediaPlaybackRequiresUserGesture",
         apiUrl:
             "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setMediaPlaybackRequiresUserGesture(boolean)"),
+    OhosPlatform(
+        apiName: "mediaPlayGestureAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#mediaplaygestureaccess"),
     IOSPlatform(
         apiName:
             "WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback",
@@ -178,6 +191,10 @@ class InAppWebViewSettings_ {
         apiName: "WebSettings.setMinimumFontSize",
         apiUrl:
             "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setMinimumFontSize(int)"),
+    OhosPlatform(
+        apiName: "minFontSize",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#minfontsize9"),
     IOSPlatform(
         apiName: "WKPreferences.minimumFontSize",
         apiUrl:
@@ -195,6 +212,10 @@ class InAppWebViewSettings_ {
         apiName: "View.setVerticalScrollBarEnabled",
         apiUrl:
             "https://developer.android.com/reference/android/view/View#setVerticalScrollBarEnabled(boolean)"),
+    OhosPlatform(
+        apiName: "verticalScrollBarAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#verticalscrollbaraccess9"),
     IOSPlatform(
         apiName: "UIScrollView.showsVerticalScrollIndicator",
         apiUrl:
@@ -211,6 +232,10 @@ class InAppWebViewSettings_ {
         apiName: "View.setHorizontalScrollBarEnabled",
         apiUrl:
             "https://developer.android.com/reference/android/view/View#setHorizontalScrollBarEnabled(boolean)"),
+    OhosPlatform(
+        apiName: "horizontalScrollBarAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#horizontalscrollbaraccess9"),
     IOSPlatform(
         apiName: "UIScrollView.showsHorizontalScrollIndicator",
         apiUrl:
@@ -332,6 +357,10 @@ because there isn't any way to make the website data store non-persistent for th
         apiName: "WebSettings.setSupportZoom",
         apiUrl:
             "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setSupportZoom(boolean)"),
+    OhosPlatform(
+        apiName: "zoomAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#zoomaccess"),
     IOSPlatform(),
     MacOSPlatform()
   ])
@@ -395,7 +424,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setTextZoom",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setTextZoom(int)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setTextZoom(int)"),
+    OhosPlatform(
+        apiName: "textZoomRatio",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#textzoomratio9")
   ])
   int? textZoom;
 
@@ -427,7 +460,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setDatabaseEnabled",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setDatabaseEnabled(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setDatabaseEnabled(boolean)"),
+    OhosPlatform(
+        apiName: "databaseAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#databaseaccess")
   ])
   bool? databaseEnabled;
 
@@ -436,7 +473,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setDomStorageEnabled",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setDomStorageEnabled(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setDomStorageEnabled(boolean)"),
+    OhosPlatform(
+        apiName: "domStorageAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#domstorageaccess"),
   ])
   bool? domStorageEnabled;
 
@@ -469,7 +510,11 @@ because there isn't any way to make the website data store non-persistent for th
         available: "21",
         apiName: "WebSettings.setMixedContentMode",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setMixedContentMode(int)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setMixedContentMode(int)"),
+    OhosPlatform(
+        apiName: "mixedMode",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#mixedmode")
   ])
   MixedContentMode_? mixedContentMode;
 
@@ -488,7 +533,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setAllowFileAccess",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setAllowFileAccess(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setAllowFileAccess(boolean)"),
+    OhosPlatform(
+        apiName: "fileAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#fileaccess")
   ])
   bool? allowFileAccess;
 
@@ -503,7 +552,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setBlockNetworkImage",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setBlockNetworkImage(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setBlockNetworkImage(boolean)"),
+    OhosPlatform(
+        apiName: "onlineImageAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#onlineimageaccess")      
   ])
   bool? blockNetworkImage;
 
@@ -512,7 +565,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setBlockNetworkLoads",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setBlockNetworkLoads(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setBlockNetworkLoads(boolean)"),
+    OhosPlatform(
+        apiName: "blockNetwork",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#blocknetwork9")
   ])
   bool? blockNetworkLoads;
 
@@ -522,7 +579,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setCacheMode",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setCacheMode(int)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setCacheMode(int)"),
+    OhosPlatform(
+        apiName: "cacheMode",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#cachemode")
   ])
   CacheMode_? cacheMode;
 
@@ -531,7 +592,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setCursiveFontFamily",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setCursiveFontFamily(java.lang.String)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setCursiveFontFamily(java.lang.String)"),
+    OhosPlatform(
+        apiName: "webCursiveFont",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#webcursivefont9")
   ])
   String? cursiveFontFamily;
 
@@ -540,7 +605,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setDefaultFixedFontSize",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setDefaultFixedFontSize(int)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setDefaultFixedFontSize(int)"),
+    OhosPlatform(
+        apiName: "defaultFixedFontSize",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#defaultfixedfontsize9")
   ])
   int? defaultFixedFontSize;
 
@@ -549,7 +618,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setDefaultFontSize",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setDefaultFontSize(int)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setDefaultFontSize(int)"),
+    OhosPlatform(
+        apiName: "defaultFontSize",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#defaultfontsize9")
   ])
   int? defaultFontSize;
 
@@ -577,7 +650,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setFantasyFontFamily",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setFantasyFontFamily(java.lang.String)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setFantasyFontFamily(java.lang.String)"),
+    OhosPlatform(
+        apiName: "webFantasyFont",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#webfantasyfont9")
   ])
   String? fantasyFontFamily;
 
@@ -586,7 +663,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setFixedFontFamily",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setFixedFontFamily(java.lang.String)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setFixedFontFamily(java.lang.String)"),
+    OhosPlatform(
+        apiName: "webFixedFont",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#webfixedfont9")
   ])
   String? fixedFontFamily;
 
@@ -596,7 +677,11 @@ because there isn't any way to make the website data store non-persistent for th
         available: "29",
         apiName: "WebSettings.setForceDark",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings#setForceDark(int)")
+            "https://developer.android.com/reference/android/webkit/WebSettings#setForceDark(int)"),
+    OhosPlatform(
+        apiName: "darkMode",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#darkmode9")
   ])
   ForceDark_? forceDark;
 
@@ -623,7 +708,11 @@ because there isn't any way to make the website data store non-persistent for th
         note:
             """Please note that in order for the Geolocation API to be usable by a page in the WebView, the following requirements must be met:
 - an application must have permission to access the device location, see [Manifest.permission.ACCESS_COARSE_LOCATION](https://developer.android.com/reference/android/Manifest.permission#ACCESS_COARSE_LOCATION), [Manifest.permission.ACCESS_FINE_LOCATION](https://developer.android.com/reference/android/Manifest.permission#ACCESS_FINE_LOCATION);
-- an application must provide an implementation of the [PlatformWebViewCreationParams.onGeolocationPermissionsShowPrompt] callback to receive notifications that a page is requesting access to location via the JavaScript Geolocation API.""")
+- an application must provide an implementation of the [PlatformWebViewCreationParams.onGeolocationPermissionsShowPrompt] callback to receive notifications that a page is requesting access to location via the JavaScript Geolocation API."""),
+    OhosPlatform(
+        apiName: "geolocationAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#geolocationaccess")
   ])
   bool? geolocationEnabled;
 
@@ -643,7 +732,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setLoadWithOverviewMode",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setLoadWithOverviewMode(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setLoadWithOverviewMode(boolean)"),
+    OhosPlatform(
+        apiName: "overviewModeAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#overviewmodeaccess")
   ])
   bool? loadWithOverviewMode;
 
@@ -654,7 +747,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setLoadsImagesAutomatically",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setLoadsImagesAutomatically(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setLoadsImagesAutomatically(boolean)"),
+    OhosPlatform(
+        apiName: "imageAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#imageaccess")
   ])
   bool? loadsImagesAutomatically;
 
@@ -663,7 +760,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setMinimumLogicalFontSize",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setMinimumLogicalFontSize(int)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setMinimumLogicalFontSize(int)"),
+    OhosPlatform(
+        apiName: "minLogicalFontSize",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#minlogicalfontsize9")
   ])
   int? minimumLogicalFontSize;
 
@@ -677,7 +778,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebView.setInitialScale",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebView#setInitialScale(int)")
+            "https://developer.android.com/reference/android/webkit/WebView#setInitialScale(int)"),
+    OhosPlatform(
+        apiName: "initialScale",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#initialscale9")
   ])
   int? initialScale;
 
@@ -707,7 +812,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setSansSerifFontFamily",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setSansSerifFontFamily(java.lang.String)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setSansSerifFontFamily(java.lang.String)"),
+    OhosPlatform(
+        apiName: "webSansSerifFont",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#websansseriffont9")
   ])
   String? sansSerifFontFamily;
 
@@ -716,7 +825,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setSerifFontFamily",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setSerifFontFamily(java.lang.String)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setSerifFontFamily(java.lang.String)"),
+    OhosPlatform(
+        apiName: "webSerifFont",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#webseriffont9")
   ])
   String? serifFontFamily;
 
@@ -725,7 +838,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setStandardFontFamily",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setStandardFontFamily(java.lang.String)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setStandardFontFamily(java.lang.String)"),
+    OhosPlatform(
+        apiName: "webStandardFont",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#webstandardfont9")
   ])
   String? standardFontFamily;
 
@@ -768,7 +885,11 @@ because there isn't any way to make the website data store non-persistent for th
     AndroidPlatform(
         apiName: "WebSettings.setSupportMultipleWindows",
         apiUrl:
-            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setSupportMultipleWindows(boolean)")
+            "https://developer.android.com/reference/android/webkit/WebSettings?hl=en#setSupportMultipleWindows(boolean)"),
+    OhosPlatform(
+        apiName: "multiWindowAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#multiwindowaccess9")
   ])
   bool? supportMultipleWindows;
 
@@ -810,7 +931,11 @@ as it can cause framerate drops on animations in Android 9 and lower (see [Hybri
     AndroidPlatform(
         apiName: "View.setOverScrollMode",
         apiUrl:
-            "https://developer.android.com/reference/android/view/View#setOverScrollMode(int)")
+            "https://developer.android.com/reference/android/view/View#setOverScrollMode(int)"),
+    OhosPlatform(
+        apiName: "overScrollMode",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#overscrollmode11")
   ])
   OverScrollMode_? overScrollMode;
 
@@ -1620,6 +1745,42 @@ as it can cause framerate drops on animations in Android 9 and lower (see [Hybri
   ])
   String? iframeCsp;
 
+  ///设置网页是否开启强制深色模式。默认关闭。该属性仅在darkMode开启深色模式时生效。
+  @SupportedPlatforms(platforms: [
+    OhosPlatform(
+        apiName: "forceDarkAccess",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#forcedarkaccess9")
+  ])
+  bool? forceDarkAccess;
+
+  ///设置网页是否开启捏合流畅模式，默认不开启。
+  @SupportedPlatforms(platforms: [
+    OhosPlatform(
+        apiName: "pinchSmooth",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#pinchsmooth9")
+  ])
+  bool? pinchSmooth;
+
+ ///设置Web布局模式。
+  @SupportedPlatforms(platforms: [
+    OhosPlatform(
+        apiName: "layoutMode",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#layoutmode11")
+  ])
+  LayoutMode_? layoutMode;
+
+  ///设置是否开启同层渲染功能，默认不开启。
+  @SupportedPlatforms(platforms: [
+    OhosPlatform(
+        apiName: "enableNativeEmbedMode",
+        apiUrl:
+            "https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#enablenativeembedmode11")
+  ])
+  bool? enableNativeEmbedMode;
+
   @ExchangeableObjectConstructor()
   InAppWebViewSettings_({
     this.useShouldOverrideUrlLoading,
@@ -1762,6 +1923,10 @@ as it can cause framerate drops on animations in Android 9 and lower (see [Hybri
     this.iframeReferrerPolicy,
     this.iframeName,
     this.iframeCsp,
+    this.pinchSmooth = false,
+    this.forceDarkAccess = false,
+    this.layoutMode = LayoutMode_.NONE,
+    this.enableNativeEmbedMode = false
   }) {
     if (this.minimumFontSize == null)
       this.minimumFontSize = Util.isAndroid ? 8 : 0;
