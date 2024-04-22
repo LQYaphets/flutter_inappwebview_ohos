@@ -7,9 +7,14 @@ import InAppWebViewInterface from '../InAppWebViewInterface';
 import { DVModelJson } from './DynamicUtils';
 import InAppWebViewSettings from './InAppWebViewSettings';
 import { buildOhosWebView } from './OhosWebView';
-import { Log } from '@ohos/flutter_ohos';
+import { Log, MethodChannel } from '@ohos/flutter_ohos';
+import UserScript from '../../types/UserScript';
+import JavaScriptBridgeInterface from '../JavaScriptBridgeInterface';
+import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
+import WebViewChannelDelegate from '../WebViewChannelDelegate';
 
 const TAG = "InAppWebView"
+const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
 
 export default class InAppWebView implements InAppWebViewInterface {
   private context: Context;
@@ -23,13 +28,20 @@ export default class InAppWebView implements InAppWebViewInterface {
   private scrollY: number = 0;
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
+  private initialUserOnlyScripts: Array<UserScript>;
+  private javaScriptBridgeInterface: JavaScriptBridgeInterface | null = null;
+  public channelDelegate: WebViewChannelDelegate;
 
-  constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined, customSettings: InAppWebViewSettings) {
+  constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
+              customSettings: InAppWebViewSettings, userScripts: Array<UserScript>) {
     this.context = context;
     this.plugin = plugin;
     this.id = id;
+    let channel = new MethodChannel(plugin.messenger!, METHOD_CHANNEL_NAME_PREFIX + id);
+    this.channelDelegate = new WebViewChannelDelegate(this, channel);
     this.windowId = windowId;
     this.customSettings = customSettings;
+    this.initialUserOnlyScripts = userScripts;
   }
 
   dispose() {
@@ -212,18 +224,30 @@ export default class InAppWebView implements InAppWebViewInterface {
     }
   }
 
-  private checkControllerAttached(): Promise<number> {
+  private checkControllerAttached(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         let intervalId = setInterval(() => {
           if (this.controllerAttached) {
             clearInterval(intervalId)
-            resolve(0)
+            resolve()
           }
         }, 20)
       } catch (err) {
         reject()
       }
     })
+  }
+
+  async prepare() {
+    await this.waitControllerAttached()
+    // TODO 1 init webViewAssetLoaderExt 暂时没有做这里面缺少安卓那种WebViewAssetLoader
+
+    this.javaScriptBridgeInterface = new JavaScriptBridgeInterface(this);
+    this.controller.registerJavaScriptProxy(this.javaScriptBridgeInterface, JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME, this.javaScriptBridgeInterface.getMethodList());
+  }
+
+  hideContextMenu() {
+    // TODO
   }
 }

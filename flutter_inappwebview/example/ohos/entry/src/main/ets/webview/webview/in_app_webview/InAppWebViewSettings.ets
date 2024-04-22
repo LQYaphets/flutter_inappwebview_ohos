@@ -40,6 +40,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public layoutMode: WebLayoutMode = WebLayoutMode.NONE;
   public enableNativeEmbedMode: boolean = false;
   public userAgent: string = ""
+  public useHybridComposition: boolean = true;
 
   parse(settings: Map<string, ESObject>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -190,6 +191,9 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "userAgent":
           this.userAgent = value as string;
           break;
+        case "useHybridComposition":
+          this.useHybridComposition = value as boolean;
+          break;
       }
     }
     return this;
@@ -233,6 +237,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("layoutMode", this.convertLayoutModeToDart(this.layoutMode));
     settings.set("enableNativeEmbedMode", this.enableNativeEmbedMode);
     settings.set("userAgent", this.userAgent);
+    settings.set("useHybridComposition", this.useHybridComposition);
     return settings;
   }
 

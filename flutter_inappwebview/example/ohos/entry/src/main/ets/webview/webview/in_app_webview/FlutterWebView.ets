@@ -4,6 +4,7 @@ import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
 import InAppWebView from './InAppWebView';
 import InAppWebViewSettings from './InAppWebViewSettings';
 import URLRequest from '../../types/URLRequest';
+import UserScript from '../../types/UserScript';
 
 export class FlutterWebView extends PlatformWebView {
   private webView: InAppWebView | null;
@@ -12,11 +13,22 @@ export class FlutterWebView extends PlatformWebView {
     super();
     let initialSettings: Map<string, ESObject> = params.get("initialSettings");
     let windowId = params.get("windowId") as number;
+    let initialUserScripts: Array<Map<string, ESObject>> = params.get("initialUserScripts");
+    let pullToRefreshInitialSettings: Map<string, ESObject> = params.get("pullToRefreshSettings");
+    let userScripts: Array<UserScript> = new Array<UserScript>();
+    if (initialUserScripts != null) {
+      initialUserScripts.forEach((item: Map<string, ESObject>) => {
+        let script = UserScript.fromMap(item);
+        if (script != null)
+          userScripts.push(script);
+      })
+    }
 
     let customSettings = new InAppWebViewSettings();
     customSettings.parse(initialSettings);
-    this.webView = new InAppWebView(context, plugin, id, windowId, customSettings)
+    this.webView = new InAppWebView(context, plugin, id, windowId, customSettings, userScripts)
     // TODO PullToRefreshSettings
+    this.webView.prepare()
   }
 
   makeInitialLoad(params: Map<string, ESObject>): void {
