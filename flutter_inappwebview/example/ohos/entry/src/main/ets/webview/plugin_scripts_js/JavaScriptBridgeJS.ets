@@ -6,15 +6,6 @@ export default class JavaScriptBridgeJS {
 
   public static JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT_GROUP_NAME: string = "IN_APP_WEBVIEW_JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT";
 
-  public JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT: PluginScript = new PluginScript(
-    JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT_GROUP_NAME,
-    JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_JS_SOURCE,
-    UserScriptInjectionTime.AT_DOCUMENT_START,
-    null,
-    true,
-    null
-  )
-
 
   public static JAVASCRIPT_UTIL_VAR_NAME: string = "window." + this.JAVASCRIPT_BRIDGE_NAME + "._Util";
 
@@ -249,4 +240,13 @@ export default class JavaScriptBridgeJS {
     "    window." + this.JAVASCRIPT_BRIDGE_NAME + "._platformReady = true;" +
     "  }" +
     "})();";
+
+  public static JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT: PluginScript = new PluginScript(
+    JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT_GROUP_NAME,
+    JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_JS_SOURCE,
+    UserScriptInjectionTime.AT_DOCUMENT_START,
+    null,
+    true,
+    null
+  )
 }

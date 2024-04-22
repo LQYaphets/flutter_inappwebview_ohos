@@ -41,6 +41,11 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public enableNativeEmbedMode: boolean = false;
   public userAgent: string = ""
   public useHybridComposition: boolean = true;
+  public useOnLoadResource: boolean = false;
+  public useOnDownloadStart: boolean = false;
+  public useShouldInterceptAjaxRequest: boolean = false;
+  public interceptOnlyAsyncAjaxRequests: boolean = true;
+  public useShouldInterceptFetchRequest: boolean = false;
 
   parse(settings: Map<string, ESObject>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -194,6 +199,21 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "useHybridComposition":
           this.useHybridComposition = value as boolean;
           break;
+        case "useOnLoadResource":
+          this.useOnLoadResource = value as boolean;
+          break;
+        case "useOnDownloadStart":
+          this.useOnDownloadStart = value as boolean;
+          break;
+        case "useShouldInterceptAjaxRequest":
+          this.useShouldInterceptAjaxRequest = value as boolean;
+          break;
+        case "interceptOnlyAsyncAjaxRequests":
+          this.interceptOnlyAsyncAjaxRequests = value as boolean;
+          break;
+        case "useShouldInterceptFetchRequest":
+          this.useShouldInterceptFetchRequest = value as boolean;
+          break;
       }
     }
     return this;
@@ -238,6 +258,11 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("enableNativeEmbedMode", this.enableNativeEmbedMode);
     settings.set("userAgent", this.userAgent);
     settings.set("useHybridComposition", this.useHybridComposition);
+    settings.set("useOnLoadResource", this.useOnLoadResource);
+    settings.set("useOnDownloadStart", this.useOnDownloadStart);
+    settings.set("useShouldInterceptAjaxRequest", this.useShouldInterceptAjaxRequest);
+    settings.set("interceptOnlyAsyncAjaxRequests", this.interceptOnlyAsyncAjaxRequests);
+    settings.set("useShouldInterceptFetchRequest", this.useShouldInterceptFetchRequest);
     return settings;
   }
 

@@ -9,7 +9,6 @@ const TAG = "InAppWebViewFlutterPlugin";
 export default class InAppWebViewFlutterPlugin implements FlutterPlugin{
   public flutterAssets: FlutterAssets | null = null;
   public flutterWebViewFactory: FlutterWebViewFactory | null = null
-
   public messenger: BinaryMessenger | null = null
 
   constructor() {
@@ -23,6 +22,7 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin{
     Log.d(TAG, "onAttachedToEngine")
     this.flutterAssets = binding.getFlutterAssets();
     this.flutterWebViewFactory = new FlutterWebViewFactory(this);
+    this.messenger = binding.getBinaryMessenger();
     binding.getPlatformViewRegistry().registerViewFactory(FlutterWebViewFactory.VIEW_TYPE_ID, this.flutterWebViewFactory);
   }
 

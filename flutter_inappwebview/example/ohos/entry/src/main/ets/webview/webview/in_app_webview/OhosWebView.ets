@@ -8,6 +8,10 @@ export struct OhosWebView {
   @Prop params: DVModelParameters = new DVModelParameters();
   controller: web_webview.WebviewController = new web_webview.WebviewController()
 
+  aboutToAppear(): void {
+
+  }
+
   build() {
     Column() {
       Web(
@@ -15,29 +19,54 @@ export struct OhosWebView {
           src: DynamicUtils.getParams(this.params, "src"),
           controller: this.controller
         })
+        .onControllerAttached(DynamicUtils.getParams(this.params, "onControllerAttached"))
+        .onAlert(DynamicUtils.getParams(this.params, "onAlert"))
+        .onBeforeUnload(DynamicUtils.getParams(this.params, "onBeforeUnload"))
+        .onConfirm(DynamicUtils.getParams(this.params, "onConfirm"))
+        .onPrompt(DynamicUtils.getParams(this.params, "onPrompt"))
+        .onConsole(DynamicUtils.getParams(this.params, "onConsole"))
         .onDownloadStart(DynamicUtils.getParams(this.params, "onDownloadStart"))
+        .onErrorReceive(DynamicUtils.getParams(this.params, "onErrorReceive"))
+        .onHttpErrorReceive(DynamicUtils.getParams(this.params, "onHttpErrorReceive"))
         .onPageBegin(DynamicUtils.getParams(this.params, "onPageBegin"))
         .onPageEnd(DynamicUtils.getParams(this.params, "onPageEnd"))
-        .onErrorReceive(DynamicUtils.getParams(this.params, "onErrorReceive"))
-        .onLoadIntercept(DynamicUtils.getParams(this.params, "onLoadIntercept"))
-        .onRefreshAccessedHistory(DynamicUtils.getParams(this.params, "onRefreshAccessedHistory"))
         .onProgressChange(DynamicUtils.getParams(this.params, "onProgressChange"))
+        .onTitleReceive(DynamicUtils.getParams(this.params, "onTitleReceive"))
+        .onRefreshAccessedHistory(DynamicUtils.getParams(this.params, "onRefreshAccessedHistory"))
+        .onRenderExited(DynamicUtils.getParams(this.params, "onRenderExited"))
+        .onShowFileSelector(DynamicUtils.getParams(this.params, "onShowFileSelector"))
+        .onResourceLoad(DynamicUtils.getParams(this.params, "onResourceLoad"))
+        .onScaleChange(DynamicUtils.getParams(this.params, "onScaleChange"))
+        .onInterceptRequest(DynamicUtils.getParams(this.params, "onInterceptRequest"))
+        .onHttpAuthRequest(DynamicUtils.getParams(this.params, "onHttpAuthRequest"))
+        .onSslErrorEventReceive(DynamicUtils.getParams(this.params, "onSslErrorEventReceive"))
+        .onClientAuthenticationRequest(DynamicUtils.getParams(this.params, "onClientAuthenticationRequest"))
+        .onPermissionRequest(DynamicUtils.getParams(this.params, "onPermissionRequest"))
+        .onContextMenuShow(DynamicUtils.getParams(this.params, "onContextMenuShow"))
+        .onContextMenuHide(DynamicUtils.getParams(this.params, "onContextMenuHide"))
+        .onScroll(DynamicUtils.getParams(this.params, "onScroll"))
         .onGeolocationShow(DynamicUtils.getParams(this.params, "onGeolocationShow"))
         .onGeolocationHide(DynamicUtils.getParams(this.params, "onGeolocationHide"))
-        .onShowFileSelector(DynamicUtils.getParams(this.params, "onShowFileSelector"))
-        .onPermissionRequest(DynamicUtils.getParams(this.params, "onPermissionRequest"))
-        .onConsole(DynamicUtils.getParams(this.params, "onConsoleMessage"))
+        .onFullScreenEnter(DynamicUtils.getParams(this.params, "onFullScreenEnter"))
+        .onFullScreenExit(DynamicUtils.getParams(this.params, "onFullScreenExit"))
+        .onWindowNew(DynamicUtils.getParams(this.params, "onWindowNew"))
         .onWindowExit(DynamicUtils.getParams(this.params, "onWindowExit"))
-        .onScroll(DynamicUtils.getParams(this.params, "onScroll"))
-        .onControllerAttached(DynamicUtils.getParams(this.params, "onControllerAttached"))
-        .onWindowNew((event) => {
-          let newWebViewController: web_webview.WebviewController = new web_webview.WebviewController();
-          let dialogController: CustomDialogController = new CustomDialogController({
-            builder: NewWebView({ webViewController: newWebViewController })
-          })
-          dialogController.open();
-          event.handler.setWebController(newWebViewController);
-        })
+        .onSearchResultReceive(DynamicUtils.getParams(this.params, "onSearchResultReceive"))
+        .onDataResubmitted(DynamicUtils.getParams(this.params, "onDataResubmitted"))
+        .onPageVisible(DynamicUtils.getParams(this.params, "onPageVisible"))
+        .onInterceptKeyEvent(DynamicUtils.getParams(this.params, "onInterceptKeyEvent"))
+        .onTouchIconUrlReceived(DynamicUtils.getParams(this.params, "onTouchIconUrlReceived"))
+        .onFaviconReceived(DynamicUtils.getParams(this.params, "onFaviconReceived"))
+        .onAudioStateChanged(DynamicUtils.getParams(this.params, "onAudioStateChanged"))
+        .onFirstContentfulPaint(DynamicUtils.getParams(this.params, "onFirstContentfulPaint"))
+        .onLoadIntercept(DynamicUtils.getParams(this.params, "onLoadIntercept"))
+        .onRequestSelected(DynamicUtils.getParams(this.params, "onRequestSelected"))
+        .onScreenCaptureRequest(DynamicUtils.getParams(this.params, "onScreenCaptureRequest"))
+        .onOverScroll(DynamicUtils.getParams(this.params, "onOverScroll"))
+        .onNavigationEntryCommitted(DynamicUtils.getParams(this.params, "onNavigationEntryCommitted"))
+        .onSafeBrowsingCheckResult(DynamicUtils.getParams(this.params, "onSafeBrowsingCheckResult"))
+        .onNativeEmbedLifecycleChange(DynamicUtils.getParams(this.params, "onNativeEmbedLifecycleChange"))
+        .onNativeEmbedGestureEvent(DynamicUtils.getParams(this.params, "onNativeEmbedGestureEvent"))
         .domStorageAccess(DynamicUtils.getParams(this.params, "domStorageAccess"))
         .fileAccess(DynamicUtils.getParams(this.params, "fileAccess"))
         .imageAccess(DynamicUtils.getParams(this.params, "imageAccess"))
@@ -80,23 +109,4 @@ export struct OhosWebView {
 @Builder
 export function buildOhosWebView(param: BuilderParams) {
   OhosWebView({ params: param.params, controller: DynamicUtils.getParams(param.params, "controller") })
-}
-
-@CustomDialog
-struct NewWebView {
-  controller?: CustomDialogController
-  webViewController: web_webview.WebviewController = new web_webview.WebviewController();
-
-  build() {
-    Web({ src: "", controller: this.webViewController })
-      .javaScriptAccess(true)
-      .multiWindowAccess(false)
-      .onWindowExit(
-        () => {
-          if (this.controller) {
-            this.controller.close();
-          }
-        }
-      )
-  }
 }
