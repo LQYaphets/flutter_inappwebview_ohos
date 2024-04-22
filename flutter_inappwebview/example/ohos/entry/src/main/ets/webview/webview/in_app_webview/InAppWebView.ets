@@ -15,18 +15,21 @@ import WebViewChannelDelegate from '../WebViewChannelDelegate';
 import ContentWorld from '../../types/ContentWorld';
 import { ValueCallback } from '../../types/ValueCallback';
 import { WebMessageChannel } from '../web_message/WebMessageChannel';
-import InAppWebViewChromeClient from './InAppWebViewChromeClient';
 import UserContentController from '../../types/UserContentController';
+import util from '@ohos.util';
+import Util from '../../Util';
+import PluginScriptsUtil from '../../plugin_scripts_js/PluginScriptsUtil';
+import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
+import InAppWebViewChromeClient from './InAppWebViewChromeClient';
+import PluginScript from '../../types/PluginScript';
 import PromisePolyfillJS from '../../plugin_scripts_js/PromisePolyfillJS';
 import ConsoleLogJS from '../../plugin_scripts_js/ConsoleLogJS';
 import PrintJS from '../../plugin_scripts_js/PrintJS';
 import OnWindowBlurEventJS from '../../plugin_scripts_js/OnWindowBlurEventJS';
 import OnWindowFocusEventJS from '../../plugin_scripts_js/OnWindowFocusEventJS';
 import InterceptAjaxRequestJS from '../../plugin_scripts_js/InterceptAjaxRequestJS';
-import PluginScript from '../../types/PluginScript';
 import InterceptFetchRequestJS from '../../plugin_scripts_js/InterceptFetchRequestJS';
 import OnLoadResourceJS from '../../plugin_scripts_js/OnLoadResourceJS';
-import PluginScriptsUtil from '../../plugin_scripts_js/PluginScriptsUtil';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -36,9 +39,11 @@ export default class InAppWebView implements InAppWebViewInterface {
   private plugin: InAppWebViewFlutterPlugin;
   private id: number;
   private windowId: number | null | undefined;
-  public customSettings: InAppWebViewSettings;
+  private customSettings: InAppWebViewSettings;
   private webCookieManager: web_webview.WebCookieManager = new web_webview.WebCookieManager();
   private controller: web_webview.WebviewController = new web_webview.WebviewController();
+  private scrollX: number = 0;
+  private scrollY: number = 0;
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
   private initialUserOnlyScripts: Array<UserScript>;
@@ -46,8 +51,10 @@ export default class InAppWebView implements InAppWebViewInterface {
   public channelDelegate: WebViewChannelDelegate;
   public webMessageChannels: Map<string, WebMessageChannel> = new Map<string, WebMessageChannel>()
   private inAppWebViewChromeClient: InAppWebViewChromeClient | null = null;
-  private userContentController = new UserContentController(this);
+  public userContentController: UserContentController = new UserContentController(this);
   private interceptOnlyAsyncAjaxRequestsPluginScript: PluginScript | null = null;
+  public callAsyncJavaScriptCallbacks: Map<string, ValueCallback<string>> = new Map<string, ValueCallback<string>>()
+  public evaluateJavaScriptContentWorldCallbacks: Map<string, ValueCallback<string>> = new Map<string, ValueCallback<string>>()
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>) {
@@ -101,8 +108,147 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.controller;
   }
 
-  public evaluateJavascript(source: string, contentWorld: ContentWorld, resultCallback: ValueCallback<string>): void {
+  public takeScreenshot(screenshotConfiguration: Map<string, ESObject> | null, result: MethodResult): void {
+
+  }
+
+  public evaluateJavascript(source: string, contentWorld: ContentWorld, resultCallback: ValueCallback<string> | null): void {
     // this.injectDeferredObject(source, contentWorld, null, resultCallback);
+  }
+
+  public injectCSSCode(source: string): void {
+    let jsWrapper: string = "(function(d) { var style = d.createElement('style'); style.innerHTML = %s;" +
+      " if (d.head != null) { d.head.appendChild(style); } })(document);";
+    this.injectDeferredObject(source, null, jsWrapper, null);
+  }
+
+  public injectCSSFileFromUrl(urlFile: string, cssLinkHtmlTagAttributes: Map<string, ESObject> | null): void {
+    let cssLinkAttributes: string = "";
+    let alternateStylesheet: string = "";
+    if (cssLinkHtmlTagAttributes != null) {
+      let idAttr: string = cssLinkHtmlTagAttributes.get("id") as string;
+      if (idAttr != null) {
+        // cssLinkAttributes += " link.id = '" + idAttr.replaceAll("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.id = '" + idAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let mediaAttr: string = cssLinkHtmlTagAttributes.get("media") as string;
+      if (mediaAttr != null) {
+        // cssLinkAttributes += " link.media = '" + mediaAttr.replaceAll("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.media = '" + mediaAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let crossOriginAttr: string = cssLinkHtmlTagAttributes.get("crossOrigin") as string;
+      if (crossOriginAttr != null) {
+        // cssLinkAttributes += " link.crossOrigin = '" + crossOriginAttr.replaceAll("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.crossOrigin = '" + crossOriginAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let integrityAttr: string = cssLinkHtmlTagAttributes.get("integrity") as string;
+      if (integrityAttr != null) {
+        // cssLinkAttributes += " link.integrity = '" + integrityAttr.replaceAll("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.integrity = '" + integrityAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let referrerPolicyAttr: string = cssLinkHtmlTagAttributes.get("referrerPolicy") as string;
+      if (referrerPolicyAttr != null) {
+        // cssLinkAttributes += " link.referrerPolicy = '" + referrerPolicyAttr.replaceAll("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.referrerPolicy = '" + referrerPolicyAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let disabledAttr: boolean = cssLinkHtmlTagAttributes.get("disabled") as boolean;
+      if (disabledAttr != null && disabledAttr) {
+        cssLinkAttributes += " link.disabled = true; ";
+      }
+      let alternateAttr: boolean = cssLinkHtmlTagAttributes.get("alternate") as boolean;
+      if (alternateAttr != null && alternateAttr) {
+        alternateStylesheet = "alternate ";
+      }
+      let titleAttr: string = cssLinkHtmlTagAttributes.get("title") as string;
+      if (titleAttr != null) {
+        // cssLinkAttributes += " link.title = '" + titleAttr.replaceAll("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.title = '" + titleAttr.replace("'", "\\\\'") + "'; ";
+      }
+    }
+    let jsWrapper: string = "(function(d) { var link = d.createElement('link'); link.rel='" + alternateStylesheet + "stylesheet'; link.type='text/css'; " +
+            cssLinkAttributes + " link.href = %s; if (d.head != null) { d.head.appendChild(link); } })(document);";
+    this.injectDeferredObject(urlFile, null, jsWrapper, null);
+  }
+
+  public injectJavascriptFileFromUrl(urlFile: string, scriptHtmlTagAttributes: Map<string, ESObject> | null): void {
+    let scriptAttributes: string = "";
+    if (scriptHtmlTagAttributes != null) {
+      let typeAttr: string = scriptHtmlTagAttributes.get("type") as string;
+      if (typeAttr != null) {
+        // scriptAttributes += " script.type = '" + typeAttr.replaceAll("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.type = '" + typeAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let idAttr: string = scriptHtmlTagAttributes.get("id") as string;
+      if (idAttr != null) {
+        // let scriptIdEscaped: string = idAttr.replaceAll("'", "\\\\'");
+        let scriptIdEscaped: string = idAttr.replace("'", "\\\\'");
+        scriptAttributes += " script.id = '" + scriptIdEscaped + "'; ";
+        scriptAttributes += " script.onload = function() {" +
+        "  if (window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + " != null) {" +
+        "    window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + ".callHandler('onInjectedScriptLoaded', '" + scriptIdEscaped + "');" +
+        "  }" +
+        "};";
+        scriptAttributes += " script.onerror = function() {" +
+        "  if (window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + " != null) {" +
+        "    window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + ".callHandler('onInjectedScriptError', '" + scriptIdEscaped + "');" +
+        "  }" +
+        "};";
+      }
+      let asyncAttr: boolean = scriptHtmlTagAttributes.get("async") as boolean;
+      if (asyncAttr != null && asyncAttr) {
+        scriptAttributes += " script.async = true; ";
+      }
+      let deferAttr: boolean = scriptHtmlTagAttributes.get("defer") as boolean;
+      if (deferAttr != null && deferAttr) {
+        scriptAttributes += " script.defer = true; ";
+      }
+      let crossOriginAttr: string = scriptHtmlTagAttributes.get("crossOrigin") as string;
+      if (crossOriginAttr != null) {
+        // scriptAttributes += " script.crossOrigin = '" + crossOriginAttr.replaceAll("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.crossOrigin = '" + crossOriginAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let integrityAttr: string = scriptHtmlTagAttributes.get("integrity") as string;
+      if (integrityAttr != null) {
+        // scriptAttributes += " script.integrity = '" + integrityAttr.replaceAll("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.integrity = '" + integrityAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let noModuleAttr: boolean = scriptHtmlTagAttributes.get("noModule") as boolean;
+      if (noModuleAttr != null && noModuleAttr) {
+        scriptAttributes += " script.noModule = true; ";
+      }
+      let nonceAttr: string = scriptHtmlTagAttributes.get("nonce") as string;
+      if (nonceAttr != null) {
+        // scriptAttributes += " script.nonce = '" + nonceAttr.replaceAll("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.nonce = '" + nonceAttr.replace("'", "\\\\'") + "'; ";
+      }
+      let referrerPolicyAttr: string = scriptHtmlTagAttributes.get("referrerPolicy") as string;
+      if (referrerPolicyAttr != null) {
+        // scriptAttributes += " script.referrerPolicy = '" + referrerPolicyAttr.replaceAll("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.referrerPolicy = '" + referrerPolicyAttr.replace("'", "\\\\'") + "'; ";
+      }
+    }
+    let jsWrapper: string = "(function(d) { var script = d.createElement('script'); " + scriptAttributes +
+            " script.src = %s; if (d.body != null) { d.body.appendChild(script); } })(document);";
+    this.injectDeferredObject(urlFile, null, jsWrapper, null);
+  }
+
+  public injectDeferredObject(source: string, contentWorld: ContentWorld | null, jsWrapper: string, resultCallback: ValueCallback<string> | null): void {
+    let resultUuid: string | null = contentWorld != null && !contentWorld.equals(ContentWorld.PAGE) ? util.generateRandomUUID(true).toString() : null
+    let scriptToInject: string = source
+    if (jsWrapper != null) {
+      // org.json.JSONArray jsonEsc = new org.json.JSONArray();
+      // jsonEsc.put(source);
+      // let jsonRepr: string = jsonEsc.toString();
+      // let jsonSourceString: string = jsonRepr.substring(1, jsonRepr.length() - 1);
+      // scriptToInject = String.format(jsWrapper, jsonSourceString);
+    }
+    if (resultUuid != null && resultCallback != null) {
+      this.evaluateJavaScriptContentWorldCallbacks.set(resultUuid, resultCallback);
+      scriptToInject = Util.replaceAll(PluginScriptsUtil.EVALUATE_JAVASCRIPT_WITH_CONTENT_WORLD_WRAPPER_JS_SOURCE,
+        PluginScriptsUtil.VAR_RANDOM_NAME, "_" + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + "_" + Math.round(Math.random() * 1000000))
+        .replace(PluginScriptsUtil.VAR_PLACEHOLDER_VALUE, UserContentController.escapeCode(source))
+        .replace(PluginScriptsUtil.VAR_RESULT_UUID, resultUuid);
+    }
   }
 
   public getPlugin(): InAppWebViewFlutterPlugin {
@@ -113,11 +259,14 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.webMessageChannels;
   }
 
+  public getUserContentController(): UserContentController {
+    return this.userContentController;
+  }
+
   private onControllerAttached = () => {
     Log.d(TAG, "onControllerAttached");
     this.controllerAttached = true
   }
-
   private toWebHeaders(headers: Map<string, string>): Array<web_webview.WebHeader> {
     let result: Array<web_webview.WebHeader> = new Array;
     if (headers == null || headers.size == 0) {
