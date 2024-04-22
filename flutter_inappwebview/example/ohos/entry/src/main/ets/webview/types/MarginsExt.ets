@@ -1,16 +1,14 @@
-export class MarginsExt {
-  private top: number | null = null
-  private right: number | null = null
-  private bottom: number | null = null
-  private left: number | null = null
+export default class MarginsExt {
+  private top: number
+  private right: number
+  private bottom: number
+  private left: number
 
-  constructor(top: number | null = null, right: number| null = null, bottom: number | null = null, left: number | null = null) {
-    if(top != null && right != null && bottom != null && left != null){
-      this.top = top;
-      this.right = right;
-      this.bottom = bottom;
-      this.left = left;
-    }
+  constructor(top: number, right: number, bottom: number, left: number) {
+    this.top = top;
+    this.right = right;
+    this.bottom = bottom;
+    this.left = left;
   }
 
   /// 缺少android.print.PrintAttributes
@@ -27,14 +25,14 @@ export class MarginsExt {
   // }
 
   public static fromMap(map: Map<String, Object>): MarginsExt | null {
-        if (map == null) {
+    if (map == null) {
       return null;
     }
     return new MarginsExt(
-            map.get("top") as number,
-            map.get("right") as number,
-            map.get("bottom") as number,
-            map.get("left") as number);
+      map.get("top") as number,
+      map.get("right") as number,
+      map.get("bottom") as number,
+      map.get("left") as number);
   }
 
   // public toMargins(): PrintAttributes.Margins {

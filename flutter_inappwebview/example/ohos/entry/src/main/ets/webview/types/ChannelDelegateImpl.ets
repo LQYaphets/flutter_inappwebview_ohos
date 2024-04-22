@@ -4,7 +4,7 @@ import { IChannelDelegate } from './IChannelDelegate';
 
 export default class ChannelDelegateImpl implements IChannelDelegate {
 
-    private channel: MethodChannel | null = null;
+    private channel: MethodChannel | null;
 
     constructor(channel: MethodChannel) {
         this.channel = channel;

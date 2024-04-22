@@ -1,8 +1,8 @@
-export class ResolutionExt {
-  private id: string | null = null
-  private label: string | null = null
-  private verticalDpi: number | null = null
-  private horizontalDpi: number | null = null
+export default class ResolutionExt {
+  private id: string
+  private label: string
+  private verticalDpi: number
+  private horizontalDpi: number
 
   constructor(id: string, label: string, verticalDpi: number, horizontalDpi: number) {
     this.id = id

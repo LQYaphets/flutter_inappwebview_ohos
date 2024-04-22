@@ -1,10 +1,10 @@
-export class MediaSizeExt {
-  private id: string | null = null
-  private label: string | null = null
-  private widthMils: number | null = null
-  private heightMils: number | null = null
+export default class MediaSizeExt {
+  private id: string
+  private label: string | null
+  private widthMils: number
+  private heightMils: number
 
-  constructor(id: string | null = null, label: string | null = null, widthMils: number, heightMils: number) {
+  constructor(id: string, label: string | null, widthMils: number, heightMils: number) {
     this.id = id
     this.label = label
     this.widthMils= widthMils

@@ -9,6 +9,8 @@ import UserScript from '../../types/UserScript';
 export class FlutterWebView extends PlatformWebView {
   private webView: InAppWebView | null;
 
+  public keepAliveId: string | null = null
+
   constructor(plugin: InAppWebViewFlutterPlugin, context: Context, id: number, params: Map<string, ESObject>) {
     super();
     let initialSettings: Map<string, ESObject> = params.get("initialSettings");
@@ -23,6 +25,8 @@ export class FlutterWebView extends PlatformWebView {
           userScripts.push(script);
       })
     }
+
+    this.keepAliveId = params.get("keepAliveId") as string
 
     let customSettings = new InAppWebViewSettings();
     customSettings.parse(initialSettings);

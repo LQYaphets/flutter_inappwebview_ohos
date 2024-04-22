@@ -1,6 +1,6 @@
 import { PrintAttributesExt } from './PrintAttributesExt'
 
-export class PrintJobInfoExt {
+export default class PrintJobInfoExt {
   private state: number | null = null
   private copies: number | null = null
   private numberOfPages: number | null = null

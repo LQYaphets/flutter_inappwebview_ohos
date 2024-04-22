@@ -1,4 +1,4 @@
-import { ContentWorld } from './ContentWorld';
+import ContentWorld from './ContentWorld';
 import { UserScriptInjectionTime } from './UserScriptInjectionTime';
 
 export default class UserScript {

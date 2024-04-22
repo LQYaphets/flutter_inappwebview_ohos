@@ -12,6 +12,9 @@ import UserScript from '../../types/UserScript';
 import JavaScriptBridgeInterface from '../JavaScriptBridgeInterface';
 import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
 import WebViewChannelDelegate from '../WebViewChannelDelegate';
+import ContentWorld from '../../types/ContentWorld';
+import { ValueCallback } from '../../types/ValueCallback';
+import { WebMessageChannel } from '../web_message/WebMessageChannel';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -31,6 +34,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   private initialUserOnlyScripts: Array<UserScript>;
   private javaScriptBridgeInterface: JavaScriptBridgeInterface | null = null;
   public channelDelegate: WebViewChannelDelegate;
+  public webMessageChannels: Map<string, WebMessageChannel> = new Map<string, WebMessageChannel>()
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>) {
@@ -82,6 +86,18 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   getController(): web_webview.WebviewController {
     return this.controller;
+  }
+
+  public evaluateJavascript(source: string, contentWorld: ContentWorld, resultCallback: ValueCallback<string>): void {
+    // this.injectDeferredObject(source, contentWorld, null, resultCallback);
+  }
+
+  public getPlugin(): InAppWebViewFlutterPlugin {
+    return this.plugin;
+  }
+
+  public getWebMessageChannels(): Map<string, WebMessageChannel> {
+    return this.webMessageChannels;
   }
 
   private onControllerAttached = () => {

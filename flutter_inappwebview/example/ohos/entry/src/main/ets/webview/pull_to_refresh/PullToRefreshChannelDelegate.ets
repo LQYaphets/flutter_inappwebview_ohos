@@ -1,13 +1,13 @@
 import { MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';
-import { PullToRefreshLayout } from './PullToRefreshLayout';
+import PullToRefreshLayout from './PullToRefreshLayout';
 
-export class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
-  pullToRefreshView: PullToRefreshLayout | null = null;
+export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
+  private pullToRefreshView: PullToRefreshLayout | null;
 
-  PullToRefreshChannelDelegate(pullToRefreshView: PullToRefreshLayout, channel: MethodChannel) {
-    // super(channel);
+  constructor(pullToRefreshView: PullToRefreshLayout, channel: MethodChannel) {
+    super(channel);
     this.pullToRefreshView = pullToRefreshView;
   }
 

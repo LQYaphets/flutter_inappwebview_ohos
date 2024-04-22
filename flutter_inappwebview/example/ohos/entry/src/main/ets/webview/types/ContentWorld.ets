@@ -1,5 +1,5 @@
-export class ContentWorld {
-  private name: string | null = null
+export default class ContentWorld {
+  private name: string | null
 
   static PAGE: ContentWorld = new ContentWorld("page");
 

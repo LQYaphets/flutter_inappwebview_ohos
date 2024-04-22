@@ -1,9 +1,9 @@
-import { MarginsExt } from './MarginsExt'
-import { MediaSizeExt } from './MediaSizeExt'
-import { ResolutionExt } from './ResolutionExt'
+import MarginsExt from './MarginsExt'
+import MediaSizeExt from './MediaSizeExt'
+import ResolutionExt from './ResolutionExt'
 
 export class PrintAttributesExt {
-  private colorMode: number | null = null
+  private colorMode: number = 0
   private duplex: number | null = null
   private orientation: number | null = null
   private mediaSize: MediaSizeExt | null = null

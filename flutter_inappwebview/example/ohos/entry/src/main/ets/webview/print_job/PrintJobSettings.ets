@@ -1,7 +1,7 @@
 import ISettings from '../ISettings';
-import { MediaSizeExt } from '../types/MediaSizeExt';
-import { ResolutionExt } from '../types/ResolutionExt';
-import { PrintJobController } from './PrintJobController';
+import MediaSizeExt from '../types/MediaSizeExt';
+import ResolutionExt from '../types/ResolutionExt';
+import PrintJobController from './PrintJobController';
 
 export default class PrintJobSettings implements ISettings<PrintJobController> {
   public LOG_TAG: string = "PrintJobSettings"

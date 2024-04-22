@@ -1,7 +1,7 @@
 import ISettings from '../ISettings';
-import { PullToRefreshLayout } from './PullToRefreshLayout';
+import PullToRefreshLayout from './PullToRefreshLayout';
 
-export class PullToRefreshSettings implements ISettings<PullToRefreshLayout> {
+export default class PullToRefreshSettings implements ISettings<PullToRefreshLayout> {
   static LOG_TAG: string = "PullToRefreshSettings";
 
   enabled: boolean = true;

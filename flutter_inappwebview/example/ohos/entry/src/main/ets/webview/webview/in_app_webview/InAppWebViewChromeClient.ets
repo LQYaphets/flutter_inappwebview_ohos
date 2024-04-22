@@ -1,4 +1,4 @@
-import InAppWebViewFlutterPlugin from '@ohos/flutter_inappwebview_ohos';
+import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
 import InAppWebView from './InAppWebView';
 
 export default class InAppWebViewChromeClient {

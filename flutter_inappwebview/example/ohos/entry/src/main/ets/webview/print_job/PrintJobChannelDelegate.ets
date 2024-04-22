@@ -1,11 +1,11 @@
 import ChannelDelegateImpl  from '../types/ChannelDelegateImpl';
-import { PrintJobController } from './PrintJobController';
+import PrintJobController from './PrintJobController';
 import { MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
-import { PrintJobInfoExt } from '../types/PrintJobInfoExt';
+import PrintJobInfoExt from '../types/PrintJobInfoExt';
 
 export default class PrintJobChannelDelegate extends ChannelDelegateImpl {
-  private printJobController: PrintJobController | null = null
+  private printJobController: PrintJobController | null
 
   constructor(printJobController: PrintJobController, channel: MethodChannel) {
     super(channel);
