@@ -1,7 +1,7 @@
 import web_webview from '@ohos.web.webview'
 import { DVModel } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicView';
 import { createDVModelFromJson } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicViewJson';
-import URLRequest from 'ets/plugins/types/URLRequest';
+import URLRequest from '../../types/URLRequest';
 import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
 import InAppWebViewInterface from '../InAppWebViewInterface';
 import { DVModelJson } from './DynamicUtils';

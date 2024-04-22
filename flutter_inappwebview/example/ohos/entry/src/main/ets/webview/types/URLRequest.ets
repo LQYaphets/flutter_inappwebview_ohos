@@ -35,7 +35,6 @@ export default class URLRequest {
     this.body = body;
   }
 
-
   getHeaders(): Map<string, string> {
     return this.headers;
   }
