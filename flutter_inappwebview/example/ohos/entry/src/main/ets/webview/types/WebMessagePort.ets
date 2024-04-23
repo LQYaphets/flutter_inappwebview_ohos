@@ -25,9 +25,7 @@ export default class WebMessagePort {
   /// 抛异常，暂未完善
   public setWebMessageCallback(callback: ValueCallback<void>): void{
     if (this.isClosed || this.isTransferred) {
-      console.error("Port is already closed or transferred");
-      return
-      // throw new Exception("Port is already closed or transferred");
+      throw new Error("Port is already closed or transferred");
     }
     this.isStarted = true;
     let webView: InAppWebViewInterface | null = this.webMessageChannel != null && this.webMessageChannel.webView != null ? this.webMessageChannel.webView : null
@@ -65,9 +63,7 @@ export default class WebMessagePort {
   /// 抛异常，暂未完善
   public postMessage(message: WebMessage, callback: ValueCallback<void>): void {
     if (this.isClosed || this.isTransferred) {
-      console.error("Port is already closed or transferred");
-      return
-      // throw new Exception("Port is already closed or transferred");
+      throw new Error("Port is already closed or transferred");
     }
     let webView: InAppWebViewInterface | null = this.webMessageChannel != null && this.webMessageChannel.webView != null ? this.webMessageChannel.webView : null;
     if (webView != null) {
@@ -77,19 +73,13 @@ export default class WebMessagePort {
         let portArrayString: List<string> = new List<string>();
         for (let port of ports) {
           if (port == this) {
-            console.error("Source port cannot be transferred");
-            return
-            // throw new Exception("Source port cannot be transferred");
+            throw new Error("Source port cannot be transferred");
           }
           if (port.isStarted) {
-            console.error("Port is already started");
-            return
-            // throw new Exception("Port is already started");
+            throw new Error("Port is already started");
           }
           if (port.isClosed || port.isTransferred) {
-            console.error("Port is already closed or transferred");
-            return
-            // throw new Exception("Port is already closed or transferred");
+            throw new Error("Port is already closed or transferred");
           }
           port.isTransferred = true;
           portArrayString.add(JavaScriptBridgeJS.WEB_MESSAGE_CHANNELS_VARIABLE_NAME + "['" + this.webMessageChannel?.id + "']." + port.name);

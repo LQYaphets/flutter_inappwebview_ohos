@@ -8,4 +8,21 @@ export default class Util {
     // return TextUtils.join(newString, s.split(Pattern.quote(oldString)));
     return ""
   }
+
+  public static getOrDefault(map: Map<string, ESObject>, key: string, defaultValue: ESObject): ESObject {
+    let keys = map.keys()
+    for(let keyValue of keys) {
+      if(keyValue == key) {
+        return map.get(key) as ESObject
+      }
+    }
+    return defaultValue;
+  }
+
+  public static objEquals(a: ESObject, b: ESObject) :boolean {
+    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    //   return Objects.equals(a, b);
+    // }
+    return (a == b) || (a != null && a.equals(b));
+  }
 }

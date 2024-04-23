@@ -30,6 +30,10 @@ import OnWindowFocusEventJS from '../../plugin_scripts_js/OnWindowFocusEventJS';
 import InterceptAjaxRequestJS from '../../plugin_scripts_js/InterceptAjaxRequestJS';
 import InterceptFetchRequestJS from '../../plugin_scripts_js/InterceptFetchRequestJS';
 import OnLoadResourceJS from '../../plugin_scripts_js/OnLoadResourceJS';
+import { InAppBrowserDelegate } from '../../in_app_browser/InAppBrowserDelegate';
+import { HashMap, List } from '@kit.ArkTS';
+import PrintJobSettings from '../../print_job/PrintJobSettings';
+import WebMessageListener from '../web_message/WebMessageListener';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -55,6 +59,8 @@ export default class InAppWebView implements InAppWebViewInterface {
   private interceptOnlyAsyncAjaxRequestsPluginScript: PluginScript | null = null;
   public callAsyncJavaScriptCallbacks: Map<string, ValueCallback<string>> = new Map<string, ValueCallback<string>>()
   public evaluateJavaScriptContentWorldCallbacks: Map<string, ValueCallback<string>> = new Map<string, ValueCallback<string>>()
+  public inAppBrowserDelegate: InAppBrowserDelegate | null = null
+  private inFullscreen: boolean = false;
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>) {
@@ -249,6 +255,149 @@ export default class InAppWebView implements InAppWebViewInterface {
         .replace(PluginScriptsUtil.VAR_PLACEHOLDER_VALUE, UserContentController.escapeCode(source))
         .replace(PluginScriptsUtil.VAR_RESULT_UUID, resultUuid);
     }
+  }
+
+  public getInAppBrowserDelegate(): InAppBrowserDelegate | null {
+    return this.inAppBrowserDelegate;
+  }
+
+  public getCopyBackForwardList(): HashMap<string, ESObject> {
+    // let currentList: WebBackForwardList = copyBackForwardList();
+    // let currentSize: number = currentList.getSize();
+    // let currentIndex: number = currentList.getCurrentIndex();
+    //
+    // let history: List<HashMap<String, String>> = new List<HashMap<String, String>>();
+    //
+    // for (let i: number = 0; i < currentSize; i++) {
+    //   let historyItem: WebHistoryItem = currentList.getItemAtIndex(i);
+    //   let historyItemMap: HashMap<string, string> = new HashMap<string, string>();
+    //
+    //   historyItemMap.set("originalUrl", historyItem.getOriginalUrl());
+    //   historyItemMap.set("title", historyItem.getTitle());
+    //   historyItemMap.set("url", historyItem.getUrl());
+    //
+    //   history.add(historyItemMap);
+    // }
+    //
+    // let result: HashMap<string, ESObject> = new HashMap<string, ESObject>();
+    //
+    // result.set("list", history);
+    // result.set("currentIndex", currentIndex);
+    //
+    // return result;
+    return new HashMap<string, ESObject>()
+  }
+
+  public clearAllCache(): void {
+    // clearCache(true);
+    this.clearCookies();
+    // clearFormData();
+    // WebStorage.getInstance().deleteAllData();
+  }
+
+  public scrollTo(x: number, y: number, animated: boolean): void {
+    // if (animated) {
+    //   let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", x);
+    //   let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", y);
+    //   let anim: ObjectAnimator = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
+    //   anim.setDuration(300).start();
+    // } else {
+    //   scrollTo(x, y);
+    // }
+  }
+
+  public scrollBy(x: number, y: number, animated: boolean): void {
+    // if (animated) {
+    //   let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", getScrollX() + x);
+    //   let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", getScrollY() + y);
+    //   let anim: PropertyValuesHolder = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
+    //   anim.setDuration(300).start();
+    // } else {
+    //   scrollBy(x, y);
+    // }
+  }
+
+  private clearCookies(): void {
+    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    //   CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+    //     @Override
+    //     public void onReceiveValue(Boolean aBoolean) {
+    //
+    //     }
+    //   });
+    // } else {
+    //   CookieManager.getInstance().removeAllCookie();
+    // }
+  }
+
+  public printCurrentPage(settings: PrintJobSettings): string | null {
+    return null;
+  }
+
+  public setSettings(newCustomSettings: InAppWebViewSettings, newSettingsMap: Map<string, ESObject>): void {
+    throw new Error('Method not implemented.')
+  }
+
+  public getCustomSettings(): Map<string, ESObject> | null {
+    return this.customSettings != null ? this.customSettings.getRealSettings(this) : null
+  }
+
+  public setContextMenu(contextMenu: Map<string, ESObject>): void {
+    // this.contextMenu = contextMenu;
+  }
+
+  public requestFocusNodeHref(): Map<string, ESObject> {
+    // let msg: Message = InAppWebView.mHandler.obtainMessage();
+    // this.requestFocusNodeHref(msg);
+    // Bundle bundle = msg.peekData();
+
+    // let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    // obj.set("src", bundle.getString("src"));
+    // obj.set("url", bundle.getString("url"));
+    // obj.set("title", bundle.getString("title"));
+    //
+    // return obj;
+    return new Map<string, ESObject>()
+  }
+
+  public requestImageRef(): Map<string, ESObject> {
+    // let msg: Message = InAppWebView.mHandler.obtainMessage();
+    // this.requestImageRef(msg);
+    // Bundle bundle = msg.peekData();
+    //
+    // let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    // obj.set("url", bundle.getString("url"));
+    //
+    // return obj;
+    return new Map<string, ESObject>()
+  }
+
+  public createCompatWebMessageChannel(): WebMessageChannel {
+    let id: string = util.generateRandomUUID(true).toString();
+    let webMessageChannel: WebMessageChannel = new WebMessageChannel(id, this);
+    this.webMessageChannels.set(id, webMessageChannel);
+    return webMessageChannel;
+  }
+
+  public addWebMessageListener(webMessageListener: WebMessageListener): void {
+    // if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+    //   WebViewCompat.addWebMessageListener(this, webMessageListener.jsObjectName, webMessageListener.allowedOriginRules, webMessageListener.listener);
+    //   webMessageListeners.add(webMessageListener);
+    // }
+  }
+
+  public canScrollVertically(): boolean {
+    // return computeVerticalScrollRange() > computeVerticalScrollExtent();
+    return false;
+  }
+
+  public canScrollHorizontally(): boolean {
+    // return computeHorizontalScrollRange() > computeHorizontalScrollExtent();
+    return false;
+  }
+
+  public isInFullscreen(): boolean {
+    return this.inFullscreen;
   }
 
   public getPlugin(): InAppWebViewFlutterPlugin {

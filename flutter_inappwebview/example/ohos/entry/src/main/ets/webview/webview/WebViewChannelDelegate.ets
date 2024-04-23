@@ -1,10 +1,30 @@
 import { MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
+import InAppBrowserActivity from '../in_app_browser/InAppBrowserActivity';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';
 import ContentWorld from '../types/ContentWorld';
 import URLRequest from '../types/URLRequest';
-import { WebViewChannelDelegateMethods } from '../WebViewChannelDelegateMethods';
+import { WebViewChannelDelegateMethods } from './WebViewChannelDelegateMethods';
 import InAppWebView from './in_app_webview/InAppWebView';
+import InAppBrowserSettings from '../in_app_browser/InAppBrowserSettings';
+import { HashMap, List } from '@kit.ArkTS';
+import InAppWebViewSettings from './in_app_webview/InAppWebViewSettings';
+import PrintJobSettings from '../print_job/PrintJobSettings';
+import HitTestResult from '../types/HitTestResult';
+import UserScript from '../types/UserScript';
+import WebMessagePortCompatExt from '../types/WebMessagePortCompatExt';
+import { WebMessageChannel } from './web_message/WebMessageChannel';
+import WebMessageCompatExt from '../types/WebMessageCompatExt';
+import WebMessageListener from './web_message/WebMessageListener';
+import DownloadStartRequest from '../types/DownloadStartRequest';
+import BaseCallbackResultImpl from '../types/BaseCallbackResultImpl';
+import JsAlertResponse from '../types/JsAlertResponse';
+import JsConfirmResponse from '../types/JsConfirmResponse';
+import JsPromptResponse from '../types/JsPromptResponse';
+import JsBeforeUnloadResponse from '../types/JsBeforeUnloadResponse';
+import CreateWindowAction from '../types/CreateWindowAction';
+import GeolocationPermissionShowPromptResponse from '../types/GeolocationPermissionShowPromptResponse';
+import PermissionResponse from '../types/PermissionResponse';
 
 const LOG_TAG = "WebViewChannelDelegate";
 
@@ -157,467 +177,760 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
           result.success(null);
         break;
       case WebViewChannelDelegateMethods.setSettings:
-        // if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-        //   InAppBrowserActivity inAppBrowserActivity = (InAppBrowserActivity) webView.getInAppBrowserDelegate();
-        //   InAppBrowserSettings inAppBrowserSettings = new InAppBrowserSettings();
-        //   HashMap<String, Object> inAppBrowserSettingsMap = (HashMap<String, Object>) call.argument("settings");
-        //   inAppBrowserSettings.parse(inAppBrowserSettingsMap);
-        //   inAppBrowserActivity.setSettings(inAppBrowserSettings, inAppBrowserSettingsMap);
-        // } else if (this.webView != null) {
-        //   InAppWebViewSettings inAppWebViewSettings = new InAppWebViewSettings();
-        //   HashMap<String, Object> inAppWebViewSettingsMap = (HashMap<String, Object>) call.argument("settings");
-        //   inAppWebViewSettings.parse(inAppWebViewSettingsMap);
-        //   webView.setSettings(inAppWebViewSettings, inAppWebViewSettingsMap);
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
+          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
+          let inAppBrowserSettings: InAppBrowserSettings = new InAppBrowserSettings();
+          let inAppBrowserSettingsMap: Map<string, ESObject> = call.argument("settings") as Map<string, ESObject>;
+          inAppBrowserSettings.parse(inAppBrowserSettingsMap);
+          inAppBrowserActivity.setSettings(inAppBrowserSettings, inAppBrowserSettingsMap);
+        } else if (this.webView != null) {
+          let inAppWebViewSettings: InAppWebViewSettings = new InAppWebViewSettings();
+          let inAppWebViewSettingsMap: Map<string, ESObject> = call.argument("settings") as Map<string, ESObject>;
+          inAppWebViewSettings.parse(inAppWebViewSettingsMap);
+          this.webView.setSettings(inAppWebViewSettings, inAppWebViewSettingsMap);
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.getSettings:
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
+          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
+          result.success(inAppBrowserActivity.getCustomSettings());
+        } else {
+          result.success((this.webView != null) ? this.webView.getCustomSettings() : null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.close:
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
+          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
+          inAppBrowserActivity.close(result);
+        } else {
+          result.notImplemented();
+        }
+        break;
+      case WebViewChannelDelegateMethods.show:
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
+          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
+          inAppBrowserActivity.show();
+          result.success(true);
+        } else {
+          result.notImplemented();
+        }
+        break;
+      case WebViewChannelDelegateMethods.hide:
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
+          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
+          inAppBrowserActivity.hide();
+          result.success(true);
+        } else {
+          result.notImplemented();
+        }
+        break;
+      case WebViewChannelDelegateMethods.isHidden:
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
+          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
+          result.success(inAppBrowserActivity.isHidden);
+        } else {
+          result.notImplemented();
+        }
+        break;
+      case WebViewChannelDelegateMethods.getCopyBackForwardList:
+        result.success((this.webView != null) ? this.webView.getCopyBackForwardList() : null);
+        break;
+      case WebViewChannelDelegateMethods.startSafeBrowsing:
+        // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.START_SAFE_BROWSING)) {
+        //   WebViewCompat.startSafeBrowsing(this.webView.getContext(), new ValueCallback<Boolean>() {
+        //     public onReceiveValue(success: boolean): void {
+        //       result.success(success);
+        //     }
+        //   });
+        // } else {
+        //   result.success(false);
+        // }
+        break;
+      case WebViewChannelDelegateMethods.clearCache:
+        if (this.webView != null)
+          this.webView.clearAllCache();
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.clearSslPreferences:
+        if (this.webView != null)
+          // this.webView.clearSslPreferences();
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.findAll:
+        if (this.webView != null) {
+          let find: string = call.argument("find");
+          // this.webView.findAllAsync(find);
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.findNext:
+        if (this.webView != null) {
+          let forward: boolean = call.argument("forward") as boolean;
+          // this.webView.findNext(forward);
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.clearMatches:
+        if (this.webView != null) {
+          // this.webView.clearMatches();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.scrollTo:
+        if (this.webView != null) {
+          let x: number = call.argument("x") as number;
+          let y: number = call.argument("y") as number;
+          let animated: boolean = call.argument("animated") as boolean;
+          this.webView.scrollTo(x, y, animated);
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.scrollBy:
+        if (this.webView != null) {
+          let x: number = call.argument("x") as number;
+          let y: number = call.argument("y") as number;
+          let animated: boolean = call.argument("animated") as boolean;
+          this.webView.scrollBy(x, y, animated);
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.pause:
+        if (this.webView != null) {
+          // this.webView.onPause();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.resume:
+        if (this.webView != null) {
+          // this.webView.onResume();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.pauseTimers:
+        if (this.webView != null) {
+          // this.webView.pauseTimers();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.resumeTimers:
+        if (this.webView != null) {
+          // this.webView.resumeTimers();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.printCurrentPage:
+        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (this.webView != null) {
+          let settings: PrintJobSettings = new PrintJobSettings();
+          let settingsMap: Map<string, ESObject> = call.argument("settings") as Map<string, ESObject>;
+          if (settingsMap != null) {
+            settings.parse(settingsMap);
+          }
+          result.success(this.webView.printCurrentPage(settings));
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.getContentHeight:
+        if (this.webView instanceof InAppWebView) {
+          // result.success(this.webView.getContentHeight());
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.getContentWidth:
+        // if (this.webView instanceof InAppWebView) {
+        //   this.webView.getContentWidth(new ValueCallback<Integer>() {
+        //     public onReceiveValue(contentWidth: number | null): void {
+        //       result.success(contentWidth);
+        //     }
+        //   });
+        // } else {
+        //   result.success(null);
+        // }
+        break;
+      case WebViewChannelDelegateMethods.zoomBy:
+        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        //   let zoomFactor: number = call.argument("zoomFactor") as number;
+        //   this.webView.zoomBy(zoomFactor as number);
         // }
         result.success(true);
         break;
-      // case getSettings:
-      //   if (webView != null && webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-      //     InAppBrowserActivity inAppBrowserActivity = (InAppBrowserActivity) webView.getInAppBrowserDelegate();
-      //     result.success(inAppBrowserActivity.getCustomSettings());
-      //   } else {
-      //     result.success((webView != null) ? webView.getCustomSettings() : null);
-      //   }
-      //   break;
-      // case close:
-      //   if (webView != null && webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-      //     InAppBrowserActivity inAppBrowserActivity = (InAppBrowserActivity) webView.getInAppBrowserDelegate();
-      //     inAppBrowserActivity.close(result);
-      //   } else {
-      //     result.notImplemented();
-      //   }
-      //   break;
-      // case show:
-      //   if (webView != null && webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-      //     InAppBrowserActivity inAppBrowserActivity = (InAppBrowserActivity) webView.getInAppBrowserDelegate();
-      //     inAppBrowserActivity.show();
-      //     result.success(true);
-      //   } else {
-      //     result.notImplemented();
-      //   }
-      //   break;
-      // case hide:
-      //   if (webView != null && webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-      //     InAppBrowserActivity inAppBrowserActivity = (InAppBrowserActivity) webView.getInAppBrowserDelegate();
-      //     inAppBrowserActivity.hide();
-      //     result.success(true);
-      //   } else {
-      //     result.notImplemented();
-      //   }
-      //   break;
-      // case isHidden:
-      //   if (webView != null && webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-      //     InAppBrowserActivity inAppBrowserActivity = (InAppBrowserActivity) webView.getInAppBrowserDelegate();
-      //     result.success(inAppBrowserActivity.isHidden);
-      //   } else {
-      //     result.notImplemented();
-      //   }
-      //   break;
-      // case getCopyBackForwardList:
-      //   result.success((webView != null) ? webView.getCopyBackForwardList() : null);
-      //   break;
-      // case startSafeBrowsing:
-      //   if (webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.START_SAFE_BROWSING)) {
-      //     WebViewCompat.startSafeBrowsing(webView.getContext(), new ValueCallback<Boolean>() {
-      //       @Override
-      //       public void onReceiveValue(Boolean success) {
-      //         result.success(success);
-      //       }
-      //     });
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case clearCache:
-      //   if (webView != null)
-      //     webView.clearAllCache();
-      //   result.success(true);
-      //   break;
-      // case clearSslPreferences:
-      //   if (webView != null)
-      //     webView.clearSslPreferences();
-      //   result.success(true);
-      //   break;
-      // case findAll:
-      //   if (webView != null) {
-      //     String find = call.argument("find");
-      //     webView.findAllAsync(find);
-      //   }
-      //   result.success(true);
-      //   break;
-      // case findNext:
-      //   if (webView != null) {
-      //     Boolean forward = (Boolean) call.argument("forward");
-      //     webView.findNext(forward);
-      //   }
-      //   result.success(true);
-      //   break;
-      // case clearMatches:
-      //   if (webView != null) {
-      //     webView.clearMatches();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case scrollTo:
-      //   if (webView != null) {
-      //     Integer x = (Integer) call.argument("x");
-      //     Integer y = (Integer) call.argument("y");
-      //     Boolean animated = (Boolean) call.argument("animated");
-      //     webView.scrollTo(x, y, animated);
-      //   }
-      //   result.success(true);
-      //   break;
-      // case scrollBy:
-      //   if (webView != null) {
-      //     Integer x = (Integer) call.argument("x");
-      //     Integer y = (Integer) call.argument("y");
-      //     Boolean animated = (Boolean) call.argument("animated");
-      //     webView.scrollBy(x, y, animated);
-      //   }
-      //   result.success(true);
-      //   break;
-      // case pause:
-      //   if (webView != null) {
-      //     webView.onPause();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case resume:
-      //   if (webView != null) {
-      //     webView.onResume();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case pauseTimers:
-      //   if (webView != null) {
-      //     webView.pauseTimers();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case resumeTimers:
-      //   if (webView != null) {
-      //     webView.resumeTimers();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case printCurrentPage:
-      //   if (webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      //     PrintJobSettings settings = new PrintJobSettings();
-      //     Map<String, Object> settingsMap = (Map<String, Object>) call.argument("settings");
-      //     if (settingsMap != null) {
-      //       settings.parse(settingsMap);
-      //     }
-      //     result.success(webView.printCurrentPage(settings));
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case getContentHeight:
-      //   if (webView instanceof InAppWebView) {
-      //     result.success(webView.getContentHeight());
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case getContentWidth:
-      //   if (webView instanceof InAppWebView) {
-      //     webView.getContentWidth(new ValueCallback<Integer>() {
-      //       @Override
-      //       public void onReceiveValue(@Nullable Integer contentWidth) {
-      //         result.success(contentWidth);
-      //       }
-      //     });
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case zoomBy:
-      //   if (webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      //     double zoomFactor = (double) call.argument("zoomFactor");
-      //     webView.zoomBy((float) zoomFactor);
-      //   }
-      //   result.success(true);
-      //   break;
-      // case getOriginalUrl:
-      //   result.success((webView != null) ? webView.getOriginalUrl() : null);
-      //   break;
-      // case getZoomScale:
-      //   if (webView instanceof InAppWebView) {
-      //     result.success(webView.getZoomScale());
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case getSelectedText:
-      //   if ((webView instanceof InAppWebView && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) {
-      //     webView.getSelectedText(new ValueCallback<String>() {
-      //       @Override
-      //       public void onReceiveValue(String value) {
-      //         result.success(value);
-      //       }
-      //     });
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case getHitTestResult:
-      //   if (webView instanceof InAppWebView) {
-      //     result.success(HitTestResult.fromWebViewHitTestResult(webView.getHitTestResult()).toMap());
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case pageDown:
-      //   if (webView != null) {
-      //     boolean bottom = (boolean) call.argument("bottom");
-      //     result.success(webView.pageDown(bottom));
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case pageUp:
-      //   if (webView != null) {
-      //     boolean top = (boolean) call.argument("top");
-      //     result.success(webView.pageUp(top));
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case saveWebArchive:
-      //   if (webView != null) {
-      //     String filePath = call.argument("filePath");
-      //     boolean autoname = (boolean) call.argument("autoname");
-      //     webView.saveWebArchive(filePath, autoname, new ValueCallback<String>() {
-      //       @Override
-      //       public void onReceiveValue(String value) {
-      //         result.success(value);
-      //       }
-      //     });
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case zoomIn:
-      //   if (webView != null) {
-      //     result.success(webView.zoomIn());
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case zoomOut:
-      //   if (webView != null) {
-      //     result.success(webView.zoomOut());
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case clearFocus:
-      //   if (webView != null) {
-      //     webView.clearFocus();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case setContextMenu:
-      //   if (webView != null) {
-      //     Map<String, Object> contextMenu = (Map<String, Object>) call.argument("contextMenu");
-      //     webView.setContextMenu(contextMenu);
-      //   }
-      //   result.success(true);
-      //   break;
-      // case requestFocusNodeHref:
-      //   if (webView != null) {
-      //     result.success(webView.requestFocusNodeHref());
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case requestImageRef:
-      //   if (webView != null) {
-      //     result.success(webView.requestImageRef());
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case getScrollX:
-      //   if (webView != null) {
-      //     result.success(webView.getScrollX());
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case getScrollY:
-      //   if (webView != null) {
-      //     result.success(webView.getScrollY());
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case getCertificate:
-      //   if (webView != null) {
-      //     result.success(SslCertificateExt.toMap(webView.getCertificate()));
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case clearHistory:
-      //   if (webView != null) {
-      //     webView.clearHistory();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case addUserScript:
-      //   if (webView != null && webView.getUserContentController() != null) {
-      //     Map<String, Object> userScriptMap = (Map<String, Object>) call.argument("userScript");
-      //     UserScript userScript = UserScript.fromMap(userScriptMap);
-      //     result.success(webView.getUserContentController().addUserOnlyScript(userScript));
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case removeUserScript:
-      //   if (webView != null && webView.getUserContentController() != null) {
-      //     Integer index = (Integer) call.argument("index");
-      //     Map<String, Object> userScriptMap = (Map<String, Object>) call.argument("userScript");
-      //     UserScript userScript = UserScript.fromMap(userScriptMap);
-      //     result.success(webView.getUserContentController().removeUserOnlyScriptAt(index, userScript.getInjectionTime()));
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case removeUserScriptsByGroupName:
-      //   if (webView != null && webView.getUserContentController() != null) {
-      //     String groupName = call.argument("groupName");
-      //     webView.getUserContentController().removeUserOnlyScriptsByGroupName(groupName);
-      //   }
-      //   result.success(true);
-      //   break;
-      // case removeAllUserScripts:
-      //   if (webView != null && webView.getUserContentController() != null) {
-      //     webView.getUserContentController().removeAllUserOnlyScripts();
-      //   }
-      //   result.success(true);
-      //   break;
-      // case callAsyncJavaScript:
-      //   if (webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      //     String functionBody = call.argument("functionBody");
-      //     Map<String, Object> functionArguments = (Map<String, Object>) call.argument("arguments");
-      //     Map<String, Object> contentWorldMap = (Map<String, Object>) call.argument("contentWorld");
-      //     ContentWorld contentWorld = ContentWorld.fromMap(contentWorldMap);
-      //     webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
-      //       @Override
-      //       public void onReceiveValue(String value) {
-      //         result.success(value);
-      //       }
-      //     });
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case isSecureContext:
-      //   if (webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      //     webView.isSecureContext(new ValueCallback<Boolean>() {
-      //       @Override
-      //       public void onReceiveValue(Boolean value) {
-      //         result.success(value);
-      //       }
-      //     });
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case createWebMessageChannel:
-      //   if (webView != null) {
-      //     if (webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.CREATE_WEB_MESSAGE_CHANNEL)) {
-      //       result.success(webView.createCompatWebMessageChannel().toMap());
-      //     } else {
-      //       result.success(null);
-      //     }
-      //   } else {
-      //     result.success(null);
-      //   }
-      //   break;
-      // case postWebMessage:
-      //   if (webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
-      //     WebMessageCompatExt message = WebMessageCompatExt.fromMap((Map<String, Object>) call.argument("message"));
-      //     String targetOrigin = call.argument("targetOrigin");
-      //     List<WebMessagePortCompat> compatPorts = new ArrayList<>();
-      //     List<WebMessagePortCompatExt> portsExt = message.getPorts();
-      //     if (portsExt != null) {
-      //       for (WebMessagePortCompatExt portExt : portsExt) {
-      //         WebMessageChannel webMessageChannel = webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
-      //         if (webMessageChannel != null) {
-      //           if (webView instanceof InAppWebView) {
-      //             compatPorts.add(webMessageChannel.compatPorts.get(portExt.getIndex()));
-      //           }
-      //         }
-      //       }
-      //     }
-      //     Object data = message.getData();
-      //     if (webView instanceof InAppWebView) {
-      //       try {
-      //         if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
-      //                 message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
-      //           WebViewCompat.postWebMessage((WebView) webView,
-      //                   new WebMessageCompat((byte[]) data, compatPorts.toArray(new WebMessagePortCompat[0])),
-      //                   Uri.parse(targetOrigin));
-      //         } else {
-      //           WebViewCompat.postWebMessage((WebView) webView,
-      //                   new WebMessageCompat(data != null ? data.toString() : null, compatPorts.toArray(new WebMessagePortCompat[0])),
-      //                   Uri.parse(targetOrigin));
-      //         }
-      //         result.success(true);
-      //       } catch (Exception e) {
-      //         result.error(LOG_TAG, e.getMessage(), null);
-      //       }
-      //     }
-      //   } else {
-      //     result.success(true);
-      //   }
-      //   break;
-      // case addWebMessageListener:
-      //   if (webView != null) {
-      //     Map<String, Object> webMessageListenerMap = (Map<String, Object>) call.argument("webMessageListener");
-      //     WebMessageListener webMessageListener = WebMessageListener.fromMap(webView, webView.getPlugin().messenger, webMessageListenerMap);
-      //     if (webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-      //       try {
-      //         webView.addWebMessageListener(webMessageListener);
-      //         result.success(true);
-      //       } catch (Exception e) {
-      //         result.error(LOG_TAG, e.getMessage(), null);
-      //       }
-      //     } else {
-      //       result.success(true);
-      //     }
-      //   } else {
-      //     result.success(true);
-      //   }
-      //   break;
-      // case canScrollVertically:
-      //   if (webView != null) {
-      //     result.success(webView.canScrollVertically());
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case canScrollHorizontally:
-      //   if (webView != null) {
-      //     result.success(webView.canScrollHorizontally());
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case isInFullscreen:
-      //   if (webView != null) {
-      //     result.success(webView.isInFullscreen());
-      //   } else {
-      //     result.success(false);
-      //   }
-      //   break;
-      // case clearFormData:
-      //   if (webView != null) {
-      //     webView.clearFormData();
-      //   }
-      //   result.success(true);
+      case WebViewChannelDelegateMethods.getOriginalUrl:
+        // result.success((this.webView != null) ? this.webView.getOriginalUrl() : null);
+        break;
+      case WebViewChannelDelegateMethods.getZoomScale:
+        if (this.webView instanceof InAppWebView) {
+          // result.success(this.webView.getZoomScale());
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.getSelectedText:
+        // if ((this.webView instanceof InAppWebView && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) {
+        //   this.webView.getSelectedText(new ValueCallback<String>() {
+        //     public onReceiveValue(value: string): void {
+        //       result.success(value);
+        //     }
+        //   });
+        // } else {
+        //   result.success(null);
+        // }
+        break;
+      case WebViewChannelDelegateMethods.getHitTestResult:
+        // if (this.webView instanceof InAppWebView) {
+        //   result.success(HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult()).toMap());
+        // } else {
+        //   result.success(null);
+        // }
+        break;
+      case WebViewChannelDelegateMethods.pageDown:
+        if (this.webView != null) {
+          let bottom: boolean = call.argument("bottom") as boolean;
+          // result.success(this.webView.pageDown(bottom));
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.pageUp:
+        if (this.webView != null) {
+          let top: boolean = call.argument("top") as boolean;
+          // result.success(this.webView.pageUp(top));
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.saveWebArchive:
+        if (this.webView != null) {
+          let filePath: string = call.argument("filePath");
+          let autoname: boolean = call.argument("autoname") as boolean;
+          // this.webView.saveWebArchive(filePath, autoname, new ValueCallback<String>() {
+          //   public void onReceiveValue(String value) {
+          //     result.success(value);
+          //   }
+          // });
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.zoomIn:
+        if (this.webView != null) {
+          // result.success(this.webView.zoomIn());
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.zoomOut:
+        if (this.webView != null) {
+          // result.success(this.webView.zoomOut());
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.clearFocus:
+        if (this.webView != null) {
+          // webView.clearFocus();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.setContextMenu:
+        if (this.webView != null) {
+          let contextMenu: Map<string, ESObject> = call.argument("contextMenu") as Map<string, ESObject>;
+          this.webView.setContextMenu(contextMenu);
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.requestFocusNodeHref:
+        if (this.webView != null) {
+          result.success(this.webView.requestFocusNodeHref());
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.requestImageRef:
+        if (this.webView != null) {
+          result.success(this.webView.requestImageRef());
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.getScrollX:
+        if (this.webView != null) {
+          // result.success(this.webView.getScrollX());
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.getScrollY:
+        if (this.webView != null) {
+          // result.success(this.webView.getScrollY());
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.getCertificate:
+        if (this.webView != null) {
+          // result.success(SslCertificateExt.toMap(this.webView.getCertificate()));
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.clearHistory:
+        if (this.webView != null) {
+          // this.webView.clearHistory();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.addUserScript:
+        if (this.webView != null && this.webView.getUserContentController() != null) {
+          let userScriptMap: Map<string, ESObject> = call.argument("userScript") as Map<string, ESObject>;
+          let userScript: UserScript | null = UserScript.fromMap(userScriptMap);
+          // result.success(this.webView.getUserContentController().addUserOnlyScript(userScript));
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.removeUserScript:
+        if (this.webView != null && this.webView.getUserContentController() != null) {
+          let index: number = call.argument("index") as number;
+          let userScriptMap: Map<string, ESObject> = call.argument("userScript") as Map<string, ESObject>;
+          let userScript: UserScript | null = UserScript.fromMap(userScriptMap);
+          // result.success(this.webView.getUserContentController().removeUserOnlyScriptAt(index, userScript?.getInjectionTime()));
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.removeUserScriptsByGroupName:
+        if (this.webView != null && this.webView.getUserContentController() != null) {
+          let groupName: string = call.argument("groupName");
+          // this.webView.getUserContentController().removeUserOnlyScriptsByGroupName(groupName);
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.removeAllUserScripts:
+        if (this.webView != null && this.webView.getUserContentController() != null) {
+          this.webView.getUserContentController().removeAllUserOnlyScripts();
+        }
+        result.success(true);
+        break;
+      case WebViewChannelDelegateMethods.callAsyncJavaScript:
+        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        //   let functionBody: string = call.argument("functionBody");
+        //   let functionArguments: Map<string, ESObject> = call.argument("arguments") as Map<string, ESObject>;
+        //   let contentWorldMap: Map<string, ESObject> = call.argument("contentWorld") as Map<string, ESObject>;
+        //   let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
+        //   this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
+        //     public onReceiveValue(value: string): void {
+        //       result.success(value);
+        //     }
+        //   });
+        // } else {
+        //   result.success(null);
+        // }
+        break;
+      case WebViewChannelDelegateMethods.isSecureContext:
+        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        //   this.webView.isSecureContext(new ValueCallback<Boolean>() {
+        //     public onReceiveValue(value: boolean): void {
+        //       result.success(value);
+        //     }
+        //   });
+        // } else {
+        //   result.success(false);
+        // }
+        break;
+      case WebViewChannelDelegateMethods.createWebMessageChannel:
+        if (this.webView != null) {
+          // if (this.webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.CREATE_WEB_MESSAGE_CHANNEL)) {
+          //   result.success(this.webView.createCompatWebMessageChannel().toMap());
+          // } else {
+          //   result.success(null);
+          // }
+        } else {
+          result.success(null);
+        }
+        break;
+      case WebViewChannelDelegateMethods.postWebMessage:
+        // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
+        //   let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, ESObject>);
+        //   let targetOrigin: string = call.argument("targetOrigin");
+        //   let compatPorts: List<WebMessagePortCompat> = new List<WebMessagePortCompat>();
+        //   let portsExt: List<WebMessagePortCompatExt> = message.getPorts();
+        //   if (portsExt != null) {
+        //     for (let portExt of portsExt) {
+        //       let webMessageChannel: WebMessageChannel | undefined = this.webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
+        //       if (webMessageChannel != null) {
+        //         if (this.webView instanceof InAppWebView) {
+        //           // compatPorts.add(webMessageChannel.compatPorts.get(portExt.getIndex()));
+        //         }
+        //       }
+        //     }
+        //   }
+        //   let data: ESObject = message.getData();
+        //   if (webView instanceof InAppWebView) {
+        //     try {
+        //       if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
+        //               message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
+        //         WebViewCompat.postWebMessage((WebView) webView,
+        //                 new WebMessageCompat((byte[]) data, compatPorts.toArray(new WebMessagePortCompat[0])),
+        //                 Uri.parse(targetOrigin));
+        //       } else {
+        //         WebViewCompat.postWebMessage((WebView) webView,
+        //                 new WebMessageCompat(data != null ? data.toString() : null, compatPorts.toArray(new WebMessagePortCompat[0])),
+        //                 Uri.parse(targetOrigin));
+        //       }
+        //       result.success(true);
+        //     } catch (Exception e) {
+        //       result.error(LOG_TAG, e.getMessage(), null);
+        //     }
+        //   }
+        // } else {
+        //   result.success(true);
+        // }
+        break;
+      case WebViewChannelDelegateMethods.addWebMessageListener:
+        if (this.webView != null) {
+          let webMessageListenerMap: Map<string, ESObject> = call.argument("webMessageListener") as Map<string, ESObject>;
+          let webMessageListener: WebMessageListener | null = WebMessageListener.fromMap(this.webView, this.webView.getPlugin().messenger, webMessageListenerMap);
+          // if (this.webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+          //   try {
+          //     this.webView.addWebMessageListener(webMessageListener!);
+          //     result.success(true);
+          //   } catch (e) {
+          //     result.error(LOG_TAG, e.getMessage(), null);
+          //   }
+          // } else {
+          //   result.success(true);
+          // }
+        } else {
+          result.success(true);
+        }
+        break;
+      case WebViewChannelDelegateMethods.canScrollVertically:
+        if (this.webView != null) {
+          result.success(this.webView.canScrollVertically());
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.canScrollHorizontally:
+        if (this.webView != null) {
+          result.success(this.webView.canScrollHorizontally());
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.isInFullscreen:
+        if (this.webView != null) {
+          result.success(this.webView.isInFullscreen());
+        } else {
+          result.success(false);
+        }
+        break;
+      case WebViewChannelDelegateMethods.clearFormData:
+        if (this.webView != null) {
+          // this.webView.clearFormData();
+        }
+        result.success(true);
     }
+  }
+
+  public onFindResultReceived(activeMatchOrdinal: number, numberOfMatches: number, isDoneCounting: boolean): void{
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return
+    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    obj.set("activeMatchOrdinal", activeMatchOrdinal);
+    obj.set("numberOfMatches", numberOfMatches);
+    obj.set("isDoneCounting", isDoneCounting);
+    channel.invokeMethod("onFindResultReceived", obj);
+  }
+
+  public onLongPressHitTestResult(hitTestResult: HitTestResult): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return
+    channel.invokeMethod("onLongPressHitTestResult", hitTestResult.toMap())
+  }
+
+  public onScrollChanged(x: number, y: number): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("x", x);
+    obj.set("y", y);
+    channel.invokeMethod("onScrollChanged", obj);
+  }
+
+  public onDownloadStartRequest(downloadStartRequest: DownloadStartRequest) {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return
+    channel.invokeMethod("onDownloadStartRequest", downloadStartRequest.toMap())
+  }
+
+  public onCreateContextMenu(hitTestResult: HitTestResult) {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return
+    channel.invokeMethod("onCreateContextMenu", hitTestResult.toMap())
+  }
+
+  public onOverScrolled(scrollX: number, scrollY: number, clampedX: boolean, clampedY: boolean): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("x", scrollX);
+    obj.set("y", scrollY);
+    obj.set("clampedX", clampedX);
+    obj.set("clampedY", clampedY);
+    channel.invokeMethod("onOverScrolled", obj);
+  }
+
+  public onContextMenuActionItemClicked(itemId: number, itemTitle: string): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("id", itemId);
+    obj.set("androidId", itemId);
+    obj.set("iosId", null);
+    obj.set("title", itemTitle);
+    channel.invokeMethod("onContextMenuActionItemClicked", obj);
+  }
+
+  public onHideContextMenu(): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return
+    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    channel.invokeMethod("onHideContextMenu", obj)
+  }
+
+  public onEnterFullscreen(): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return
+    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    channel.invokeMethod("onEnterFullscreen", obj);
+  }
+
+  public onExitFullscreen(): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) return
+    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    channel.invokeMethod("onExitFullscreen", obj);
+  }
+
+  public onJsAlert(url: string, message: string, isMainFrame: boolean, callback: JsAlertCallback): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    obj.set("message", message);
+    obj.set("isMainFrame", isMainFrame);
+    channel.invokeMethod("onJsAlert", obj, callback);
+  }
+
+  public onJsConfirm(url: string, message: string, isMainFrame: boolean, callback: JsConfirmCallback): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    obj.set("message", message);
+    obj.set("isMainFrame", isMainFrame);
+    channel.invokeMethod("onJsAlert", obj, callback);
+  }
+
+  public onJsPrompt(url: string, message: string, defaultValue: string, isMainFrame: boolean, callback: JsConfirmCallback): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    obj.set("message", message);
+    obj.set("defaultValue", defaultValue);
+    obj.set("isMainFrame", isMainFrame);
+    channel.invokeMethod("onJsAlert", obj, callback);
+  }
+
+  public onJsBeforeUnload(url: string, message: string, callback: JsBeforeUnloadCallback): void {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    obj.set("message", message);
+    channel.invokeMethod("onJsAlert", obj, callback);
+  }
+
+  public onCreateWindow(createWindowAction: CreateWindowAction, callback: CreateWindowCallback) {
+    let channel: MethodChannel = this.getChannel()
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    channel.invokeMethod("onCreateWindow", createWindowAction.toMap(), callback);
+  }
+
+  public onCloseWindow(): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    channel.invokeMethod("onCloseWindow", obj);
+  }
+
+  public onGeolocationPermissionsShowPrompt(origin: string, callback: GeolocationPermissionsShowPromptCallback): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("origin", origin)
+    channel.invokeMethod("onCloseWindow", obj);
+  }
+
+  public onGeolocationPermissionsHidePrompt(): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    channel.invokeMethod("onGeolocationPermissionsHidePrompt", obj);
+  }
+
+  public onConsoleMessage(message: string, messageLevel: number): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("message", message);
+    obj.set("messageLevel", messageLevel);
+    channel.invokeMethod("onConsoleMessage", obj);
+  }
+
+  public onProgressChanged(progress: number): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("progress", progress);
+    channel.invokeMethod("onProgressChanged", obj);
+  }
+
+  public onTitleChanged(title: string): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("title", title);
+    channel.invokeMethod("onTitleChanged", obj);
+  }
+
+  public onReceivedIcon(icon: ArrayBuffer): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("icon", icon);
+    channel.invokeMethod("onReceivedIcon", obj);
+  }
+
+  public onReceivedTouchIconUrl(url: string, precomposed: boolean): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    obj.set("precomposed", precomposed);
+    channel.invokeMethod("onReceivedTouchIconUrl", obj);
+  }
+
+  public onPermissionRequest(origin: string, resources: List<string>, frame: ESObject, callback: PermissionRequestCallback) {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("origin", origin);
+    obj.set("resources", resources);
+    obj.set("frame", frame);
+    channel.invokeMethod("onPermissionRequest", obj, callback);
+  }
+
+  public onPermissionRequestCanceled(origin: string, resources: List<string>): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("origin", origin);
+    obj.set("resources", resources);
+    channel.invokeMethod("onPermissionRequestCanceled", obj);
+  }
+
+  public onLoadStart(url: string) {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    channel.invokeMethod("onLoadStart", obj);
+  }
+
+  public onLoadStop(url: string) {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    channel.invokeMethod("onLoadStop", obj);
+  }
+
+  public onUpdateVisitedHistory(url: string, isReload: boolean) {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    obj.set("url", url);
+    obj.set("isReload", isReload);
+    channel.invokeMethod("onUpdateVisitedHistory", obj);
+  }
+
+}
+
+export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
+  public decodeResult(obj: ESObject): JsAlertResponse | null {
+    return JsAlertResponse.fromMap(obj as Map<string, ESObject>);
+  }
+}
+
+export class JsConfirmCallback extends BaseCallbackResultImpl<JsConfirmResponse> {
+  public decodeResult(obj: ESObject): JsConfirmResponse | null {
+    return JsConfirmResponse.fromMap(obj as Map<string, ESObject>);
+  }
+}
+
+export class JsPromptCallback extends BaseCallbackResultImpl<JsPromptResponse> {
+  public decodeResult(obj: ESObject): JsPromptResponse | null {
+    return JsPromptResponse.fromMap(obj as Map<string, ESObject>);
+  }
+}
+
+export class JsBeforeUnloadCallback extends BaseCallbackResultImpl<JsBeforeUnloadResponse> {
+  public decodeResult(obj: ESObject): JsBeforeUnloadResponse | null {
+    return JsBeforeUnloadResponse.fromMap(obj as Map<string, ESObject>);
+  }
+}
+
+export class CreateWindowCallback extends BaseCallbackResultImpl<Boolean> {
+  public decodeResult(obj: ESObject): Boolean | null {
+    return (obj instanceof Boolean) && obj as boolean;
+  }
+}
+
+export class GeolocationPermissionsShowPromptCallback extends BaseCallbackResultImpl<GeolocationPermissionShowPromptResponse> {
+  public decodeResult(obj: ESObject): GeolocationPermissionShowPromptResponse | null {
+    return GeolocationPermissionShowPromptResponse.fromMap(obj as Map<string, ESObject>);
+  }
+}
+
+export class PermissionRequestCallback extends BaseCallbackResultImpl<PermissionResponse> {
+  public decodeResult(obj: ESObject): PermissionResponse | null {
+    return PermissionResponse.fromMap(obj as Map<string, ESObject>);
   }
 }

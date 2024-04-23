@@ -56,4 +56,24 @@ export default class URLRequest {
     let headers: Map<string, string> = map.get("headers");
     return new URLRequest(url, method, body, headers);
   }
+
+  public toMap(): Map<string, ESObject> {
+    let urlRequestMap: Map<string, ESObject> = new Map<string, ESObject>();
+    urlRequestMap.set("url", this.url);
+    urlRequestMap.set("method", this.method);
+    urlRequestMap.set("headers", this.headers);
+    urlRequestMap.set("body", this.body);
+    urlRequestMap.set("allowsCellularAccess", null);
+    urlRequestMap.set("allowsConstrainedNetworkAccess", null);
+    urlRequestMap.set("allowsExpensiveNetworkAccess", null);
+    urlRequestMap.set("cachePolicy", null);
+    urlRequestMap.set("httpShouldHandleCookies", null);
+    urlRequestMap.set("httpShouldUsePipelining", null);
+    urlRequestMap.set("networkServiceType", null);
+    urlRequestMap.set("timeoutInterval", null);
+    urlRequestMap.set("mainDocumentURL", null);
+    urlRequestMap.set("assumesHTTP3Capable", null);
+    urlRequestMap.set("attribution", null);
+    return urlRequestMap;
+  }
 }

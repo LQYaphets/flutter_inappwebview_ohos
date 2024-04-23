@@ -28,12 +28,12 @@ export default class WebMessageListener implements Disposable {
 
   public channelDelegate: WebMessageListenerChannelDelegate | null
 
-  constructor(id: string, webView: InAppWebViewInterface, messenger: BinaryMessenger, jsObjectName: string, allowedOriginRules: Set<string>) {
+  constructor(id: string, webView: InAppWebViewInterface, messenger: BinaryMessenger | null, jsObjectName: string, allowedOriginRules: Set<string>) {
     this.id = id
     this.webView = webView
     this.jsObjectName = jsObjectName
     this.allowedOriginRules = allowedOriginRules
-    let channel: MethodChannel = new MethodChannel(messenger, METHOD_CHANNEL_NAME_PREFIX + this.id + "_" + this.jsObjectName);
+    let channel: MethodChannel = new MethodChannel(messenger!, METHOD_CHANNEL_NAME_PREFIX + this.id + "_" + this.jsObjectName);
     this.channelDelegate = new WebMessageListenerChannelDelegate(this, channel);
 
     // if (this.webView instanceof InAppWebView) {
@@ -87,14 +87,14 @@ export default class WebMessageListener implements Disposable {
     }
   }
 
-  public fromMap(webView: InAppWebViewInterface, messenger: BinaryMessenger, map: Map<string, ESObject> | null): WebMessageListener | null {
+  public static fromMap(webView: InAppWebViewInterface, messenger: BinaryMessenger | null, map: Map<string, ESObject> | null): WebMessageListener | null {
     if (map == null) {
       return null;
     }
     let id: string = map.get("id") as string;
     let jsObjectName: string = map.get("jsObjectName") as string;
-    // assert this.jsObjectName != null;
-    if(this.jsObjectName == null) return null
+    // assert jsObjectName != null;
+    if(jsObjectName == null) return null
     let allowedOriginRuleList: List<string> = map.get("allowedOriginRules") as List<string>;
     // assert allowedOriginRuleList != null;
     if(allowedOriginRuleList == null) return null

@@ -19,9 +19,9 @@ export class WebMessageChannel implements Disposable {
   public channelDelegate: WebMessageChannelChannelDelegate | null = null
 
   /// 未完善，缺少androidx.webkit.WebMessagePortCompat
-  // public compatPorts: Array<WebMessagePortCompat> | null = null
+  // public compatPorts: List<WebMessagePortCompat> | null = null
 
-  public ports: Array<WebMessagePort> | null = null
+  public ports: List<WebMessagePort> | null = null
 
   public webView: InAppWebViewInterface | null = null
 
@@ -31,7 +31,7 @@ export class WebMessageChannel implements Disposable {
     this.channelDelegate = new WebMessageChannelChannelDelegate(this, channel)
     if(webView instanceof  InAppWebView) {
       // this.compatPorts = new ArrayList<>(Arrays.asList(WebViewCompat.createWebMessageChannel((InAppWebView) webView))) ;
-      this.ports = new Array<WebMessagePort>()
+      this.ports = new List<WebMessagePort>()
     } else {
       // this.ports = Arrays.asList(new WebMessagePort("port1", this), new WebMessagePort("port2", this))
       // this.compatPorts = new Array<WebMessagePortCompat>()

@@ -20,7 +20,7 @@ export default class PrintJobSettings implements ISettings<PrintJobController> {
   public parse(settings: Map<string, ESObject>): PrintJobSettings {
     let keys = settings.keys()
     for(let key of keys) {
-      if(key == null) {
+      if(settings[key] == null) {
         continue
       }
 
