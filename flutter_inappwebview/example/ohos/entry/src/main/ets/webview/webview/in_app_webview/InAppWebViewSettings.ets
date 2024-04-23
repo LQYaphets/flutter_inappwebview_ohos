@@ -46,6 +46,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public useShouldInterceptAjaxRequest: boolean = false;
   public interceptOnlyAsyncAjaxRequests: boolean = true;
   public useShouldInterceptFetchRequest: boolean = false;
+  public webViewAssetLoader: Map<string, ESObject> | null = null;
 
   parse(settings: Map<string, ESObject>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -214,6 +215,9 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "useShouldInterceptFetchRequest":
           this.useShouldInterceptFetchRequest = value as boolean;
           break;
+        case "webViewAssetLoader":
+          this.webViewAssetLoader = value;
+        break;
       }
     }
     return this;

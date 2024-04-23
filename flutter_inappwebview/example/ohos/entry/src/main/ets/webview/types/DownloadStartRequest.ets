@@ -4,10 +4,11 @@ export default class DownloadStartRequest {
   private contentDisposition: string;
   private mimeType: string;
   private contentLength: number;
-  private suggestedFilename: string;
-  private textEncodingName: string;
+  private suggestedFilename: string | null;
+  private textEncodingName: string | null = null;
 
-  constructor(url: string, userAgent: string, contentDisposition: string, mimeType: string, contentLength: number, suggestedFilename: string, textEncodingName: string) {
+  constructor(url: string, userAgent: string, contentDisposition: string, mimeType: string, contentLength: number,
+              suggestedFilename: string | null, textEncodingName: string | null) {
     this.url = url;
     this.userAgent = userAgent;
     this.contentDisposition = contentDisposition;
@@ -69,8 +70,7 @@ export default class DownloadStartRequest {
     this.contentLength = contentLength;
   }
 
-
-  getSuggestedFilename(): string {
+  getSuggestedFilename(): string | null {
     return this.suggestedFilename;
   }
 
@@ -78,7 +78,7 @@ export default class DownloadStartRequest {
     this.suggestedFilename = suggestedFilename;
   }
 
-  getTextEncodingName(): string {
+  getTextEncodingName(): string | null {
     return this.textEncodingName;
   }
 

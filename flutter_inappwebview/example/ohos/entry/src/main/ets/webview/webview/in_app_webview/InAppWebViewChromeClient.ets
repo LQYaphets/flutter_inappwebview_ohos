@@ -1,5 +1,7 @@
 import { Log } from '@ohos/flutter_ohos';
 import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
+import DownloadStartRequest from '../../types/DownloadStartRequest';
+import URLUtil from '../../types/URLUtil';
 import InAppWebView from './InAppWebView';
 
 const TAG = "InAppWebViewChromeClient";
@@ -42,7 +44,17 @@ export default class InAppWebViewChromeClient {
   onDownloadStart(event: ESObject): void {
     Log.d(TAG, "onDownloadStart=" + JSON.stringify(event))
     if (this.inAppWebView.customSettings.useOnDownloadStart) {
-      //TODO send DownloadStartRequest
+      let downloadStartRequest = new DownloadStartRequest(
+        event.url,
+        event.userAgent,
+        event.contentDisposition,
+        event.mimetype,
+        event.contentLength,
+        URLUtil.guessFileName(event.url, event.contentDisposition, event.mimetype),
+        null
+      );
+      // TODO
+      //this.inAppWebView.channelDelegate.onDownloadStartRequest(downloadStartRequest)
     }
   }
 
