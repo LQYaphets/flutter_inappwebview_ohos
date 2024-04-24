@@ -125,6 +125,18 @@ export default class UserContentController implements Disposable {
 
   }
 
+  resetContentWorlds() {
+
+  }
+
+  generateWrappedCodeForDocumentStart(): string {
+    return ""
+  }
+
+  generateWrappedCodeForDocumentEnd(): string {
+    return ""
+  }
+
   public dispose(): void {
     // if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT) && contentWorldsCreatorScript != null) {
     //   contentWorldsCreatorScript.remove();

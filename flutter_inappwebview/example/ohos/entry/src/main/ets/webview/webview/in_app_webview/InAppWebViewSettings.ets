@@ -1,4 +1,4 @@
-import { Any } from '@ohos/flutter_ohos';
+import { Any, Log } from '@ohos/flutter_ohos';
 import ISettings from '../../ISettings';
 import InAppWebViewInterface from '../InAppWebViewInterface';
 
@@ -51,6 +51,8 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public resourceCustomSchemes: Array<string> | null = new Array<string>();
   public webViewAssetLoader: Map<string, Any> | null = null;
   public contentBlockers: Array<Map<string, Map<string, Any>>> = new Array<Map<string, Map<string, Any>>>();
+  public useShouldOverrideUrlLoading: boolean = false;
+  public regexToCancelSubFramesLoading: string | null = null;
 
   parse(settings: Map<string, Any>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -231,6 +233,12 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "contentBlockers":
           this.contentBlockers = value;
           break;
+        case "useShouldOverrideUrlLoading":
+          this.useShouldOverrideUrlLoading = value;
+          break;
+        case "regexToCancelSubFramesLoading":
+          this.regexToCancelSubFramesLoading = value;
+          break;
       }
     }
     return this;
@@ -283,6 +291,8 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("useShouldInterceptRequest", this.useShouldInterceptRequest);
     settings.set("resourceCustomSchemes", this.resourceCustomSchemes);
     settings.set("contentBlockers", this.contentBlockers);
+    settings.set("useShouldOverrideUrlLoading", this.useShouldOverrideUrlLoading);
+    settings.set("regexToCancelSubFramesLoading", this.regexToCancelSubFramesLoading);
     return settings;
   }
 

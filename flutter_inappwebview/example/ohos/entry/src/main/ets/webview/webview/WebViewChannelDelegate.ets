@@ -32,6 +32,8 @@ import HttpAuthResponse from '../types/HttpAuthResponse';
 import HttpAuthenticationChallenge from '../types/HttpAuthenticationChallenge';
 import SyncBaseCallbackResultImpl from '../types/SyncBaseCallbackResultImpl';
 import CustomSchemeResponse from '../types/CustomSchemeResponse';
+import { NavigationActionPolicy } from '../types/NavigationActionPolicy';
+import NavigationAction from '../types/NavigationAction';
 
 const LOG_TAG = "WebViewChannelDelegate";
 
@@ -945,6 +947,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     await callback.waitResponse()
     return callback.result;
   }
+
+    shouldOverrideUrlLoading(navigationAction: NavigationAction, callback: ShouldOverrideUrlLoadingCallback) {
+        let channel = this.getChannel();
+        if (channel == null) {
+            callback.defaultBehaviour(null);
+            return;
+          }
+      channel.invokeMethod("shouldOverrideUrlLoading", navigationAction.toMap(), callback);
+      }
 }
 
 export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
@@ -1016,5 +1027,14 @@ class LoadResourceWithCustomSchemeCallback extends BaseCallbackResultImpl<Custom
 class SyncLoadResourceWithCustomSchemeCallback extends SyncBaseCallbackResultImpl<CustomSchemeResponse> {
   public decodeResult(obj: Any): CustomSchemeResponse | null {
     return (new LoadResourceWithCustomSchemeCallback()).decodeResult(obj);
+  }
+}
+
+export class ShouldOverrideUrlLoadingCallback extends BaseCallbackResultImpl<NavigationActionPolicy> {
+  public decodeResult(obj: Any): NavigationActionPolicy {
+    if (!(typeof obj == 'number')) {
+      return NavigationActionPolicy.CANCEL;
+    }
+    return obj;
   }
 }

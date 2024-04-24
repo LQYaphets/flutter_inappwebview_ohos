@@ -50,7 +50,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   private id: number;
   private windowId: number | null | undefined;
   public customSettings: InAppWebViewSettings;
-  private controller: web_webview.WebviewController = new web_webview.WebviewController();
+  public controller: web_webview.WebviewController = new web_webview.WebviewController();
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
   private initialUserOnlyScripts: Array<UserScript>;
@@ -69,6 +69,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   public isLoading: boolean = false
   public zoomScale: number = 1.0
   public contextMenu: Map<string, Any> | null = null
+  public regexToCancelSubFramesLoadingCompiled: RegExp | null = null;
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>) {
@@ -263,7 +264,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     this.controller.onInactive
   }
 
-  async postUrl(url: string, postData: ArrayBuffer) {
+  async postUrl(url: string, postData: ArrayBuffer | null) {
     await this.waitControllerAttached();
     this.controller.postUrl(url, postData);
   }
@@ -340,7 +341,7 @@ export default class InAppWebView implements InAppWebViewInterface {
       }
     }
     let jsWrapper: string = "(function(d) { var link = d.createElement('link'); link.rel='" + alternateStylesheet + "stylesheet'; link.type='text/css'; " +
-            cssLinkAttributes + " link.href = %s; if (d.head != null) { d.head.appendChild(link); } })(document);";
+      cssLinkAttributes + " link.href = %s; if (d.head != null) { d.head.appendChild(link); } })(document);";
     this.injectDeferredObject(urlFile, null, jsWrapper, null);
   }
 
@@ -358,15 +359,15 @@ export default class InAppWebView implements InAppWebViewInterface {
         let scriptIdEscaped: string = idAttr.replace(/'/g, "\\\\'");
         scriptAttributes += " script.id = '" + scriptIdEscaped + "'; ";
         scriptAttributes += " script.onload = function() {" +
-        "  if (window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + " != null) {" +
-        "    window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + ".callHandler('onInjectedScriptLoaded', '" + scriptIdEscaped + "');" +
-        "  }" +
-        "};";
+          "  if (window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + " != null) {" +
+          "    window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + ".callHandler('onInjectedScriptLoaded', '" + scriptIdEscaped + "');" +
+          "  }" +
+          "};";
         scriptAttributes += " script.onerror = function() {" +
-        "  if (window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + " != null) {" +
-        "    window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + ".callHandler('onInjectedScriptError', '" + scriptIdEscaped + "');" +
-        "  }" +
-        "};";
+          "  if (window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + " != null) {" +
+          "    window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + ".callHandler('onInjectedScriptError', '" + scriptIdEscaped + "');" +
+          "  }" +
+          "};";
       }
       let asyncAttr: boolean = scriptHtmlTagAttributes.get("async") as boolean;
       if (asyncAttr != null && asyncAttr) {
@@ -402,12 +403,13 @@ export default class InAppWebView implements InAppWebViewInterface {
       }
     }
     let jsWrapper: string = "(function(d) { var script = d.createElement('script'); " + scriptAttributes +
-            " script.src = %s; if (d.body != null) { d.body.appendChild(script); } })(document);";
+      " script.src = %s; if (d.body != null) { d.body.appendChild(script); } })(document);";
     this.injectDeferredObject(urlFile, null, jsWrapper, null);
   }
 
   public injectDeferredObject(source: string, contentWorld: ContentWorld | null, jsWrapper: string, resultCallback: ValueCallback<string> | null): void {
-    let resultUuid: string | null = contentWorld != null && !contentWorld.equals(ContentWorld.PAGE) ? util.generateRandomUUID(true).toString() : null
+    let resultUuid: string | null = contentWorld != null && !contentWorld.equals(ContentWorld.PAGE) ? util.generateRandomUUID(true)
+      .toString() : null
     let scriptToInject: string = source
     if (jsWrapper != null) {
       // org.json.JSONArray jsonEsc = new org.json.JSONArray();
@@ -573,7 +575,8 @@ export default class InAppWebView implements InAppWebViewInterface {
     Log.d(TAG, "onControllerAttached");
     this.controllerAttached = true
   }
-  private toWebHeaders(headers: Map<string, string>): Array<web_webview.WebHeader> {
+
+  toWebHeaders(headers: Map<string, string>): Array<web_webview.WebHeader> {
     let result: Array<web_webview.WebHeader> = new Array;
     if (headers == null || headers.size == 0) {
       return result;
@@ -624,11 +627,15 @@ export default class InAppWebView implements InAppWebViewInterface {
     }
 
     this.contentBlockerHandler.getRuleList().clear();
-    this.customSettings.contentBlockers.forEach((contentBlocker : Any) => {
+    this.customSettings.contentBlockers.forEach((contentBlocker: Any) => {
       let trigger = ContentBlockerTrigger.fromMap(contentBlocker.get("trigger"));
       let action = ContentBlockerAction.fromMap(contentBlocker.get("action"));
       this.contentBlockerHandler.getRuleList().add(new ContentBlocker(trigger, action));
     })
+
+    if (this.customSettings.regexToCancelSubFramesLoading != null) {
+      this.regexToCancelSubFramesLoadingCompiled = new RegExp(this.customSettings.regexToCancelSubFramesLoading);
+    }
 
     await this.waitControllerAttached()
     this.controller.registerJavaScriptProxy(this.javaScriptBridgeInterface, JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME, this.javaScriptBridgeInterface.getMethodList());
@@ -657,6 +664,13 @@ export default class InAppWebView implements InAppWebViewInterface {
       this.userContentController.addPluginScript(PluginScriptsUtil.CHECK_GLOBAL_KEY_DOWN_EVENT_TO_HIDE_CONTEXT_MENU_JS_PLUGIN_SCRIPT);
     }
     this.userContentController.addUserOnlyScripts(this.initialUserOnlyScripts);
+  }
+
+  disposeWebMessageChannels(): void {
+    for (let webMessageChannel of this.webMessageChannels.values()) {
+      webMessageChannel.dispose();
+    }
+    this.webMessageChannels.clear();
   }
 
   hideContextMenu() {

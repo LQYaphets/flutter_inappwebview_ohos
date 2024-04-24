@@ -74,7 +74,7 @@ export default class WebResourceRequestExt {
     this.hasGesture = hasGesture;
   }
 
-  public geForMainFrame(): boolean {
+  public getForMainFrame(): boolean {
     return this.isForMainFrame;
   }
 

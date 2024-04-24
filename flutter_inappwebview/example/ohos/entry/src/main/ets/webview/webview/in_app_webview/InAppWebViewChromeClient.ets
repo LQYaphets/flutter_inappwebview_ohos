@@ -1,4 +1,5 @@
 import { Any, Log } from '@ohos/flutter_ohos';
+import web_webview from '@ohos.web.webview';
 import uri from '@ohos.uri'
 import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
 import DownloadStartRequest from '../../types/DownloadStartRequest';
@@ -7,11 +8,19 @@ import InAppWebView from './InAppWebView';
 import WebResourceResponseExt from '../../types/WebResourceResponseExt';
 import CustomSchemeResponse from '../../types/CustomSchemeResponse';
 import WebResourceRequestExt from '../../types/WebResourceRequestExt';
+import URLRequest from '../../types/URLRequest';
+import NavigationAction from '../../types/NavigationAction';
+import { ShouldOverrideUrlLoadingCallback } from '../WebViewChannelDelegate';
+import { NavigationActionPolicy } from '../../types/NavigationActionPolicy';
+import URLCredential from '../../types/URLCredential';
+import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
 
 const TAG = "InAppWebViewChromeClient";
 
 // 参考文档 所有事件 https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#onalert
 export default class InAppWebViewChromeClient {
+  private static previousAuthRequestFailureCount = 0;
+  private static credentialsProposed: Array<URLCredential> | null = null;
   private plugin: InAppWebViewFlutterPlugin;
   private inAppWebView: InAppWebView;
 
@@ -40,7 +49,7 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
     return false;
   }
-  onDownloadStart = (event: Any) => {
+  onDownloadStart = (event: Any) => { //对应安卓setDownloadListener
     Log.d(TAG, "onDownloadStart=" + JSON.stringify(event))
     if (this.inAppWebView.customSettings.useOnDownloadStart) {
       let downloadStartRequest = new DownloadStartRequest(
@@ -63,12 +72,37 @@ export default class InAppWebViewChromeClient {
   }
   onPageBegin = (event: Any) => {
     Log.d(TAG, "onPageBegin=" + JSON.stringify(event))
+    this.inAppWebView.isLoading = true;
+    this.inAppWebView.disposeWebMessageChannels();
+    this.inAppWebView.userContentController.resetContentWorlds();
+    this.loadCustomJavaScriptOnPageStarted(this.inAppWebView);
+    // if (this.inAppWebView.channelDelegate != null) {
+    //   this.inAppWebView.channelDelegate.onLoadStart(event.url);
+    // }
   }
   onPageEnd = (event: Any) => {
     Log.d(TAG, "onPageBegin=" + JSON.stringify(event))
+    this.inAppWebView.isLoading = false;
+    this.loadCustomJavaScriptOnPageFinished(this.inAppWebView);
+    InAppWebViewChromeClient.previousAuthRequestFailureCount = 0;
+    InAppWebViewChromeClient.credentialsProposed = null;
+
+    web_webview.WebCookieManager.saveCookieAsync()
+
+    let js = JavaScriptBridgeJS.PLATFORM_READY_JS_SOURCE;
+    // this.inAppWebView.controller.runJavaScriptExt(js)
+
+    // if (this.inAppWebView.channelDelegate != null) {
+    //   this.inAppWebView.channelDelegate.onLoadStop(event.url);
+    // }
   }
   onProgressChange = (event: Any) => {
     Log.d(TAG, "onProgressChange=" + JSON.stringify(event))
+    this.loadCustomJavaScriptOnPageStarted(this.inAppWebView);
+
+    // if (this.inAppWebView.channelDelegate != null) {
+    //   this.inAppWebView.channelDelegate.onProgressChanged(event.newProgress);
+    // }
   }
   onTitleReceive = (event: Any) => {
     Log.d(TAG, "onTitleReceive=" + JSON.stringify(event))
@@ -89,7 +123,7 @@ export default class InAppWebViewChromeClient {
   onScaleChange = (event: Any) => {
     Log.d(TAG, "onScaleChange=" + JSON.stringify(event))
   }
-  onInterceptRequest = async (event: Any) => {
+  onInterceptRequest = async (event: Any) => { //对应安卓shouldInterceptRequest
     let request = WebResourceRequestExt.fromWebResourceRequest(event.request);
     Log.d(TAG, "onInterceptRequest=" + JSON.stringify(event))
     Log.d(TAG, "webViewAssetLoaderExt=" + this.inAppWebView.webViewAssetLoaderExt)
@@ -241,8 +275,34 @@ export default class InAppWebViewChromeClient {
   onFirstContentfulPaint = (event: Any) => {
     Log.d(TAG, "onFirstContentfulPaint=" + JSON.stringify(event))
   }
-  onLoadIntercept = (event: Any) => {
+  onLoadIntercept = (event: Any) => { //对应安卓 shouldOverrideUrlLoading
     Log.d(TAG, "onLoadIntercept=" + JSON.stringify(event))
+    Log.d(TAG, "getRequestUrl=" + event.data.getRequestUrl())
+    Log.d(TAG, "isMainFrame=" + event.data.isMainFrame())
+    Log.d(TAG, "isRedirect=" + event.data.isRedirect())
+    Log.d(TAG, "regexToCancelSubFramesLoadingCompiled=" + this.inAppWebView.regexToCancelSubFramesLoadingCompiled)
+    if (this.inAppWebView.customSettings.useShouldOverrideUrlLoading) {
+      let request = WebResourceRequestExt.fromWebResourceRequest(event.data);
+      this.onShouldOverrideUrlLoading(
+        this.inAppWebView,
+        request.getUrl(),
+        request.getMethod(),
+        request.getHeaders(),
+        request.getForMainFrame(),
+        request.isHasGesture(),
+        request.getRedirect());
+      if (this.inAppWebView.regexToCancelSubFramesLoadingCompiled != null) {
+        if (request.getForMainFrame()) {
+          return true;
+        } else {
+          return this.inAppWebView.regexToCancelSubFramesLoadingCompiled.test(request.getUrl());
+        }
+      } else {
+        // There isn't any way to load an URL for a frame that is not the main frame,
+        // so if the request is not for the main frame, the navigation is allowed.
+        return request.getForMainFrame();
+      }
+    }
     return false;
   }
   onRequestSelected = (event: Any) => {
@@ -265,5 +325,70 @@ export default class InAppWebViewChromeClient {
   }
   onNativeEmbedGestureEvent = (callback: NativeEmbedTouchInfo) => {
     Log.d(TAG, "onNativeEmbedGestureEvent=")
+  }
+
+  private onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string, headers: Map<string, string>,
+                                     isForMainFrame: boolean, hasGesture: boolean, isRedirect: boolean): void {
+    let request = new URLRequest(url, method, null, headers);
+    let navigationAction = new NavigationAction(request, isForMainFrame, hasGesture, isRedirect);
+
+    let callback = new ClientShouldOverrideUrlLoadingCallback(webView, url, headers, isForMainFrame)
+    if (webView.channelDelegate != null) {
+      webView.channelDelegate.shouldOverrideUrlLoading(navigationAction, callback);
+    } else {
+      callback.defaultBehaviour(null);
+    }
+  }
+
+  private loadCustomJavaScriptOnPageStarted(webView: InAppWebView) {
+    let source = webView.userContentController.generateWrappedCodeForDocumentStart();
+    // webView.controller.runJavaScriptExt(source)
+  }
+
+  private loadCustomJavaScriptOnPageFinished(webView: InAppWebView) {
+    let source = webView.userContentController.generateWrappedCodeForDocumentEnd();
+    // webView.controller.runJavaScriptExt(source)
+  }
+}
+
+class ClientShouldOverrideUrlLoadingCallback extends ShouldOverrideUrlLoadingCallback {
+  private webView: InAppWebView;
+  private url: string;
+  private headers: Map<string, string>;
+  private isForMainFrame: boolean;
+
+  constructor(webView: InAppWebView, url: string, headers: Map<string, string>, isForMainFrame: boolean) {
+    super();
+    this.webView = webView;
+    this.url = url;
+    this.headers = headers;
+    this.isForMainFrame = isForMainFrame;
+  }
+
+  nonNullSuccess(result: NavigationActionPolicy): boolean {
+    switch (result) {
+      case NavigationActionPolicy.ALLOW:
+        this.allowShouldOverrideUrlLoading(this.webView, this.url, this.headers, this.isForMainFrame);
+        break;
+      case NavigationActionPolicy.CANCEL:
+      default:
+        break;
+    }
+    return false;
+  }
+
+  defaultBehaviour(result: NavigationActionPolicy | null): void {
+    this.allowShouldOverrideUrlLoading(this.webView, this.url, this.headers, this.isForMainFrame);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+
+  private allowShouldOverrideUrlLoading(webView: InAppWebView, url: string, headers: Map<string, string>, isForMainFrame: boolean): void {
+    if (isForMainFrame) {
+      webView.controller.loadUrl(url, webView.toWebHeaders(headers));
+    }
   }
 }

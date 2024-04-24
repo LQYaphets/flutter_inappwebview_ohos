@@ -3,10 +3,10 @@ import { Any } from '@ohos/flutter_ohos';
 export default class URLRequest {
   private url: string;
   private method: string;
-  private body: ArrayBuffer;
+  private body: ArrayBuffer | null;
   private headers: Map<string, string>;
 
-  constructor(url: string, method: string, body: ArrayBuffer, headers: Map<string, string>) {
+  constructor(url: string, method: string, body: ArrayBuffer | null, headers: Map<string, string>) {
     this.url = url;
     this.method = method;
     this.body = body;
@@ -29,7 +29,7 @@ export default class URLRequest {
     this.method = method;
   }
 
-  getBody(): ArrayBuffer {
+  getBody(): ArrayBuffer | null {
     return this.body;
   }
 
