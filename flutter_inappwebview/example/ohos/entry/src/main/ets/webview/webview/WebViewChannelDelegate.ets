@@ -25,6 +25,11 @@ import JsBeforeUnloadResponse from '../types/JsBeforeUnloadResponse';
 import CreateWindowAction from '../types/CreateWindowAction';
 import GeolocationPermissionShowPromptResponse from '../types/GeolocationPermissionShowPromptResponse';
 import PermissionResponse from '../types/PermissionResponse';
+import WebResourceRequestExt from '../types/WebResourceRequestExt';
+import WebResourceErrorExt from '../types/WebResourceErrorExt';
+import WebResourceResponseExt from '../types/WebResourceResponseExt';
+import HttpAuthResponse from '../types/HttpAuthResponse';
+import HttpAuthenticationChallenge from '../types/HttpAuthenticationChallenge';
 
 const LOG_TAG = "WebViewChannelDelegate";
 
@@ -891,6 +896,32 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
     channel.invokeMethod("onUpdateVisitedHistory", obj);
   }
 
+  public onReceivedError(request: WebResourceRequestExt, error: WebResourceErrorExt): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("request", request.toMap());
+    obj.set("error", error.toMap());
+    channel.invokeMethod("onReceivedError", obj);
+  }
+
+  public onReceivedHttpError(request: WebResourceRequestExt, errorResponse: WebResourceResponseExt): void {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("request", request.toMap());
+    obj.set("errorResponse", errorResponse.toMap());
+    channel.invokeMethod("onReceivedHttpError", obj);
+  }
+
+  public onReceivedHttpAuthRequest(challenge: HttpAuthenticationChallenge, callback: ReceivedHttpAuthRequestCallback) {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    channel.invokeMethod("onReceivedHttpAuthRequest", challenge.toMap(), callback);
+  }
 }
 
 export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
@@ -932,5 +963,11 @@ export class GeolocationPermissionsShowPromptCallback extends BaseCallbackResult
 export class PermissionRequestCallback extends BaseCallbackResultImpl<PermissionResponse> {
   public decodeResult(obj: Any): PermissionResponse | null {
     return PermissionResponse.fromMap(obj as Map<string, Any>);
+  }
+}
+
+export class ReceivedHttpAuthRequestCallback extends BaseCallbackResultImpl<HttpAuthResponse> {
+  public decodeResult(obj: Any): HttpAuthResponse | null {
+    return HttpAuthResponse.fromMap(obj as Map<string, Any>);
   }
 }

@@ -103,4 +103,15 @@ export default class WebResourceResponseExt {
   setData(data: ArrayBuffer) {
     this.data = data;
   }
+
+  public toString(): string {
+    return "WebResourceResponseExt{" +
+      "contentType='" + this.contentType + '\'' +
+      ", contentEncoding='" + this.contentEncoding + '\'' +
+      ", statusCode=" + this.statusCode +
+      ", reasonPhrase='" + this.reasonPhrase + '\'' +
+      ", headers=" + this.headers +
+      ", data=" + this.data.toString() +
+      '}';
+  }
 }
