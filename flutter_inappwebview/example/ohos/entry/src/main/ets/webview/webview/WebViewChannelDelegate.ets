@@ -30,10 +30,12 @@ import WebResourceErrorExt from '../types/WebResourceErrorExt';
 import WebResourceResponseExt from '../types/WebResourceResponseExt';
 import HttpAuthResponse from '../types/HttpAuthResponse';
 import HttpAuthenticationChallenge from '../types/HttpAuthenticationChallenge';
+import SyncBaseCallbackResultImpl from '../types/SyncBaseCallbackResultImpl';
+import CustomSchemeResponse from '../types/CustomSchemeResponse';
 
 const LOG_TAG = "WebViewChannelDelegate";
 
-export default class WebViewChannelDelegate extends ChannelDelegateImpl{
+export default class WebViewChannelDelegate extends ChannelDelegateImpl {
   private webView: InAppWebView;
 
   constructor(webView: InAppWebView, channel: MethodChannel) {
@@ -51,13 +53,13 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
     }
     switch (method) {
       case WebViewChannelDelegateMethods.getUrl:
-        // result.success((this.webView != null) ? this.webView.getUrl() : null);
+      // result.success((this.webView != null) ? this.webView.getUrl() : null);
         break;
       case WebViewChannelDelegateMethods.getTitle:
-        // result.success((this.webView != null) ? this.webView.getTitle() : null);
+      // result.success((this.webView != null) ? this.webView.getTitle() : null);
         break;
       case WebViewChannelDelegateMethods.getProgress:
-        // result.success((this.webView != null) ? this.webView.getProgress() : null);
+      // result.success((this.webView != null) ? this.webView.getProgress() : null);
         break;
       case WebViewChannelDelegateMethods.loadUrl:
         if (this.webView != null) {
@@ -103,13 +105,12 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
           let source: string = call.argument("source");
           let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
           let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
-          this.webView.evaluateJavascript(source, contentWorld!, null
-           // new ValueCallback<String>() {
-           //    public onReceiveValue(value: string): void {
-           //      result.success(value);
-           //    }
-           //  }
-          );
+          this.webView.evaluateJavascript(source, contentWorld!, null);
+          // new ValueCallback<String>() {
+          //    public onReceiveValue(value: string): void {
+          //      result.success(value);
+          //    }
+          //  });
         } else {
           result.success(null);
         }
@@ -139,40 +140,40 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.reload:
         if (this.webView != null)
-          // this.webView.reload();
-        result.success(true);
+        // this.webView.reload();
+          result.success(true);
         break;
       case WebViewChannelDelegateMethods.goBack:
         if (this.webView != null)
-          // webView.goBack();
-        result.success(true);
+        // webView.goBack();
+          result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoBack:
-        // result.success((this.webView != null) && this.webView.canGoBack());
+      // result.success((this.webView != null) && this.webView.canGoBack());
         break;
       case WebViewChannelDelegateMethods.goForward:
         if (this.webView != null)
-          // this.webView.goForward();
-        result.success(true);
+        // this.webView.goForward();
+          result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoForward:
-        // result.success((this.webView != null) && this.webView.canGoForward());
+      // result.success((this.webView != null) && this.webView.canGoForward());
         break;
       case WebViewChannelDelegateMethods.goBackOrForward:
         if (this.webView != null)
-          // this.webView.goBackOrForward(call.argument("steps") as number);
-        result.success(true);
+        // this.webView.goBackOrForward(call.argument("steps") as number);
+          result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoBackOrForward:
-        // result.success((this.webView != null) && this.webView.canGoBackOrForward(call.argument("steps")) as number);
+      // result.success((this.webView != null) && this.webView.canGoBackOrForward(call.argument("steps")) as number);
         break;
       case WebViewChannelDelegateMethods.stopLoading:
         if (this.webView != null)
-          // this.webView.stopLoading();
-        result.success(true);
+        // this.webView.stopLoading();
+          result.success(true);
         break;
       case WebViewChannelDelegateMethods.isLoading:
-        // result.success((this.webView != null) && this.webView.isLoading());
+      // result.success((this.webView != null) && this.webView.isLoading());
         break;
       case WebViewChannelDelegateMethods.takeScreenshot:
         if (this.webView != null) {
@@ -242,15 +243,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         result.success((this.webView != null) ? this.webView.getCopyBackForwardList() : null);
         break;
       case WebViewChannelDelegateMethods.startSafeBrowsing:
-        // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.START_SAFE_BROWSING)) {
-        //   WebViewCompat.startSafeBrowsing(this.webView.getContext(), new ValueCallback<Boolean>() {
-        //     public onReceiveValue(success: boolean): void {
-        //       result.success(success);
-        //     }
-        //   });
-        // } else {
-        //   result.success(false);
-        // }
+      // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.START_SAFE_BROWSING)) {
+      //   WebViewCompat.startSafeBrowsing(this.webView.getContext(), new ValueCallback<Boolean>() {
+      //     public onReceiveValue(success: boolean): void {
+      //       result.success(success);
+      //     }
+      //   });
+      // } else {
+      //   result.success(false);
+      // }
         break;
       case WebViewChannelDelegateMethods.clearCache:
         if (this.webView != null)
@@ -259,8 +260,8 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.clearSslPreferences:
         if (this.webView != null)
-          // this.webView.clearSslPreferences();
-        result.success(true);
+        // this.webView.clearSslPreferences();
+          result.success(true);
         break;
       case WebViewChannelDelegateMethods.findAll:
         if (this.webView != null) {
@@ -325,7 +326,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.printCurrentPage:
-        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         if (this.webView != null) {
           let settings: PrintJobSettings = new PrintJobSettings();
           let settingsMap: Map<string, Any> = call.argument("settings") as Map<string, Any>;
@@ -345,25 +346,25 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         }
         break;
       case WebViewChannelDelegateMethods.getContentWidth:
-        // if (this.webView instanceof InAppWebView) {
-        //   this.webView.getContentWidth(new ValueCallback<Integer>() {
-        //     public onReceiveValue(contentWidth: number | null): void {
-        //       result.success(contentWidth);
-        //     }
-        //   });
-        // } else {
-        //   result.success(null);
-        // }
+      // if (this.webView instanceof InAppWebView) {
+      //   this.webView.getContentWidth(new ValueCallback<Integer>() {
+      //     public onReceiveValue(contentWidth: number | null): void {
+      //       result.success(contentWidth);
+      //     }
+      //   });
+      // } else {
+      //   result.success(null);
+      // }
         break;
       case WebViewChannelDelegateMethods.zoomBy:
-        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        //   let zoomFactor: number = call.argument("zoomFactor") as number;
-        //   this.webView.zoomBy(zoomFactor as number);
-        // }
+      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      //   let zoomFactor: number = call.argument("zoomFactor") as number;
+      //   this.webView.zoomBy(zoomFactor as number);
+      // }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.getOriginalUrl:
-        // result.success((this.webView != null) ? this.webView.getOriginalUrl() : null);
+      // result.success((this.webView != null) ? this.webView.getOriginalUrl() : null);
         break;
       case WebViewChannelDelegateMethods.getZoomScale:
         if (this.webView instanceof InAppWebView) {
@@ -373,22 +374,22 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         }
         break;
       case WebViewChannelDelegateMethods.getSelectedText:
-        // if ((this.webView instanceof InAppWebView && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) {
-        //   this.webView.getSelectedText(new ValueCallback<String>() {
-        //     public onReceiveValue(value: string): void {
-        //       result.success(value);
-        //     }
-        //   });
-        // } else {
-        //   result.success(null);
-        // }
+      // if ((this.webView instanceof InAppWebView && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) {
+      //   this.webView.getSelectedText(new ValueCallback<String>() {
+      //     public onReceiveValue(value: string): void {
+      //       result.success(value);
+      //     }
+      //   });
+      // } else {
+      //   result.success(null);
+      // }
         break;
       case WebViewChannelDelegateMethods.getHitTestResult:
-        // if (this.webView instanceof InAppWebView) {
-        //   result.success(HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult()).toMap());
-        // } else {
-        //   result.success(null);
-        // }
+      // if (this.webView instanceof InAppWebView) {
+      //   result.success(HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult()).toMap());
+      // } else {
+      //   result.success(null);
+      // }
         break;
       case WebViewChannelDelegateMethods.pageDown:
         if (this.webView != null) {
@@ -520,30 +521,30 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.callAsyncJavaScript:
-        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        //   let functionBody: string = call.argument("functionBody");
-        //   let functionArguments: Map<string, Any> = call.argument("arguments") as Map<string, Any>;
-        //   let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
-        //   let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
-        //   this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
-        //     public onReceiveValue(value: string): void {
-        //       result.success(value);
-        //     }
-        //   });
-        // } else {
-        //   result.success(null);
-        // }
+      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      //   let functionBody: string = call.argument("functionBody");
+      //   let functionArguments: Map<string, Any> = call.argument("arguments") as Map<string, Any>;
+      //   let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
+      //   let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
+      //   this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
+      //     public onReceiveValue(value: string): void {
+      //       result.success(value);
+      //     }
+      //   });
+      // } else {
+      //   result.success(null);
+      // }
         break;
       case WebViewChannelDelegateMethods.isSecureContext:
-        // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        //   this.webView.isSecureContext(new ValueCallback<Boolean>() {
-        //     public onReceiveValue(value: boolean): void {
-        //       result.success(value);
-        //     }
-        //   });
-        // } else {
-        //   result.success(false);
-        // }
+      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      //   this.webView.isSecureContext(new ValueCallback<Boolean>() {
+      //     public onReceiveValue(value: boolean): void {
+      //       result.success(value);
+      //     }
+      //   });
+      // } else {
+      //   result.success(false);
+      // }
         break;
       case WebViewChannelDelegateMethods.createWebMessageChannel:
         if (this.webView != null) {
@@ -557,47 +558,48 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         }
         break;
       case WebViewChannelDelegateMethods.postWebMessage:
-        // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
-        //   let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
-        //   let targetOrigin: string = call.argument("targetOrigin");
-        //   let compatPorts: List<WebMessagePortCompat> = new List<WebMessagePortCompat>();
-        //   let portsExt: List<WebMessagePortCompatExt> = message.getPorts();
-        //   if (portsExt != null) {
-        //     for (let portExt of portsExt) {
-        //       let webMessageChannel: WebMessageChannel | undefined = this.webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
-        //       if (webMessageChannel != null) {
-        //         if (this.webView instanceof InAppWebView) {
-        //           // compatPorts.add(webMessageChannel.compatPorts.get(portExt.getIndex()));
-        //         }
-        //       }
-        //     }
-        //   }
-        //   let data: Any = message.getData();
-        //   if (webView instanceof InAppWebView) {
-        //     try {
-        //       if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
-        //               message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
-        //         WebViewCompat.postWebMessage((WebView) webView,
-        //                 new WebMessageCompat((byte[]) data, compatPorts.toArray(new WebMessagePortCompat[0])),
-        //                 Uri.parse(targetOrigin));
-        //       } else {
-        //         WebViewCompat.postWebMessage((WebView) webView,
-        //                 new WebMessageCompat(data != null ? data.toString() : null, compatPorts.toArray(new WebMessagePortCompat[0])),
-        //                 Uri.parse(targetOrigin));
-        //       }
-        //       result.success(true);
-        //     } catch (Exception e) {
-        //       result.error(LOG_TAG, e.getMessage(), null);
-        //     }
-        //   }
-        // } else {
-        //   result.success(true);
-        // }
+      // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
+      //   let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
+      //   let targetOrigin: string = call.argument("targetOrigin");
+      //   let compatPorts: List<WebMessagePortCompat> = new List<WebMessagePortCompat>();
+      //   let portsExt: List<WebMessagePortCompatExt> = message.getPorts();
+      //   if (portsExt != null) {
+      //     for (let portExt of portsExt) {
+      //       let webMessageChannel: WebMessageChannel | undefined = this.webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
+      //       if (webMessageChannel != null) {
+      //         if (this.webView instanceof InAppWebView) {
+      //           // compatPorts.add(webMessageChannel.compatPorts.get(portExt.getIndex()));
+      //         }
+      //       }
+      //     }
+      //   }
+      //   let data: Any = message.getData();
+      //   if (webView instanceof InAppWebView) {
+      //     try {
+      //       if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
+      //               message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
+      //         WebViewCompat.postWebMessage((WebView) webView,
+      //                 new WebMessageCompat((byte[]) data, compatPorts.toArray(new WebMessagePortCompat[0])),
+      //                 Uri.parse(targetOrigin));
+      //       } else {
+      //         WebViewCompat.postWebMessage((WebView) webView,
+      //                 new WebMessageCompat(data != null ? data.toString() : null, compatPorts.toArray(new WebMessagePortCompat[0])),
+      //                 Uri.parse(targetOrigin));
+      //       }
+      //       result.success(true);
+      //     } catch (Exception e) {
+      //       result.error(LOG_TAG, e.getMessage(), null);
+      //     }
+      //   }
+      // } else {
+      //   result.success(true);
+      // }
         break;
       case WebViewChannelDelegateMethods.addWebMessageListener:
         if (this.webView != null) {
           let webMessageListenerMap: Map<string, Any> = call.argument("webMessageListener") as Map<string, Any>;
-          let webMessageListener: WebMessageListener | null = WebMessageListener.fromMap(this.webView, this.webView.getPlugin().messenger, webMessageListenerMap);
+          let webMessageListener: WebMessageListener | null = WebMessageListener.fromMap(this.webView, this.webView.getPlugin()
+            .messenger, webMessageListenerMap);
           // if (this.webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
           //   try {
           //     this.webView.addWebMessageListener(webMessageListener!);
@@ -641,7 +643,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
     }
   }
 
-  public onFindResultReceived(activeMatchOrdinal: number, numberOfMatches: number, isDoneCounting: boolean): void{
+  public onFindResultReceived(activeMatchOrdinal: number, numberOfMatches: number, isDoneCounting: boolean): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return
     let obj: Map<string, Any> = new Map<string, Any>()
@@ -922,6 +924,26 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
     }
     channel.invokeMethod("onReceivedHttpAuthRequest", challenge.toMap(), callback);
   }
+
+  async shouldInterceptRequest(request: WebResourceRequestExt) {
+    let channel = this.getChannel();
+    if (channel == null) return null;
+    let callback = new SyncShouldInterceptRequestCallback();
+    channel.invokeMethod("shouldInterceptRequest", request.toMap(), callback);
+    await callback.waitResponse()
+    return callback.result;
+  }
+
+  async onLoadResourceWithCustomScheme(request: WebResourceRequestExt) {
+    let channel = this.getChannel();
+    if (channel == null) return null;
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("request", request.toMap());
+    let callback = new SyncLoadResourceWithCustomSchemeCallback();
+    channel.invokeMethod("onLoadResourceWithCustomScheme", obj, callback);
+    await callback.waitResponse()
+    return callback.result;
+  }
 }
 
 export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
@@ -969,5 +991,29 @@ export class PermissionRequestCallback extends BaseCallbackResultImpl<Permission
 export class ReceivedHttpAuthRequestCallback extends BaseCallbackResultImpl<HttpAuthResponse> {
   public decodeResult(obj: Any): HttpAuthResponse | null {
     return HttpAuthResponse.fromMap(obj as Map<string, Any>);
+  }
+}
+
+class ShouldInterceptRequestCallback extends BaseCallbackResultImpl<WebResourceResponseExt> {
+  public decodeResult(obj: Any): WebResourceResponseExt | null {
+    return WebResourceResponseExt.fromMap(obj);
+  }
+}
+
+class SyncShouldInterceptRequestCallback extends SyncBaseCallbackResultImpl<WebResourceResponseExt> {
+  public decodeResult(obj: Any): WebResourceResponseExt | null {
+    return (new ShouldInterceptRequestCallback()).decodeResult(obj);
+  }
+}
+
+class LoadResourceWithCustomSchemeCallback extends BaseCallbackResultImpl<CustomSchemeResponse> {
+  public decodeResult(obj: Any): CustomSchemeResponse | null {
+    return CustomSchemeResponse.fromMap(obj);
+  }
+}
+
+class SyncLoadResourceWithCustomSchemeCallback extends SyncBaseCallbackResultImpl<CustomSchemeResponse> {
+  public decodeResult(obj: Any): CustomSchemeResponse | null {
+    return (new LoadResourceWithCustomSchemeCallback()).decodeResult(obj);
   }
 }

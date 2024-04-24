@@ -34,6 +34,11 @@ import { InAppBrowserDelegate } from '../../in_app_browser/InAppBrowserDelegate'
 import { HashMap, List } from '@kit.ArkTS';
 import PrintJobSettings from '../../print_job/PrintJobSettings';
 import WebMessageListener from '../web_message/WebMessageListener';
+import WebViewAssetLoaderExt from '../../types/WebViewAssetLoaderExt';
+import ContentBlockerHandler from '../../content_blocker/ContentBlockerHandler';
+import ContentBlockerAction from '../../content_blocker/ContentBlockerAction';
+import ContentBlockerTrigger from '../../content_blocker/ContentBlockerTrigger';
+import ContentBlocker from '../../content_blocker/ContentBlocker';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -59,6 +64,8 @@ export default class InAppWebView implements InAppWebViewInterface {
   public evaluateJavaScriptContentWorldCallbacks: Map<string, ValueCallback<string>> = new Map<string, ValueCallback<string>>()
   public inAppBrowserDelegate: InAppBrowserDelegate | null = null
   private inFullscreen: boolean = false;
+  public webViewAssetLoaderExt: WebViewAssetLoaderExt | null = null;
+  public contentBlockerHandler = new ContentBlockerHandler();
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>) {
@@ -73,7 +80,10 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   dispose() {
-
+    if (this.webViewAssetLoaderExt != null) {
+      this.webViewAssetLoaderExt.dispose();
+      this.webViewAssetLoaderExt = null;
+    }
   }
 
   async loadUrl(urlRequest: URLRequest) {
@@ -452,7 +462,10 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   async prepare() {
-    // TODO 1 init webViewAssetLoaderExt 暂时没有做这里面缺少安卓那种WebViewAssetLoader
+    if (this.plugin != null) {
+      this.webViewAssetLoaderExt = WebViewAssetLoaderExt.fromMap(this.customSettings.webViewAssetLoader, this.plugin, getContext());
+    }
+
     this.javaScriptBridgeInterface = new JavaScriptBridgeInterface(this);
 
     this.inAppWebViewChromeClient = new InAppWebViewChromeClient(this.plugin, this);
@@ -460,6 +473,13 @@ export default class InAppWebView implements InAppWebViewInterface {
     if (this.windowId == null || this.windowId == undefined) {
       this.prepareAndAddUserScripts();
     }
+
+    this.contentBlockerHandler.getRuleList().clear();
+    this.customSettings.contentBlockers.forEach((contentBlocker : Any) => {
+      let trigger = ContentBlockerTrigger.fromMap(contentBlocker.get("trigger"));
+      let action = ContentBlockerAction.fromMap(contentBlocker.get("action"));
+      this.contentBlockerHandler.getRuleList().add(new ContentBlocker(trigger, action));
+    })
 
     await this.waitControllerAttached()
     this.controller.registerJavaScriptProxy(this.javaScriptBridgeInterface, JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME, this.javaScriptBridgeInterface.getMethodList());

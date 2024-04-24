@@ -104,6 +104,14 @@ export default class WebResourceResponseExt {
     this.data = data;
   }
 
+  getHeaderArray(): Array<Header> {
+    let arrayHeaders = Array<Header>()
+    this.headers.forEach((value: string, key: string) => {
+      arrayHeaders.push({headerKey : key, headerValue: value})
+    })
+    return arrayHeaders;
+  }
+
   public toString(): string {
     return "WebResourceResponseExt{" +
       "contentType='" + this.contentType + '\'' +

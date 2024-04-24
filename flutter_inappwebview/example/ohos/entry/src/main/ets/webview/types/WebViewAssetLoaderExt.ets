@@ -24,7 +24,7 @@ export default class WebViewAssetLoaderExt implements Disposable {
     this.customPathHandlers = customPathHandlers;
   }
 
-  static fromMap(map: Map<string, Any>, plugin: InAppWebViewFlutterPlugin, context: Context): WebViewAssetLoaderExt | null {
+  static fromMap(map: Map<string, Any> | null, plugin: InAppWebViewFlutterPlugin, context: Context): WebViewAssetLoaderExt | null {
     if (map == null) {
       return null;
     }

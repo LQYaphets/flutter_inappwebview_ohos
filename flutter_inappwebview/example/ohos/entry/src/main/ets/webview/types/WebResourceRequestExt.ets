@@ -1,5 +1,4 @@
 import { Any } from '@ohos/flutter_ohos'
-import WebResourceRequest from './WebResourceRequest'
 
 export default class WebResourceRequestExt {
   private url: string
@@ -19,18 +18,16 @@ export default class WebResourceRequestExt {
   }
 
   public static fromWebResourceRequest(request: WebResourceRequest): WebResourceRequestExt {
-    let isRedirect: boolean = false;
-    // if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_RESOURCE_REQUEST_IS_REDIRECT)) {
-    //   isRedirect = WebResourceRequestCompat.isRedirect(request);
-    // } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-    //   isRedirect = request.isRedirect();
-    // }
-    return new WebResourceRequestExt(request.getUrl().toString(),
-      request.getRequestHeaders(),
-      isRedirect,
-      request.hasGesture(),
-      request.isForMainFrame(),
-      request.getMethod()
+    let headers = new Map<string, string>()
+    for (let header of request.getRequestHeader()) {
+      headers.set(header.headerKey, header.headerValue)
+    }
+    return new WebResourceRequestExt(request.getRequestUrl(),
+      headers,
+      request.isRedirect(),
+      request.isRequestGesture(),
+      request.isMainFrame(),
+      request.getRequestMethod()
     );
   }
 

@@ -47,7 +47,10 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public useShouldInterceptAjaxRequest: boolean = false;
   public interceptOnlyAsyncAjaxRequests: boolean = true;
   public useShouldInterceptFetchRequest: boolean = false;
+  public useShouldInterceptRequest: boolean = false;
+  public resourceCustomSchemes: Array<string> | null = new Array<string>();
   public webViewAssetLoader: Map<string, Any> | null = null;
+  public contentBlockers: Array<Map<string, Map<string, Any>>> = new Array<Map<string, Map<string, Any>>>();
 
   parse(settings: Map<string, Any>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -216,9 +219,18 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "useShouldInterceptFetchRequest":
           this.useShouldInterceptFetchRequest = value as boolean;
           break;
+        case "useShouldInterceptRequest":
+          this.useShouldInterceptRequest = value;
+          break;
         case "webViewAssetLoader":
           this.webViewAssetLoader = value;
-        break;
+          break;
+        case "resourceCustomSchemes":
+          this.resourceCustomSchemes = value;
+          break;
+        case "contentBlockers":
+          this.contentBlockers = value;
+          break;
       }
     }
     return this;
@@ -268,6 +280,9 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("useShouldInterceptAjaxRequest", this.useShouldInterceptAjaxRequest);
     settings.set("interceptOnlyAsyncAjaxRequests", this.interceptOnlyAsyncAjaxRequests);
     settings.set("useShouldInterceptFetchRequest", this.useShouldInterceptFetchRequest);
+    settings.set("useShouldInterceptRequest", this.useShouldInterceptRequest);
+    settings.set("resourceCustomSchemes", this.resourceCustomSchemes);
+    settings.set("contentBlockers", this.contentBlockers);
     return settings;
   }
 

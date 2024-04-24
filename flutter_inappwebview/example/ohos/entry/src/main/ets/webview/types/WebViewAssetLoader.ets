@@ -7,7 +7,7 @@ import MimeUtil from './MimeUtil';
 const TAG = "WebViewAssetLoader";
 
 export interface PathHandler {
-  handle(path: string): Promise<WebResourceResponse|null>;
+  handle(path: string): Promise<WebResourceResponse | null>;
 }
 
 //读取rawfile目录文件
