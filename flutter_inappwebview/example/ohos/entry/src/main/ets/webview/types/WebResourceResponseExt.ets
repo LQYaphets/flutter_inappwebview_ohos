@@ -1,4 +1,4 @@
-import { StringUtils } from '@ohos/flutter_ohos';
+import { Any, StringUtils } from '@ohos/flutter_ohos';
 
 export default class WebResourceResponseExt {
   private contentType: string;
@@ -31,7 +31,7 @@ export default class WebResourceResponseExt {
     );
   }
 
-  static fromMap(map: Map<string, ESObject>): WebResourceResponseExt | null {
+  static fromMap(map: Map<string, Any>): WebResourceResponseExt | null {
     if (map == null) {
       return null;
     }
@@ -45,7 +45,7 @@ export default class WebResourceResponseExt {
   }
 
   toMap(): Map<string, Object> {
-    let webResourceResponseMap: Map<string, ESObject> = new Map<string, ESObject>();
+    let webResourceResponseMap: Map<string, Any> = new Map<string, Any>();
     webResourceResponseMap.set("contentType", this.contentType);
     webResourceResponseMap.set("contentEncoding", this.contentEncoding);
     webResourceResponseMap.set("statusCode", this.statusCode);

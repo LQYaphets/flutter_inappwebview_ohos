@@ -10,6 +10,7 @@ import { WebMessageChannel } from './web_message/WebMessageChannel';
 import { HashMap } from '@kit.ArkTS';
 import PrintJobSettings from '../print_job/PrintJobSettings';
 import WebMessageListener from './web_message/WebMessageListener';
+import { Any } from '@ohos/flutter_ohos';
 
 export default interface InAppWebViewInterface {
   loadUrl(urlRequest: URLRequest): void;
@@ -30,19 +31,19 @@ export default interface InAppWebViewInterface {
 
   evaluateJavascript(source: string, contentWorld: ContentWorld | null, resultCallback: ValueCallback<string> | null): void;
 
-  injectJavascriptFileFromUrl(urlFile: string, scriptHtmlTagAttributes: Map<string, ESObject>): void;
+  injectJavascriptFileFromUrl(urlFile: string, scriptHtmlTagAttributes: Map<string, Any>): void;
 
   injectCSSCode(source: string): void
 
-  injectCSSFileFromUrl(urlFile: string, cssLinkHtmlTagAttributes: Map<string, ESObject>): void
+  injectCSSFileFromUrl(urlFile: string, cssLinkHtmlTagAttributes: Map<string, Any>): void
 
-  takeScreenshot(screenshotConfiguration: Map<string, ESObject> | null, result: MethodResult): void
+  takeScreenshot(screenshotConfiguration: Map<string, Any> | null, result: MethodResult): void
 
   getInAppBrowserDelegate(): InAppBrowserDelegate | null
 
-  getCustomSettings(): Map<string, ESObject> | null
+  getCustomSettings(): Map<string, Any> | null
 
-  getCopyBackForwardList(): HashMap<string, ESObject>
+  getCopyBackForwardList(): HashMap<string, Any>
 
   clearAllCache(): void
 
@@ -52,11 +53,11 @@ export default interface InAppWebViewInterface {
 
   printCurrentPage(settings: PrintJobSettings): string | null
 
-  setContextMenu(contextMenu: Map<string, ESObject>): void
+  setContextMenu(contextMenu: Map<string, Any>): void
 
-  requestFocusNodeHref(): Map<string, ESObject>
+  requestFocusNodeHref(): Map<string, Any>
 
-  requestImageRef(): Map<string, ESObject>
+  requestImageRef(): Map<string, Any>
 
   createCompatWebMessageChannel(): WebMessageChannel
 

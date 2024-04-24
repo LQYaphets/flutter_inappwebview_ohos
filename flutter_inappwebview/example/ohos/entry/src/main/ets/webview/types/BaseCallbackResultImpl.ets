@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import ICallbackResult from './ICallbackResult';
 
 export default class BaseCallbackResultImpl<T> implements ICallbackResult<T> {
@@ -13,7 +14,7 @@ export default class BaseCallbackResultImpl<T> implements ICallbackResult<T> {
 
   }
 
-  success(obj: ESObject): void {
+  success(obj: Any): void {
     let result = this.decodeResult(obj);
     let shouldRunDefaultBehaviour: boolean = false;
     if (result == null) {
@@ -26,12 +27,12 @@ export default class BaseCallbackResultImpl<T> implements ICallbackResult<T> {
     }
   }
 
-  decodeResult(obj: ESObject): T | null {
+  decodeResult(obj: Any): T | null {
     return null;
   }
 
 
-  error(errorCode: string, errorMessage: string, errorDetails: ESObject) {
+  error(errorCode: string, errorMessage: string, errorDetails: Any) {
 
   }
 

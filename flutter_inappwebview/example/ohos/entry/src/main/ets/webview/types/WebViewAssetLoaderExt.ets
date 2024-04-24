@@ -1,4 +1,4 @@
-import { Log, MethodChannel } from '@ohos/flutter_ohos';
+import { Any, Log, MethodChannel } from '@ohos/flutter_ohos';
 import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import BaseCallbackResultImpl from './BaseCallbackResultImpl';
 import ChannelDelegateImpl from './ChannelDelegateImpl';
@@ -24,14 +24,14 @@ export default class WebViewAssetLoaderExt implements Disposable {
     this.customPathHandlers = customPathHandlers;
   }
 
-  static fromMap(map: Map<string, ESObject>, plugin: InAppWebViewFlutterPlugin, context: Context): WebViewAssetLoaderExt | null {
+  static fromMap(map: Map<string, Any>, plugin: InAppWebViewFlutterPlugin, context: Context): WebViewAssetLoaderExt | null {
     if (map == null) {
       return null;
     }
     let builder = new WebViewAssetLoaderBuilder();
     let domain: string | null = map.get("domain");
     let httpAllowed: boolean | null = map.get("httpAllowed");
-    let pathHandlers: Array<Map<string, ESObject>> | null = map.get("pathHandlers");
+    let pathHandlers: Array<Map<string, Any>> | null = map.get("pathHandlers");
     let customPathHandlers = new Array<PathHandlerExt>();
     if (domain != null && domain.length > 0) {
       builder.setDomain(domain);
@@ -40,7 +40,7 @@ export default class WebViewAssetLoaderExt implements Disposable {
       builder.setHttpAllowed(httpAllowed);
     }
     if (pathHandlers != null) {
-      pathHandlers!!.forEach((pathHandler: Map<string, ESObject>) => {
+      pathHandlers!!.forEach((pathHandler: Map<string, Any>) => {
         let type: string | null = pathHandler.get("type");
         let path: string | null = pathHandler.get("path");
         if (type != null && path != null) {
@@ -136,7 +136,7 @@ class PathHandlerExtChannelDelegate extends ChannelDelegateImpl {
   handle(path: string, callback: HandleCallback): void {
     let channel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<String, ESObject> = new Map<String, ESObject>();
+    let obj: Map<String, Any> = new Map<String, Any>();
     obj.set("path", path);
     channel.invokeMethod("handle", obj, callback);
   }
@@ -145,7 +145,7 @@ class PathHandlerExtChannelDelegate extends ChannelDelegateImpl {
     let channel = this.getChannel();
     if (channel == null) return null;
     let callback = new SyncHandleCallback();
-    let obj: Map<String, ESObject> = new Map<String, ESObject>();
+    let obj: Map<String, Any> = new Map<String, Any>();
     obj.set("path", path);
     channel.invokeMethod("handle", obj, callback);
     await callback.waitResponse()
@@ -159,13 +159,13 @@ class PathHandlerExtChannelDelegate extends ChannelDelegateImpl {
 }
 
 class HandleCallback extends BaseCallbackResultImpl<WebResourceResponseExt> {
-  public decodeResult(obj: ESObject): WebResourceResponseExt | null {
+  public decodeResult(obj: Any): WebResourceResponseExt | null {
     return WebResourceResponseExt.fromMap(obj);
   }
 }
 
 class SyncHandleCallback extends SyncBaseCallbackResultImpl<WebResourceResponseExt> {
-  decodeResult(obj: ESObject): WebResourceResponseExt | null {
+  decodeResult(obj: Any): WebResourceResponseExt | null {
     return (new HandleCallback()).decodeResult(obj);
   }
 }

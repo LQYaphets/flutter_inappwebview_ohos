@@ -12,29 +12,30 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+import { Any } from '@ohos/flutter_ohos';
 
 import { DVModelParameters } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicView'
 
 export class DynamicUtils {
-  static getParams(params: DVModelParameters, element: string): string | ESObject {
-    let params2 = params as Record<string, ESObject>;
+  static getParams(params: DVModelParameters, element: string): string | Any {
+    let params2 = params as Record<string, Any>;
     return params2[element];
   }
 
-  static setParams(params: DVModelParameters, key: string, element: ESObject): void {
-    let params2 = params as Record<string, ESObject>;
+  static setParams(params: DVModelParameters, key: string, element: Any): void {
+    let params2 = params as Record<string, Any>;
     params2[key] = element;
   }
 }
 
 export class DVModelJson {
   compType: string
-  children: Array<ESObject>
-  attributes: ESObject
-  events: ESObject
-  build: ESObject
+  children: Array<Any>
+  attributes: Any
+  events: Any
+  build: Any
 
-  constructor(compType: string, children: Array<ESObject>, attributes: ESObject, events: ESObject, build?: ESObject) {
+  constructor(compType: string, children: Array<Any>, attributes: Any, events: Any, build?: Any) {
     this.compType = compType
     this.children = children
     this.attributes = attributes

@@ -1,4 +1,4 @@
-import { MethodChannel } from '@ohos/flutter_ohos';
+import { Any, MethodChannel } from '@ohos/flutter_ohos';
 import { Disposable } from '../../types/Disposable';
 import WebMessagePort from '../../types/WebMessagePort';
 import InAppWebViewInterface from '../InAppWebViewInterface';
@@ -93,7 +93,7 @@ export class WebMessageChannel implements Disposable {
     //       }
     //     }
     //   }
-    //   let data: ESObject = message.getData();
+    //   let data: Any = message.getData();
     //   try {
     //     if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
     //             message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
@@ -132,8 +132,8 @@ export class WebMessageChannel implements Disposable {
     }
   }
 
-  public toMap(): Map<string, ESObject> {
-    let webMessageChannelMap: Map<string, ESObject> = new Map<string, ESObject>()
+  public toMap(): Map<string, Any> {
+    let webMessageChannelMap: Map<string, Any> = new Map<string, Any>()
     webMessageChannelMap.set("id", this.id);
     return webMessageChannelMap;
   }

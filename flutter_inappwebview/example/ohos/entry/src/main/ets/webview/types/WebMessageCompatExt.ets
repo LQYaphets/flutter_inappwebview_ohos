@@ -1,15 +1,16 @@
 import WebMessagePortCompatExt from './WebMessagePortCompatExt'
 import { List } from '@kit.ArkTS'
+import { Any } from '@ohos/flutter_ohos'
 
 export default class WebMessageCompatExt {
-  private data: ESObject
+  private data: Any
 
   /// 缺少androidx.webkit.WebMessageCompat 中 public @interface Type 类似接口
   private type: number
 
   private ports: List<WebMessagePortCompatExt> | null
 
-  constructor(data: ESObject, type: number, ports: List<WebMessagePortCompatExt> | null) {
+  constructor(data: Any, type: number, ports: List<WebMessagePortCompatExt> | null) {
     this.data = data;
     this.type = type;
     this.ports = ports;
@@ -27,13 +28,13 @@ export default class WebMessageCompatExt {
   //   return new WebMessageCompatExt(data, message.getType(), null);
   // }
 
-  public static fromMap(map: Map<string, ESObject> | null): WebMessageCompatExt | null {
+  public static fromMap(map: Map<string, Any> | null): WebMessageCompatExt | null {
     if (map == null) {
       return null;
     }
-    let data: ESObject = map.get("data")
+    let data: Any = map.get("data")
     let type: number = map.get("type") as number
-    let portMapList: List<Map<string, ESObject>> = map.get("ports") as List<Map<string, ESObject>>
+    let portMapList: List<Map<string, Any>> = map.get("ports") as List<Map<string, Any>>
     let ports: List<WebMessagePortCompatExt> | null = null;
     if (portMapList != null && !portMapList.isEmpty()) {
       ports = new List<WebMessagePortCompatExt>();
@@ -44,18 +45,18 @@ export default class WebMessageCompatExt {
     return new WebMessageCompatExt(data, type, ports);
   }
 
-  public toMap(): Map<string, ESObject> {
-    let proxyRuleMap: Map<string, ESObject> = new Map<string, ESObject>()
+  public toMap(): Map<string, Any> {
+    let proxyRuleMap: Map<string, Any> = new Map<string, Any>()
     proxyRuleMap.set("data", this.data);
     proxyRuleMap.set("type", this.type);
     return proxyRuleMap;
   }
 
-  public getData(): ESObject {
+  public getData(): Any {
     return this.data;
   }
 
-  public setData(data: ESObject): void {
+  public setData(data: Any): void {
     this.data = data;
   }
 
@@ -75,7 +76,7 @@ export default class WebMessageCompatExt {
     this.ports = ports;
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
 

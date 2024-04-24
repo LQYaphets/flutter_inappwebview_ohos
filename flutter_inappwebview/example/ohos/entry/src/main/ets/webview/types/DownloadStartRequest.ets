@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos';
+
 export default class DownloadStartRequest {
   private url: string;
   private userAgent: string;
@@ -18,8 +20,8 @@ export default class DownloadStartRequest {
     this.textEncodingName = textEncodingName;
   }
 
-  toMap(): Map<string, ESObject> {
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+  toMap(): Map<string, Any> {
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", this.url);
     obj.set("userAgent", this.userAgent);
     obj.set("contentDisposition", this.contentDisposition);

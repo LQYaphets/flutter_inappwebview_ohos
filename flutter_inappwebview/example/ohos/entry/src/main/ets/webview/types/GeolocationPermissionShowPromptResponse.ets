@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos'
+
 export default class GeolocationPermissionShowPromptResponse {
   private origin: string
   allow: boolean
@@ -9,7 +11,7 @@ export default class GeolocationPermissionShowPromptResponse {
     this.retain = retain
   }
 
-  public static fromMap(map: Map<string, ESObject>): GeolocationPermissionShowPromptResponse | null {
+  public static fromMap(map: Map<string, Any>): GeolocationPermissionShowPromptResponse | null {
     if (map == null) {
       return null;
     }

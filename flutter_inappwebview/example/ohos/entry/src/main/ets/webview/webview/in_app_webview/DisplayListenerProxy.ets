@@ -14,6 +14,7 @@
 */
 
 import display from '@ohos.display';
+import { Any } from '@ohos/flutter_ohos';
 
 export class DisplayListenerProxy {
   private static TAG = "DisplayListenerProxy";
@@ -32,7 +33,7 @@ export class DisplayListenerProxy {
   async onPostWebViewInitialization() {
     let webViewListeners: mDisplay[] = (await this.yoinkDisplayListeners()) as mDisplay[];
 
-    webViewListeners = webViewListeners.filter((item: ESObject) => this.listenersBeforeWebView.indexOf(item) === -1)
+    webViewListeners = webViewListeners.filter((item: Any) => this.listenersBeforeWebView.indexOf(item) === -1)
 
     if (webViewListeners.length === 0) {
       return;
@@ -78,8 +79,8 @@ export class DisplayListenerProxy {
 }
 
 interface mDisplay extends display.Display {
-  on: ESObject,
-  off: ESObject,
+  on: Any,
+  off: Any,
   changeCallback,
   removeCallback,
   addCallback,

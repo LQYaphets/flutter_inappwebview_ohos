@@ -1,4 +1,4 @@
-import { MethodCall, MethodChannel } from '@ohos/flutter_ohos'
+import { Any, MethodCall, MethodChannel } from '@ohos/flutter_ohos'
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel'
 import ChannelDelegateImpl from '../../types/ChannelDelegateImpl'
 import WebMessageCompatExt from '../../types/WebMessageCompatExt'
@@ -26,7 +26,7 @@ export class WebMessageChannelChannelDelegate extends ChannelDelegateImpl {
       case "postMessage":
         if (this.webMessageChannel != null && this.webMessageChannel.webView instanceof InAppWebView) {
           let index: number = call.argument("index") as number;
-          let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, ESObject>);
+          let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
           this.webMessageChannel.postMessageForInAppWebView(index, message!, result);
         } else {
           result.success(false);
@@ -48,7 +48,7 @@ export class WebMessageChannelChannelDelegate extends ChannelDelegateImpl {
   public onMessage(index: number, message: WebMessageCompatExt | null): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("index", index);
     obj.set("message", message != null ? message.toMap() : null);
     channel.invokeMethod("onMessage", obj);

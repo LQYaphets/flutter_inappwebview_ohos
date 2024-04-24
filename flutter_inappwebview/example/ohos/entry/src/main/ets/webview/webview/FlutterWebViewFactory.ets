@@ -1,6 +1,7 @@
 import { Log, PlatformView, PlatformViewFactory, StandardMessageCodec } from '@ohos/flutter_ohos';
 import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import { FlutterWebView } from './in_app_webview/FlutterWebView';
+import { Any } from '@ohos/flutter_ohos';
 
 const TAG: string = "FlutterWebViewFactory";
 
@@ -13,7 +14,7 @@ export default class FlutterWebViewFactory extends PlatformViewFactory {
     this.plugin = plugin;
   }
 
-  public create(context: Context, viewId: number, args: ESObject): PlatformView {
+  public create(context: Context, viewId: number, args: Any): PlatformView {
     Log.d(TAG, "create")
     let flutterWebView = new FlutterWebView(this.plugin, context, viewId, args);
     flutterWebView.makeInitialLoad(args);

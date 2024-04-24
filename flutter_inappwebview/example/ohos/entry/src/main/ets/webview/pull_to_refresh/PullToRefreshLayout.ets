@@ -1,4 +1,4 @@
-import { MethodChannel } from '@ohos/flutter_ohos';
+import { Any, MethodChannel } from '@ohos/flutter_ohos';
 import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import { Disposable } from '../types/Disposable';
 import PullToRefreshChannelDelegate from './PullToRefreshChannelDelegate';
@@ -15,7 +15,7 @@ export default class PullToRefreshLayout implements Disposable {
 
   /// attrs应为android.util.AttributeSet类型
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin | null,
-              id: Object | null = null, settings: PullToRefreshSettings, attrs: ESObject | null) {
+              id: Object | null = null, settings: PullToRefreshSettings, attrs: Any | null) {
     // super(context, attrs);
     this.settings = settings;
     let channel: MethodChannel = new MethodChannel(plugin!.messenger!, METHOD_CHANNEL_NAME_PREFIX + id);

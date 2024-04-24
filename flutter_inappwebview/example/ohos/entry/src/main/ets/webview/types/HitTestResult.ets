@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos'
+
 export default class HitTestResult {
   private type: number
   private extra: string | null
@@ -31,14 +33,14 @@ export default class HitTestResult {
     this.extra = extra;
   }
 
-  public toMap(): Map<string, ESObject> {
-    let hitTestResultMap: Map<string, ESObject> = new Map<string, ESObject>()
+  public toMap(): Map<string, Any> {
+    let hitTestResultMap: Map<string, Any> = new Map<string, Any>()
     hitTestResultMap.set("type", this.type);
     hitTestResultMap.set("extra", this.extra);
     return hitTestResultMap;
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
 

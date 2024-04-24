@@ -1,7 +1,9 @@
+import { Any } from '@ohos/flutter_ohos';
+
 export default interface ISettings<T> {
-  parse(settings: Map<string, ESObject>): ISettings<T>
+  parse(settings: Map<string, Any>): ISettings<T>
 
-  toMap(): Map<string, ESObject>;
+  toMap(): Map<string, Any>;
 
-  getRealSettings(obj: T): Map<string, ESObject>;
+  getRealSettings(obj: T): Map<string, Any>;
 }

@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import ContentWorld from './ContentWorld';
 import { UserScriptInjectionTime } from './UserScriptInjectionTime';
 
@@ -22,7 +23,7 @@ export default class UserScript {
     }
   }
 
-  public static fromMap(map: Map<string, ESObject>): UserScript | null {
+  public static fromMap(map: Map<string, Any>): UserScript | null {
     if (map == null) {
       return null;
     }
@@ -78,7 +79,7 @@ export default class UserScript {
     this.allowedOriginRules = allowedOriginRules;
   }
 
-  equals(o: ESObject): boolean {
+  equals(o: Any): boolean {
     if (this == o) return true;
 
     let that = o as UserScript;

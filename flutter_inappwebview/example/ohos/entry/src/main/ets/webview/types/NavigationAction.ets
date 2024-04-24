@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos'
 import URLRequest from './URLRequest'
 
 export default class NavigationAction {
@@ -13,8 +14,8 @@ export default class NavigationAction {
     this.isRedirect = isRedirect
   }
 
-  public toMap(): Map<string, ESObject> {
-    let navigationActionMap: Map<string, ESObject> = new Map<string, ESObject>();
+  public toMap(): Map<string, Any> {
+    let navigationActionMap: Map<string, Any> = new Map<string, Any>();
     navigationActionMap.set("request", this.request.toMap());
     navigationActionMap.set("isForMainFrame", this.isForMainFrame);
     navigationActionMap.set("hasGesture", this.hasGesture);
@@ -58,7 +59,7 @@ export default class NavigationAction {
     this.isRedirect = redirect;
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
 

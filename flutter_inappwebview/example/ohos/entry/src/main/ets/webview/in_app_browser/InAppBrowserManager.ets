@@ -25,7 +25,7 @@ export default class InAppBrowserManager extends ChannelDelegateImpl {
     switch (call.method) {
       case "open":
         // if (this.plugin != null && this.plugin.activity != null) {
-        //   open(this.plugin.activity, call.arguments() as Map<string, ESObject>);
+        //   open(this.plugin.activity, call.arguments() as Map<string, Any>);
         //   result.success(true);
         // } else {
         //   result.success(false);

@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import ISettings from '../ISettings';
 import PullToRefreshLayout from './PullToRefreshLayout';
 
@@ -13,7 +14,7 @@ export default class PullToRefreshSettings implements ISettings<PullToRefreshLay
   slingshotDistance: number | null = null;
   size: number | null = null;
 
-  public parse(settings: Map<string, ESObject>): PullToRefreshSettings {
+  public parse(settings: Map<string, Any>): PullToRefreshSettings {
     let keys = settings.keys();
     for(let key of keys) {
       if(key == null) {
@@ -45,7 +46,7 @@ export default class PullToRefreshSettings implements ISettings<PullToRefreshLay
   }
 
   public toMap() {
-    let settings: Map<string, ESObject> = new Map<string, Object>();
+    let settings: Map<string, Any> = new Map<string, Object>();
     settings.set("enabled", this.enabled);
     settings.set("color", this.color!);
     settings.set("backgroundColor", this.backgroundColor!);
@@ -56,7 +57,7 @@ export default class PullToRefreshSettings implements ISettings<PullToRefreshLay
   }
 
   public getRealSettings(pullToRefreshLayout: PullToRefreshLayout) {
-    let realSettings: Map<string, ESObject> = this.toMap();
+    let realSettings: Map<string, Any> = this.toMap();
     return realSettings;
   }
 }

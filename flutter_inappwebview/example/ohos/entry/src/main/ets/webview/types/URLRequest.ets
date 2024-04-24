@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos';
+
 export default class URLRequest {
   private url: string;
   private method: string;
@@ -43,7 +45,7 @@ export default class URLRequest {
     this.headers = headers;
   }
 
-  static fromMap(map: Map<string, ESObject>): URLRequest | null {
+  static fromMap(map: Map<string, Any>): URLRequest | null {
     if (map == null) {
       return null;
     }
@@ -57,8 +59,8 @@ export default class URLRequest {
     return new URLRequest(url, method, body, headers);
   }
 
-  public toMap(): Map<string, ESObject> {
-    let urlRequestMap: Map<string, ESObject> = new Map<string, ESObject>();
+  public toMap(): Map<string, Any> {
+    let urlRequestMap: Map<string, Any> = new Map<string, Any>();
     urlRequestMap.set("url", this.url);
     urlRequestMap.set("method", this.method);
     urlRequestMap.set("headers", this.headers);

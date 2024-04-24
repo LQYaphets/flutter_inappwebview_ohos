@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import NavigationAction from './NavigationAction';
 import URLRequest from './URLRequest';
 
@@ -11,8 +12,8 @@ export default class CreateWindowAction extends NavigationAction {
     this.isDialog = isDialog
   }
 
-  public toMap(): Map<string, ESObject> {
-    let createWindowActionMap: Map<string, ESObject> = super.toMap();
+  public toMap(): Map<string, Any> {
+    let createWindowActionMap: Map<string, Any> = super.toMap();
     createWindowActionMap.set("windowId", this.windowId);
     createWindowActionMap.set("isDialog", this.isDialog);
     createWindowActionMap.set("windowFeatures", null);

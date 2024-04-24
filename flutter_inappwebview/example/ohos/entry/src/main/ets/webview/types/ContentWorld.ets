@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos';
+
 export default class ContentWorld {
   private name: string | null
 
@@ -9,7 +11,7 @@ export default class ContentWorld {
 
   public static world(name: string): ContentWorld { return new ContentWorld(name); }
 
-  public static fromMap(map: Map<String, Object>): ContentWorld | null {
+  public static fromMap(map: Map<string, Any>): ContentWorld | null {
     if (map == null) {
     return null;
     }

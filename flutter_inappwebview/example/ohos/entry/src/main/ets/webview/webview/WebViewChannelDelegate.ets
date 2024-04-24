@@ -1,4 +1,4 @@
-import { MethodCall, MethodChannel } from '@ohos/flutter_ohos';
+import { Any, MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
 import InAppBrowserActivity from '../in_app_browser/InAppBrowserActivity';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';
@@ -56,7 +56,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.loadUrl:
         if (this.webView != null) {
-          let urlRequest: Map<string, ESObject> = call.argument("urlRequest") as Map<string, ESObject>;
+          let urlRequest: Map<string, Any> = call.argument("urlRequest") as Map<string, Any>;
           this.webView.loadUrl(URLRequest.fromMap(urlRequest)!);
         }
         result.success(true);
@@ -96,7 +96,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       case WebViewChannelDelegateMethods.evaluateJavascript:
         if (this.webView != null) {
           let source: string = call.argument("source");
-          let contentWorldMap: Map<string, ESObject> = call.argument("contentWorld") as Map<string, ESObject>;
+          let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
           let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
           this.webView.evaluateJavascript(source, contentWorld!, null
            // new ValueCallback<String>() {
@@ -112,7 +112,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       case WebViewChannelDelegateMethods.injectJavascriptFileFromUrl:
         if (this.webView != null) {
           let urlFile: string = call.argument("urlFile");
-          let scriptHtmlTagAttributes: Map<string, ESObject> = call.argument("scriptHtmlTagAttributes") as Map<string, ESObject>;
+          let scriptHtmlTagAttributes: Map<string, Any> = call.argument("scriptHtmlTagAttributes") as Map<string, Any>;
           this.webView.injectJavascriptFileFromUrl(urlFile, scriptHtmlTagAttributes);
         }
         result.success(true);
@@ -127,7 +127,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       case WebViewChannelDelegateMethods.injectCSSFileFromUrl:
         if (this.webView != null) {
           let urlFile: string = call.argument("urlFile");
-          let cssLinkHtmlTagAttributes: Map<string, ESObject> = call.argument("cssLinkHtmlTagAttributes") as Map<string, ESObject>;
+          let cssLinkHtmlTagAttributes: Map<string, Any> = call.argument("cssLinkHtmlTagAttributes") as Map<string, Any>;
           this.webView.injectCSSFileFromUrl(urlFile, cssLinkHtmlTagAttributes);
         }
         result.success(true);
@@ -171,7 +171,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.takeScreenshot:
         if (this.webView != null) {
-          let screenshotConfiguration: Map<string, ESObject> = call.argument("screenshotConfiguration") as Map<string, ESObject>;
+          let screenshotConfiguration: Map<string, Any> = call.argument("screenshotConfiguration") as Map<string, Any>;
           this.webView.takeScreenshot(screenshotConfiguration, result);
         } else
           result.success(null);
@@ -180,12 +180,12 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
           let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
           let inAppBrowserSettings: InAppBrowserSettings = new InAppBrowserSettings();
-          let inAppBrowserSettingsMap: Map<string, ESObject> = call.argument("settings") as Map<string, ESObject>;
+          let inAppBrowserSettingsMap: Map<string, Any> = call.argument("settings") as Map<string, Any>;
           inAppBrowserSettings.parse(inAppBrowserSettingsMap);
           inAppBrowserActivity.setSettings(inAppBrowserSettings, inAppBrowserSettingsMap);
         } else if (this.webView != null) {
           let inAppWebViewSettings: InAppWebViewSettings = new InAppWebViewSettings();
-          let inAppWebViewSettingsMap: Map<string, ESObject> = call.argument("settings") as Map<string, ESObject>;
+          let inAppWebViewSettingsMap: Map<string, Any> = call.argument("settings") as Map<string, Any>;
           inAppWebViewSettings.parse(inAppWebViewSettingsMap);
           this.webView.setSettings(inAppWebViewSettings, inAppWebViewSettingsMap);
         }
@@ -323,7 +323,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         if (this.webView != null) {
           let settings: PrintJobSettings = new PrintJobSettings();
-          let settingsMap: Map<string, ESObject> = call.argument("settings") as Map<string, ESObject>;
+          let settingsMap: Map<string, Any> = call.argument("settings") as Map<string, Any>;
           if (settingsMap != null) {
             settings.parse(settingsMap);
           }
@@ -436,7 +436,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.setContextMenu:
         if (this.webView != null) {
-          let contextMenu: Map<string, ESObject> = call.argument("contextMenu") as Map<string, ESObject>;
+          let contextMenu: Map<string, Any> = call.argument("contextMenu") as Map<string, Any>;
           this.webView.setContextMenu(contextMenu);
         }
         result.success(true);
@@ -484,7 +484,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.addUserScript:
         if (this.webView != null && this.webView.getUserContentController() != null) {
-          let userScriptMap: Map<string, ESObject> = call.argument("userScript") as Map<string, ESObject>;
+          let userScriptMap: Map<string, Any> = call.argument("userScript") as Map<string, Any>;
           let userScript: UserScript | null = UserScript.fromMap(userScriptMap);
           // result.success(this.webView.getUserContentController().addUserOnlyScript(userScript));
         } else {
@@ -494,7 +494,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       case WebViewChannelDelegateMethods.removeUserScript:
         if (this.webView != null && this.webView.getUserContentController() != null) {
           let index: number = call.argument("index") as number;
-          let userScriptMap: Map<string, ESObject> = call.argument("userScript") as Map<string, ESObject>;
+          let userScriptMap: Map<string, Any> = call.argument("userScript") as Map<string, Any>;
           let userScript: UserScript | null = UserScript.fromMap(userScriptMap);
           // result.success(this.webView.getUserContentController().removeUserOnlyScriptAt(index, userScript?.getInjectionTime()));
         } else {
@@ -517,8 +517,8 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       case WebViewChannelDelegateMethods.callAsyncJavaScript:
         // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         //   let functionBody: string = call.argument("functionBody");
-        //   let functionArguments: Map<string, ESObject> = call.argument("arguments") as Map<string, ESObject>;
-        //   let contentWorldMap: Map<string, ESObject> = call.argument("contentWorld") as Map<string, ESObject>;
+        //   let functionArguments: Map<string, Any> = call.argument("arguments") as Map<string, Any>;
+        //   let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
         //   let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
         //   this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
         //     public onReceiveValue(value: string): void {
@@ -553,7 +553,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.postWebMessage:
         // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
-        //   let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, ESObject>);
+        //   let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
         //   let targetOrigin: string = call.argument("targetOrigin");
         //   let compatPorts: List<WebMessagePortCompat> = new List<WebMessagePortCompat>();
         //   let portsExt: List<WebMessagePortCompatExt> = message.getPorts();
@@ -567,7 +567,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         //       }
         //     }
         //   }
-        //   let data: ESObject = message.getData();
+        //   let data: Any = message.getData();
         //   if (webView instanceof InAppWebView) {
         //     try {
         //       if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
@@ -591,7 +591,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
         break;
       case WebViewChannelDelegateMethods.addWebMessageListener:
         if (this.webView != null) {
-          let webMessageListenerMap: Map<string, ESObject> = call.argument("webMessageListener") as Map<string, ESObject>;
+          let webMessageListenerMap: Map<string, Any> = call.argument("webMessageListener") as Map<string, Any>;
           let webMessageListener: WebMessageListener | null = WebMessageListener.fromMap(this.webView, this.webView.getPlugin().messenger, webMessageListenerMap);
           // if (this.webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
           //   try {
@@ -639,7 +639,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onFindResultReceived(activeMatchOrdinal: number, numberOfMatches: number, isDoneCounting: boolean): void{
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return
-    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    let obj: Map<string, Any> = new Map<string, Any>()
     obj.set("activeMatchOrdinal", activeMatchOrdinal);
     obj.set("numberOfMatches", numberOfMatches);
     obj.set("isDoneCounting", isDoneCounting);
@@ -655,7 +655,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onScrollChanged(x: number, y: number): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("x", x);
     obj.set("y", y);
     channel.invokeMethod("onScrollChanged", obj);
@@ -676,7 +676,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onOverScrolled(scrollX: number, scrollY: number, clampedX: boolean, clampedY: boolean): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("x", scrollX);
     obj.set("y", scrollY);
     obj.set("clampedX", clampedX);
@@ -687,7 +687,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onContextMenuActionItemClicked(itemId: number, itemTitle: string): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("id", itemId);
     obj.set("androidId", itemId);
     obj.set("iosId", null);
@@ -698,21 +698,21 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onHideContextMenu(): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return
-    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    let obj: Map<string, Any> = new Map<string, Any>()
     channel.invokeMethod("onHideContextMenu", obj)
   }
 
   public onEnterFullscreen(): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return
-    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    let obj: Map<string, Any> = new Map<string, Any>()
     channel.invokeMethod("onEnterFullscreen", obj);
   }
 
   public onExitFullscreen(): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return
-    let obj: Map<string, ESObject> = new Map<string, ESObject>()
+    let obj: Map<string, Any> = new Map<string, Any>()
     channel.invokeMethod("onExitFullscreen", obj);
   }
 
@@ -722,7 +722,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       callback.defaultBehaviour(null);
       return;
     }
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     obj.set("message", message);
     obj.set("isMainFrame", isMainFrame);
@@ -735,7 +735,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       callback.defaultBehaviour(null);
       return;
     }
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     obj.set("message", message);
     obj.set("isMainFrame", isMainFrame);
@@ -748,7 +748,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       callback.defaultBehaviour(null);
       return;
     }
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     obj.set("message", message);
     obj.set("defaultValue", defaultValue);
@@ -762,7 +762,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       callback.defaultBehaviour(null);
       return;
     }
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     obj.set("message", message);
     channel.invokeMethod("onJsAlert", obj, callback);
@@ -780,7 +780,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onCloseWindow(): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     channel.invokeMethod("onCloseWindow", obj);
   }
 
@@ -790,7 +790,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
       callback.defaultBehaviour(null);
       return;
     }
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("origin", origin)
     channel.invokeMethod("onCloseWindow", obj);
   }
@@ -798,14 +798,14 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onGeolocationPermissionsHidePrompt(): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     channel.invokeMethod("onGeolocationPermissionsHidePrompt", obj);
   }
 
   public onConsoleMessage(message: string, messageLevel: number): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("message", message);
     obj.set("messageLevel", messageLevel);
     channel.invokeMethod("onConsoleMessage", obj);
@@ -814,7 +814,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onProgressChanged(progress: number): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("progress", progress);
     channel.invokeMethod("onProgressChanged", obj);
   }
@@ -822,7 +822,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onTitleChanged(title: string): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("title", title);
     channel.invokeMethod("onTitleChanged", obj);
   }
@@ -830,7 +830,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onReceivedIcon(icon: ArrayBuffer): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("icon", icon);
     channel.invokeMethod("onReceivedIcon", obj);
   }
@@ -838,19 +838,19 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onReceivedTouchIconUrl(url: string, precomposed: boolean): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     obj.set("precomposed", precomposed);
     channel.invokeMethod("onReceivedTouchIconUrl", obj);
   }
 
-  public onPermissionRequest(origin: string, resources: List<string>, frame: ESObject, callback: PermissionRequestCallback) {
+  public onPermissionRequest(origin: string, resources: List<string>, frame: Any, callback: PermissionRequestCallback) {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) {
       callback.defaultBehaviour(null);
       return;
     }
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("origin", origin);
     obj.set("resources", resources);
     obj.set("frame", frame);
@@ -860,7 +860,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onPermissionRequestCanceled(origin: string, resources: List<string>): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("origin", origin);
     obj.set("resources", resources);
     channel.invokeMethod("onPermissionRequestCanceled", obj);
@@ -869,7 +869,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onLoadStart(url: string) {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     channel.invokeMethod("onLoadStart", obj);
   }
@@ -877,7 +877,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onLoadStop(url: string) {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     channel.invokeMethod("onLoadStop", obj);
   }
@@ -885,7 +885,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
   public onUpdateVisitedHistory(url: string, isReload: boolean) {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     obj.set("isReload", isReload);
     channel.invokeMethod("onUpdateVisitedHistory", obj);
@@ -894,43 +894,43 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl{
 }
 
 export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
-  public decodeResult(obj: ESObject): JsAlertResponse | null {
-    return JsAlertResponse.fromMap(obj as Map<string, ESObject>);
+  public decodeResult(obj: Any): JsAlertResponse | null {
+    return JsAlertResponse.fromMap(obj as Map<string, Any>);
   }
 }
 
 export class JsConfirmCallback extends BaseCallbackResultImpl<JsConfirmResponse> {
-  public decodeResult(obj: ESObject): JsConfirmResponse | null {
-    return JsConfirmResponse.fromMap(obj as Map<string, ESObject>);
+  public decodeResult(obj: Any): JsConfirmResponse | null {
+    return JsConfirmResponse.fromMap(obj as Map<string, Any>);
   }
 }
 
 export class JsPromptCallback extends BaseCallbackResultImpl<JsPromptResponse> {
-  public decodeResult(obj: ESObject): JsPromptResponse | null {
-    return JsPromptResponse.fromMap(obj as Map<string, ESObject>);
+  public decodeResult(obj: Any): JsPromptResponse | null {
+    return JsPromptResponse.fromMap(obj as Map<string, Any>);
   }
 }
 
 export class JsBeforeUnloadCallback extends BaseCallbackResultImpl<JsBeforeUnloadResponse> {
-  public decodeResult(obj: ESObject): JsBeforeUnloadResponse | null {
-    return JsBeforeUnloadResponse.fromMap(obj as Map<string, ESObject>);
+  public decodeResult(obj: Any): JsBeforeUnloadResponse | null {
+    return JsBeforeUnloadResponse.fromMap(obj as Map<string, Any>);
   }
 }
 
 export class CreateWindowCallback extends BaseCallbackResultImpl<Boolean> {
-  public decodeResult(obj: ESObject): Boolean | null {
+  public decodeResult(obj: Any): Boolean | null {
     return (obj instanceof Boolean) && obj as boolean;
   }
 }
 
 export class GeolocationPermissionsShowPromptCallback extends BaseCallbackResultImpl<GeolocationPermissionShowPromptResponse> {
-  public decodeResult(obj: ESObject): GeolocationPermissionShowPromptResponse | null {
-    return GeolocationPermissionShowPromptResponse.fromMap(obj as Map<string, ESObject>);
+  public decodeResult(obj: Any): GeolocationPermissionShowPromptResponse | null {
+    return GeolocationPermissionShowPromptResponse.fromMap(obj as Map<string, Any>);
   }
 }
 
 export class PermissionRequestCallback extends BaseCallbackResultImpl<PermissionResponse> {
-  public decodeResult(obj: ESObject): PermissionResponse | null {
-    return PermissionResponse.fromMap(obj as Map<string, ESObject>);
+  public decodeResult(obj: Any): PermissionResponse | null {
+    return PermissionResponse.fromMap(obj as Map<string, Any>);
   }
 }

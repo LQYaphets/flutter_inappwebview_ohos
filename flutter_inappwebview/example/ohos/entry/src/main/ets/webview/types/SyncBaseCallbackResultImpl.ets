@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import BaseCallbackResultImpl from './BaseCallbackResultImpl';
 
 export default class SyncBaseCallbackResultImpl<T> extends BaseCallbackResultImpl<T> {
@@ -8,7 +9,7 @@ export default class SyncBaseCallbackResultImpl<T> extends BaseCallbackResultImp
     this.responsed = true
   }
 
-  success(obj: ESObject): void {
+  success(obj: Any): void {
     let result = this.decodeResult(obj);
     this.result = result;
     let shouldRunDefaultBehaviour: boolean = false;
@@ -39,7 +40,7 @@ export default class SyncBaseCallbackResultImpl<T> extends BaseCallbackResultImp
     })
   }
 
-  error(errorCode: string, errorMessage: string, errorDetails: ESObject) {
+  error(errorCode: string, errorMessage: string, errorDetails: Any) {
     this.responsed = true
   }
 

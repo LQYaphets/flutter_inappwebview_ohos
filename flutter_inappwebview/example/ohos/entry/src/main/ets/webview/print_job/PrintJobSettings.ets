@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import ISettings from '../ISettings';
 import MediaSizeExt from '../types/MediaSizeExt';
 import ResolutionExt from '../types/ResolutionExt';
@@ -17,7 +18,7 @@ export default class PrintJobSettings implements ISettings<PrintJobController> {
 
   constructor() {}
 
-  public parse(settings: Map<string, ESObject>): PrintJobSettings {
+  public parse(settings: Map<string, Any>): PrintJobSettings {
     let keys = settings.keys()
     for(let key of keys) {
       if(settings[key] == null) {
@@ -54,8 +55,8 @@ export default class PrintJobSettings implements ISettings<PrintJobController> {
     return this
   }
 
-  public toMap(): Map<string, ESObject> {
-    let settings: Map<string, ESObject> = new Map<string, ESObject>();
+  public toMap(): Map<string, Any> {
+    let settings: Map<string, Any> = new Map<string, Any>();
     settings.set("handledByClient", this.handledByClient);
     settings.set("jobName", this.jobName!);
     settings.set("orientation", this.orientation!);
@@ -67,8 +68,8 @@ export default class PrintJobSettings implements ISettings<PrintJobController> {
     return settings;
   }
 
-  public getRealSettings(printJobController: PrintJobController): Map<string, ESObject> {
-    let realSettings: Map<string, ESObject> = this.toMap()
+  public getRealSettings(printJobController: PrintJobController): Map<string, Any> {
+    let realSettings: Map<string, Any> = this.toMap()
     return realSettings
   }
 }

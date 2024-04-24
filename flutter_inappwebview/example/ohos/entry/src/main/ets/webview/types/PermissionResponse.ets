@@ -1,4 +1,5 @@
 import { List } from '@kit.ArkTS'
+import { Any } from '@ohos/flutter_ohos'
 
 export default class PermissionResponse{
   private resources: List<string>
@@ -9,7 +10,7 @@ export default class PermissionResponse{
     this.action = action
   }
 
-  public static fromMap(map: Map<string, ESObject>): PermissionResponse | null {
+  public static fromMap(map: Map<string, Any>): PermissionResponse | null {
     if (map == null) {
       return null;
     }

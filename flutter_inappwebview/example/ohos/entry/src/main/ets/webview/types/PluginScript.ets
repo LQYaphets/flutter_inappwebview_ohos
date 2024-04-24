@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import ContentWorld from './ContentWorld';
 import UserScript from './UserScript';
 import { UserScriptInjectionTime } from './UserScriptInjectionTime';
@@ -17,7 +18,7 @@ export default class PluginScript extends UserScript {
     this.requiredInAllContentWorlds = requiredInAllContentWorlds;
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;

@@ -1,4 +1,4 @@
-import { MethodCall, MethodChannel } from '@ohos/flutter_ohos';
+import { Any, MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
 import ChannelDelegateImpl from '../../types/ChannelDelegateImpl';
 import WebMessageCompatExt from '../../types/WebMessageCompatExt';
@@ -17,7 +17,7 @@ export default class WebMessageListenerChannelDelegate extends ChannelDelegateIm
     switch (call.method) {
       case "postMessage":
         if (this.webMessageListener != null && this.webMessageListener.webView instanceof InAppWebView) {
-          let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, ESObject>);
+          let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
           this.webMessageListener.postMessageForInAppWebView(message, result);
         } else {
           result.success(false);
@@ -31,7 +31,7 @@ export default class WebMessageListenerChannelDelegate extends ChannelDelegateIm
   public onPostMessage(message: WebMessageCompatExt, sourceOrigin: string, isMainFrame: boolean): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
-    let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("message", message != null ? message.toMap() : null);
     obj.set("sourceOrigin", sourceOrigin);
     obj.set("isMainFrame", isMainFrame);

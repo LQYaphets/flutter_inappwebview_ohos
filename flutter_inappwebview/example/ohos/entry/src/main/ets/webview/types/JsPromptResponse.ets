@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos'
+
 export default class JsPromptResponse{
   private message: string
   private confirmButtonTitle: string
@@ -15,7 +17,7 @@ export default class JsPromptResponse{
     this.action = action
   }
 
-  public static fromMap(map: Map<string, ESObject>): JsPromptResponse | null{
+  public static fromMap(map: Map<string, Any>): JsPromptResponse | null{
     if (map == null) {
       return null;
     }
@@ -76,7 +78,7 @@ export default class JsPromptResponse{
     this.action = action;
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
 

@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos'
 import Util from '../Util'
 import AndroidResource from './OhosResource'
 
@@ -6,11 +7,11 @@ export default class InAppBrowserMenuItem {
   private id: number
   private title: string
   private order: number | null
-  private icon: ESObject
+  private icon: Any
   private iconColor: string | null
   private showAsAction: boolean
 
-  constructor(id: number, title: string, order: number | null, icon: ESObject, iconColor: string | null, showAsAction: boolean) {
+  constructor(id: number, title: string, order: number | null, icon: Any, iconColor: string | null, showAsAction: boolean) {
     this.id = id
     this.title = title
     this.order = order
@@ -19,16 +20,16 @@ export default class InAppBrowserMenuItem {
     this.showAsAction = showAsAction
   }
 
-  public static fromMap(map: Map<string, ESObject>): InAppBrowserMenuItem | null {
+  public static fromMap(map: Map<string, Any>): InAppBrowserMenuItem | null {
     if (map == null) {
       return null;
     }
     let id: number = map.get("id") as number
     let title: string = map.get("title") as string
     let order: number = map.get("order") as number
-    let icon: ESObject = map.get("icon")
+    let icon: Any = map.get("icon")
     if (icon instanceof Map) {
-      icon = AndroidResource.fromMap(map.get("icon") as Map<string, ESObject>);
+      icon = AndroidResource.fromMap(map.get("icon") as Map<string, Any>);
     } else if (!(icon instanceof ArrayBuffer)) {
       icon = null;
     }
@@ -61,11 +62,11 @@ export default class InAppBrowserMenuItem {
     this.order = order;
   }
 
-  public getIcon(): ESObject {
+  public getIcon(): Any {
     return this.icon;
   }
 
-  public setIcon(icon: ESObject): void {
+  public setIcon(icon: Any): void {
     this.icon = icon;
   }
 
@@ -85,7 +86,7 @@ export default class InAppBrowserMenuItem {
     this.showAsAction = showAsAction;
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
 
@@ -94,9 +95,9 @@ export default class InAppBrowserMenuItem {
     if (this.id != that.id) return false;
     if (this.showAsAction != that.showAsAction) return false;
     if (!this.title.includes(that.title)) return false;
-    // if (!ESObject.equals(this.order, that.order)) return false;
-    // if (!ESObject.equals(this.icon, that.icon)) return false;
-    // return ESObject.equals(this.iconColor, that.iconColor);
+    // if (!Any.equals(this.order, that.order)) return false;
+    // if (!Any.equals(this.icon, that.icon)) return false;
+    // return Any.equals(this.iconColor, that.iconColor);
     if(!(this.order == that.order)) return false
     if(!(this.icon == that.icon)) return false
     return this.iconColor == that.iconColor

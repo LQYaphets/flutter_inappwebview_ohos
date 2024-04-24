@@ -145,8 +145,8 @@ export class InAppWebviewManager extends ChannelDelegateImpl {
     }
   }
 
-  // public convertWebViewPackageToMap(webViewPackageInfo: PackageInfo): Map<string, ESObject> {
-  //   let webViewPackageInfoMap: Map<string, ESObject> = new Map<string, ESObject>()
+  // public convertWebViewPackageToMap(webViewPackageInfo: PackageInfo): Map<string, Any> {
+  //   let webViewPackageInfoMap: Map<string, Any> = new Map<string, Any>()
   //
   //   webViewPackageInfoMap.set("versionName", webViewPackageInfo.versionName);
   //   webViewPackageInfoMap.set("packageName", webViewPackageInfo.packageName);

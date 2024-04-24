@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import ISettings from '../ISettings';
 import InAppBrowserActivity from './InAppBrowserActivity';
 
@@ -20,7 +21,7 @@ export default class InAppBrowserSettings implements ISettings<InAppBrowserActiv
 
   constructor() {}
 
-  public parse(settings: Map<string, ESObject>): InAppBrowserSettings {
+  public parse(settings: Map<string, Any>): InAppBrowserSettings {
     let keys = settings.keys()
     for(let key of keys) {
       if(settings[key] == null) {
@@ -67,8 +68,8 @@ export default class InAppBrowserSettings implements ISettings<InAppBrowserActiv
     return this
   }
 
-  public toMap(): Map<string, ESObject> {
-    let settings: Map<string, ESObject> = new Map<string, ESObject>()
+  public toMap(): Map<string, Any> {
+    let settings: Map<string, Any> = new Map<string, Any>()
     settings.set("hidden", this.hidden);
     settings.set("hideToolbarTop", this.hideToolbarTop);
     settings.set("toolbarTopBackgroundColor", this.toolbarTopBackgroundColor);
@@ -83,8 +84,8 @@ export default class InAppBrowserSettings implements ISettings<InAppBrowserActiv
     return settings;
   }
 
-  public getRealSettings(inAppBrowserActivity: InAppBrowserActivity): Map<string, ESObject> {
-    let realSettings: Map<string, ESObject> = this.toMap()
+  public getRealSettings(inAppBrowserActivity: InAppBrowserActivity): Map<string, Any> {
+    let realSettings: Map<string, Any> = this.toMap()
     realSettings.set("hidden", inAppBrowserActivity.isHidden);
     // realSettings.set("hideToolbarTop", inAppBrowserActivity.actionBar == null || !inAppBrowserActivity.actionBar.isShowing());
     // realSettings.set("hideUrlBar", inAppBrowserActivity.menu == null || !inAppBrowserActivity.menu.findItem(R.id.menu_search).isVisible());

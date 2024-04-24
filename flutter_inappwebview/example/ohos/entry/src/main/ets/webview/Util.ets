@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos'
+
 export default class Util {
   static LOG_TAG: string = "Util"
 
@@ -9,17 +11,17 @@ export default class Util {
     return ""
   }
 
-  public static getOrDefault(map: Map<string, ESObject>, key: string, defaultValue: ESObject): ESObject {
+  public static getOrDefault(map: Map<string, Any>, key: string, defaultValue: Any): Any {
     let keys = map.keys()
     for(let keyValue of keys) {
       if(keyValue == key) {
-        return map.get(key) as ESObject
+        return map.get(key) as Any
       }
     }
     return defaultValue;
   }
 
-  public static objEquals(a: ESObject, b: ESObject) :boolean {
+  public static objEquals(a: Any, b: Any) :boolean {
     // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
     //   return Objects.equals(a, b);
     // }

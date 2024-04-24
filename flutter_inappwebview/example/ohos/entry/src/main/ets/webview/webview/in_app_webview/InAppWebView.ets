@@ -7,7 +7,7 @@ import InAppWebViewInterface from '../InAppWebViewInterface';
 import { DVModelJson } from './DynamicUtils';
 import InAppWebViewSettings from './InAppWebViewSettings';
 import { buildOhosWebView } from './OhosWebView';
-import { Log, MethodChannel } from '@ohos/flutter_ohos';
+import { Any, Log, MethodChannel } from '@ohos/flutter_ohos';
 import UserScript from '../../types/UserScript';
 import JavaScriptBridgeInterface from '../JavaScriptBridgeInterface';
 import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
@@ -43,11 +43,9 @@ export default class InAppWebView implements InAppWebViewInterface {
   private plugin: InAppWebViewFlutterPlugin;
   private id: number;
   private windowId: number | null | undefined;
-  private customSettings: InAppWebViewSettings;
+  public customSettings: InAppWebViewSettings;
   private webCookieManager: web_webview.WebCookieManager = new web_webview.WebCookieManager();
   private controller: web_webview.WebviewController = new web_webview.WebviewController();
-  private scrollX: number = 0;
-  private scrollY: number = 0;
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
   private initialUserOnlyScripts: Array<UserScript>;
@@ -114,7 +112,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.controller;
   }
 
-  public takeScreenshot(screenshotConfiguration: Map<string, ESObject> | null, result: MethodResult): void {
+  public takeScreenshot(screenshotConfiguration: Map<string, Any> | null, result: MethodResult): void {
 
   }
 
@@ -128,7 +126,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     this.injectDeferredObject(source, null, jsWrapper, null);
   }
 
-  public injectCSSFileFromUrl(urlFile: string, cssLinkHtmlTagAttributes: Map<string, ESObject> | null): void {
+  public injectCSSFileFromUrl(urlFile: string, cssLinkHtmlTagAttributes: Map<string, Any> | null): void {
     let cssLinkAttributes: string = "";
     let alternateStylesheet: string = "";
     if (cssLinkHtmlTagAttributes != null) {
@@ -176,7 +174,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     this.injectDeferredObject(urlFile, null, jsWrapper, null);
   }
 
-  public injectJavascriptFileFromUrl(urlFile: string, scriptHtmlTagAttributes: Map<string, ESObject> | null): void {
+  public injectJavascriptFileFromUrl(urlFile: string, scriptHtmlTagAttributes: Map<string, Any> | null): void {
     let scriptAttributes: string = "";
     if (scriptHtmlTagAttributes != null) {
       let typeAttr: string = scriptHtmlTagAttributes.get("type") as string;
@@ -261,7 +259,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.inAppBrowserDelegate;
   }
 
-  public getCopyBackForwardList(): HashMap<string, ESObject> {
+  public getCopyBackForwardList(): HashMap<string, Any> {
     // let currentList: WebBackForwardList = copyBackForwardList();
     // let currentSize: number = currentList.getSize();
     // let currentIndex: number = currentList.getCurrentIndex();
@@ -279,13 +277,13 @@ export default class InAppWebView implements InAppWebViewInterface {
     //   history.add(historyItemMap);
     // }
     //
-    // let result: HashMap<string, ESObject> = new HashMap<string, ESObject>();
+    // let result: HashMap<string, Any> = new HashMap<string, Any>();
     //
     // result.set("list", history);
     // result.set("currentIndex", currentIndex);
     //
     // return result;
-    return new HashMap<string, ESObject>()
+    return new HashMap<string, Any>()
   }
 
   public clearAllCache(): void {
@@ -334,42 +332,42 @@ export default class InAppWebView implements InAppWebViewInterface {
     return null;
   }
 
-  public setSettings(newCustomSettings: InAppWebViewSettings, newSettingsMap: Map<string, ESObject>): void {
+  public setSettings(newCustomSettings: InAppWebViewSettings, newSettingsMap: Map<string, Any>): void {
     throw new Error('Method not implemented.')
   }
 
-  public getCustomSettings(): Map<string, ESObject> | null {
+  public getCustomSettings(): Map<string, Any> | null {
     return this.customSettings != null ? this.customSettings.getRealSettings(this) : null
   }
 
-  public setContextMenu(contextMenu: Map<string, ESObject>): void {
+  public setContextMenu(contextMenu: Map<string, Any>): void {
     // this.contextMenu = contextMenu;
   }
 
-  public requestFocusNodeHref(): Map<string, ESObject> {
+  public requestFocusNodeHref(): Map<string, Any> {
     // let msg: Message = InAppWebView.mHandler.obtainMessage();
     // this.requestFocusNodeHref(msg);
     // Bundle bundle = msg.peekData();
 
-    // let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    // let obj: Map<string, Any> = new Map<string, Any>();
     // obj.set("src", bundle.getString("src"));
     // obj.set("url", bundle.getString("url"));
     // obj.set("title", bundle.getString("title"));
     //
     // return obj;
-    return new Map<string, ESObject>()
+    return new Map<string, Any>()
   }
 
-  public requestImageRef(): Map<string, ESObject> {
+  public requestImageRef(): Map<string, Any> {
     // let msg: Message = InAppWebView.mHandler.obtainMessage();
     // this.requestImageRef(msg);
     // Bundle bundle = msg.peekData();
     //
-    // let obj: Map<string, ESObject> = new Map<string, ESObject>();
+    // let obj: Map<string, Any> = new Map<string, Any>();
     // obj.set("url", bundle.getString("url"));
     //
     // return obj;
-    return new Map<string, ESObject>()
+    return new Map<string, Any>()
   }
 
   public createCompatWebMessageChannel(): WebMessageChannel {

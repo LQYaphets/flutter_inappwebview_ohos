@@ -11,6 +11,7 @@ import InAppBrowserMenuItem from '../types/InAppBrowserMenuItem'
 import InAppWebViewSettings from '../webview/in_app_webview/InAppWebViewSettings'
 import Util from '../Util'
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel'
+import { Any } from '@ohos/flutter_ohos'
 
 const LOG_TAG = "InAppBrowserActivity"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappbrowser_"
@@ -81,12 +82,12 @@ export default class InAppBrowserActivity implements InAppBrowserDelegate, Dispo
     // }
   }
 
-  public getCustomSettings(): Map<string, ESObject> | null {
-    let webViewSettingsMap: Map<string, ESObject> | null = this.webView != null ? this.webView.getCustomSettings() : null
+  public getCustomSettings(): Map<string, Any> | null {
+    let webViewSettingsMap: Map<string, Any> | null = this.webView != null ? this.webView.getCustomSettings() : null
     if (this.customSettings == null || webViewSettingsMap == null)
       return null;
 
-    let settingsMap: Map<string, ESObject> = this.customSettings.getRealSettings(this);
+    let settingsMap: Map<string, Any> = this.customSettings.getRealSettings(this);
     let keys = webViewSettingsMap.keys()
     for(let key of keys) {
       settingsMap.set(key, webViewSettingsMap[key])
@@ -94,7 +95,7 @@ export default class InAppBrowserActivity implements InAppBrowserDelegate, Dispo
     return settingsMap;
   }
 
-  public setSettings(newSettings: InAppBrowserSettings, newSettingsMap: Map<string, ESObject>): void {
+  public setSettings(newSettings: InAppBrowserSettings, newSettingsMap: Map<string, Any>): void {
 
     let newInAppWebViewSettings: InAppWebViewSettings = new InAppWebViewSettings();
     newInAppWebViewSettings.parse(newSettingsMap);

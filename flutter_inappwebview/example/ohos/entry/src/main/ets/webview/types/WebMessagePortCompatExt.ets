@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos'
+
 export default class WebMessagePortCompatExt {
   private index: number | null = null
 
@@ -8,7 +10,7 @@ export default class WebMessagePortCompatExt {
     this.webMessageChannelId = webMessageChannelId
   }
 
-  public static fromMap(map: Map<string, ESObject>): WebMessagePortCompatExt | null {
+  public static fromMap(map: Map<string, Any>): WebMessagePortCompatExt | null {
     if (map == null) {
       return null;
     }
@@ -17,8 +19,8 @@ export default class WebMessagePortCompatExt {
     return new WebMessagePortCompatExt(index, webMessageChannelId);
   }
 
-  public toMap(): Map<string, ESObject> {
-    let proxyRuleMap: Map<string, ESObject> = new Map<string, ESObject>()
+  public toMap(): Map<string, Any> {
+    let proxyRuleMap: Map<string, Any> = new Map<string, Any>()
     proxyRuleMap.set("index", this.index);
     proxyRuleMap.set("webMessageChannelId", this.webMessageChannelId);
     return proxyRuleMap;
@@ -34,7 +36,7 @@ export default class WebMessagePortCompatExt {
     this.webMessageChannelId = webMessageChannelId;
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
 

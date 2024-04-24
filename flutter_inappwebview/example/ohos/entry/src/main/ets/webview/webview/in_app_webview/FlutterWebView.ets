@@ -5,21 +5,22 @@ import InAppWebView from './InAppWebView';
 import InAppWebViewSettings from './InAppWebViewSettings';
 import URLRequest from '../../types/URLRequest';
 import UserScript from '../../types/UserScript';
+import { Any } from '@ohos/flutter_ohos';
 
 export class FlutterWebView extends PlatformWebView {
   private webView: InAppWebView | null;
 
   public keepAliveId: string | null = null
 
-  constructor(plugin: InAppWebViewFlutterPlugin, context: Context, id: number, params: Map<string, ESObject>) {
+  constructor(plugin: InAppWebViewFlutterPlugin, context: Context, id: number, params: Map<string, Any>) {
     super();
-    let initialSettings: Map<string, ESObject> = params.get("initialSettings");
+    let initialSettings: Map<string, Any> = params.get("initialSettings");
     let windowId = params.get("windowId") as number;
-    let initialUserScripts: Array<Map<string, ESObject>> = params.get("initialUserScripts");
-    let pullToRefreshInitialSettings: Map<string, ESObject> = params.get("pullToRefreshSettings");
+    let initialUserScripts: Array<Map<string, Any>> = params.get("initialUserScripts");
+    let pullToRefreshInitialSettings: Map<string, Any> = params.get("pullToRefreshSettings");
     let userScripts: Array<UserScript> = new Array<UserScript>();
     if (initialUserScripts != null) {
-      initialUserScripts.forEach((item: Map<string, ESObject>) => {
+      initialUserScripts.forEach((item: Map<string, Any>) => {
         let script = UserScript.fromMap(item);
         if (script != null)
           userScripts.push(script);
@@ -35,14 +36,14 @@ export class FlutterWebView extends PlatformWebView {
     this.webView.prepare()
   }
 
-  makeInitialLoad(params: Map<string, ESObject>): void {
+  makeInitialLoad(params: Map<string, Any>): void {
     if (this.webView == null) {
       return;
     }
     let windowId = params.get("windowId") as number;
-    let initialUrlRequest: Map<string, ESObject> = params.get("initialUrlRequest");
+    let initialUrlRequest: Map<string, Any> = params.get("initialUrlRequest");
     let initialFile = params.get("initialFile") as string;
-    let initialData: Map<string, ESObject> = params.get("initialData");
+    let initialData: Map<string, Any> = params.get("initialData");
     if (windowId != null && windowId != undefined) {
       // TODO
     } else {

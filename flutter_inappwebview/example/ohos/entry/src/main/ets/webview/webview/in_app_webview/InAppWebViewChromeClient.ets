@@ -1,4 +1,4 @@
-import { Log } from '@ohos/flutter_ohos';
+import { Any, Log } from '@ohos/flutter_ohos';
 import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
 import DownloadStartRequest from '../../types/DownloadStartRequest';
 import URLUtil from '../../types/URLUtil';
@@ -16,32 +16,32 @@ export default class InAppWebViewChromeClient {
     this.inAppWebView = inAppWebView;
   }
 
-  onAlert(event: ESObject): boolean {
+  onAlert(event: Any): boolean {
     Log.d(TAG, "onAlert=" + JSON.stringify(event))
     return false;
   }
 
-  onBeforeUnload(event: ESObject): boolean {
+  onBeforeUnload(event: Any): boolean {
     Log.d(TAG, "onBeforeUnload=" + JSON.stringify(event))
     return false;
   }
 
-  onConfirm(event: ESObject): boolean {
+  onConfirm(event: Any): boolean {
     Log.d(TAG, "onConfirm=" + JSON.stringify(event))
     return false;
   }
 
-  onPrompt(event: ESObject): boolean {
+  onPrompt(event: Any): boolean {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
     return false;
   }
 
-  onConsole(event: ESObject): boolean {
+  onConsole(event: Any): boolean {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
     return false;
   }
 
-  onDownloadStart(event: ESObject): void {
+  onDownloadStart(event: Any): void {
     Log.d(TAG, "onDownloadStart=" + JSON.stringify(event))
     if (this.inAppWebView.customSettings.useOnDownloadStart) {
       let downloadStartRequest = new DownloadStartRequest(
@@ -58,74 +58,74 @@ export default class InAppWebViewChromeClient {
     }
   }
 
-  onErrorReceive(event: ESObject): void {
+  onErrorReceive(event: Any): void {
     Log.d(TAG, "onErrorReceive=" + JSON.stringify(event))
   }
 
-  onHttpErrorReceive(event: ESObject): void {
+  onHttpErrorReceive(event: Any): void {
     Log.d(TAG, "onHttpErrorReceive=" + JSON.stringify(event))
   }
 
-  onPageBegin(event: ESObject): void {
+  onPageBegin(event: Any): void {
     Log.d(TAG, "onPageBegin=" + JSON.stringify(event))
   }
 
-  onPageEnd(event: ESObject): void {
+  onPageEnd(event: Any): void {
     Log.d(TAG, "onPageBegin=" + JSON.stringify(event))
   }
 
-  onProgressChange(event: ESObject): void {
+  onProgressChange(event: Any): void {
     Log.d(TAG, "onProgressChange=" + JSON.stringify(event))
   }
 
-  onTitleReceive(event: ESObject): void {
+  onTitleReceive(event: Any): void {
     Log.d(TAG, "onTitleReceive=" + JSON.stringify(event))
   }
 
-  onRefreshAccessedHistory(event: ESObject): void {
+  onRefreshAccessedHistory(event: Any): void {
     Log.d(TAG, "onRefreshAccessedHistory=" + JSON.stringify(event))
   }
 
-  onRenderExited(event: ESObject): void {
+  onRenderExited(event: Any): void {
     Log.d(TAG, "onRenderExited=" + JSON.stringify(event))
   }
 
-  onShowFileSelector(event: ESObject): boolean {
+  onShowFileSelector(event: Any): boolean {
     Log.d(TAG, "onShowFileSelector=" + JSON.stringify(event))
     return false;
   }
 
-  onResourceLoad(event: ESObject): void {
+  onResourceLoad(event: Any): void {
     Log.d(TAG, "onResourceLoad=" + JSON.stringify(event))
   }
 
-  onScaleChange(event: ESObject): void {
+  onScaleChange(event: Any): void {
     Log.d(TAG, "onScaleChange=" + JSON.stringify(event))
   }
 
-  onInterceptRequest(event: ESObject): WebResourceResponse | null {
+  onInterceptRequest(event: Any): WebResourceResponse | null {
     Log.d(TAG, "onInterceptRequest=" + JSON.stringify(event))
     return null
   }
 
-  onHttpAuthRequest(event: ESObject): boolean {
+  onHttpAuthRequest(event: Any): boolean {
     Log.d(TAG, "onHttpAuthRequest=" + JSON.stringify(event))
     return true;
   }
 
-  onSslErrorEventReceive(event: ESObject): void {
+  onSslErrorEventReceive(event: Any): void {
     Log.d(TAG, "onSslErrorEventReceive=" + JSON.stringify(event))
   }
 
-  onClientAuthenticationRequest(event: ESObject): void {
+  onClientAuthenticationRequest(event: Any): void {
     Log.d(TAG, "onClientAuthenticationRequest=" + JSON.stringify(event))
   }
 
-  onPermissionRequest(event: ESObject): void {
+  onPermissionRequest(event: Any): void {
     Log.d(TAG, "onPermissionRequest=" + JSON.stringify(event))
   }
 
-  onContextMenuShow(event: ESObject): boolean {
+  onContextMenuShow(event: Any): boolean {
     Log.d(TAG, "onContextMenuShow=" + JSON.stringify(event))
     return false;
   }
@@ -134,81 +134,81 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onContextMenuHide=")
   }
 
-  onScroll(event: ESObject): void {
+  onScroll(event: Any): void {
     Log.d(TAG, "onScroll=" + JSON.stringify(event))
   }
 
-  onGeolocationShow(event: ESObject): void {
+  onGeolocationShow(event: Any): void {
     Log.d(TAG, "onGeolocationShow=" + JSON.stringify(event))
   }
 
-  onGeolocationHide(event: ESObject): void {
+  onGeolocationHide(event: Any): void {
     Log.d(TAG, "onGeolocationHide=" + JSON.stringify(event))
   }
 
-  onFullScreenEnter(event: ESObject): void {
+  onFullScreenEnter(event: Any): void {
     Log.d(TAG, "onFullScreenEnter=" + JSON.stringify(event))
   }
 
-  onFullScreenExit(event: ESObject): void {
+  onFullScreenExit(event: Any): void {
     Log.d(TAG, "onFullScreenExit=" + JSON.stringify(event))
   }
 
-  onWindowNew(event: ESObject): void {
+  onWindowNew(event: Any): void {
     Log.d(TAG, "onWindowNew=" + JSON.stringify(event))
   }
 
-  onWindowExit(event: ESObject): void {
+  onWindowExit(event: Any): void {
     Log.d(TAG, "onWindowExit=" + JSON.stringify(event))
   }
 
-  onSearchResultReceive(event: ESObject): void {
+  onSearchResultReceive(event: Any): void {
     Log.d(TAG, "onSearchResultReceive=" + JSON.stringify(event))
   }
 
-  onDataResubmitted(event: ESObject): void {
+  onDataResubmitted(event: Any): void {
     Log.d(TAG, "onDataResubmitted=" + JSON.stringify(event))
   }
 
-  onPageVisible(event: ESObject): void {
+  onPageVisible(event: Any): void {
     Log.d(TAG, "onPageVisible=" + JSON.stringify(event))
   }
 
-  onInterceptKeyEvent(event: ESObject): boolean {
+  onInterceptKeyEvent(event: Any): boolean {
     Log.d(TAG, "onInterceptKeyEvent=" + JSON.stringify(event))
     return false;
   }
 
-  onTouchIconUrlReceived(event: ESObject): void {
+  onTouchIconUrlReceived(event: Any): void {
     Log.d(TAG, "onTouchIconUrlReceived=" + JSON.stringify(event))
   }
 
-  onFaviconReceived(event: ESObject): void {
+  onFaviconReceived(event: Any): void {
     Log.d(TAG, "onFaviconReceived=" + JSON.stringify(event))
   }
 
-  onAudioStateChanged(event: ESObject): void {
+  onAudioStateChanged(event: Any): void {
     Log.d(TAG, "onAudioStateChanged=" + JSON.stringify(event))
   }
 
-  onFirstContentfulPaint(event: ESObject): void {
+  onFirstContentfulPaint(event: Any): void {
     Log.d(TAG, "onFirstContentfulPaint=" + JSON.stringify(event))
   }
 
-  onLoadIntercept(event: ESObject): boolean {
+  onLoadIntercept(event: Any): boolean {
     Log.d(TAG, "onLoadIntercept=" + JSON.stringify(event))
     return false;
   }
 
-  onRequestSelected(event: ESObject): void {
+  onRequestSelected(event: Any): void {
     Log.d(TAG, "onRequestSelected=" + JSON.stringify(event))
   }
 
-  onScreenCaptureRequest(event: ESObject): void {
+  onScreenCaptureRequest(event: Any): void {
     Log.d(TAG, "onScreenCaptureRequest=" + JSON.stringify(event))
   }
 
-  onOverScroll(event: ESObject): void {
+  onOverScroll(event: Any): void {
     Log.d(TAG, "onOverScroll=" + JSON.stringify(event))
   }
 

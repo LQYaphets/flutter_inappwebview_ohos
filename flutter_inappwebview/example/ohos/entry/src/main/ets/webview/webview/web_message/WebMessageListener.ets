@@ -1,4 +1,4 @@
-import { BinaryMessenger, MethodChannel } from '@ohos/flutter_ohos';
+import { Any, BinaryMessenger, MethodChannel } from '@ohos/flutter_ohos';
 import { Disposable } from '../../types/Disposable';
 import InAppWebViewInterface from '../InAppWebViewInterface';
 import WebMessageListenerChannelDelegate from './WebMessageListenerChannelDelegate';
@@ -87,7 +87,7 @@ export default class WebMessageListener implements Disposable {
     }
   }
 
-  public static fromMap(webView: InAppWebViewInterface, messenger: BinaryMessenger | null, map: Map<string, ESObject> | null): WebMessageListener | null {
+  public static fromMap(webView: InAppWebViewInterface, messenger: BinaryMessenger | null, map: Map<string, Any> | null): WebMessageListener | null {
     if (map == null) {
       return null;
     }
@@ -104,7 +104,7 @@ export default class WebMessageListener implements Disposable {
 
   public postMessageForInAppWebView(message: WebMessageCompatExt | null, result: MethodResult): void {
     // if (replyProxy != null && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-    //   let data: ESObject = message.getData();
+    //   let data: Any = message.getData();
     //   if (data != null) {
     //     if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
     //       replyProxy.postMessage(data as ArrayBuffer[]);

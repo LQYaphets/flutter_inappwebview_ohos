@@ -1,3 +1,4 @@
+import { Any } from '@ohos/flutter_ohos';
 import ISettings from '../../ISettings';
 import InAppWebViewInterface from '../InAppWebViewInterface';
 
@@ -46,12 +47,12 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public useShouldInterceptAjaxRequest: boolean = false;
   public interceptOnlyAsyncAjaxRequests: boolean = true;
   public useShouldInterceptFetchRequest: boolean = false;
-  public webViewAssetLoader: Map<string, ESObject> | null = null;
+  public webViewAssetLoader: Map<string, Any> | null = null;
 
-  parse(settings: Map<string, ESObject>): ISettings<InAppWebViewInterface> {
+  parse(settings: Map<string, Any>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
     for (let key of keys) {
-      let value: ESObject = settings.get(key);
+      let value: Any = settings.get(key);
       if (value == null) {
         continue;
       }
@@ -223,8 +224,8 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     return this;
   }
 
-  toMap(): Map<string, ESObject> {
-    let settings: Map<string, ESObject> = new Map<string, ESObject>();
+  toMap(): Map<string, Any> {
+    let settings: Map<string, Any> = new Map<string, Any>();
     settings.set("domStorageEnabled", this.domStorageAccess);
     settings.set("allowFileAccess", this.fileAccess);
     settings.set("loadsImagesAutomatically", this.imageAccess);
@@ -270,9 +271,9 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     return settings;
   }
 
-  getRealSettings(inAppWebView: InAppWebViewInterface): Map<string, ESObject> {
+  getRealSettings(inAppWebView: InAppWebViewInterface): Map<string, Any> {
     let controller = inAppWebView.getController();
-    let realSettings: Map<string, ESObject> = this.toMap();
+    let realSettings: Map<string, Any> = this.toMap();
     realSettings.set("userAgent", controller.getUserAgent());
     return realSettings;
   }

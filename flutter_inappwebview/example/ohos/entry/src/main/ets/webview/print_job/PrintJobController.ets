@@ -1,4 +1,4 @@
-import { MethodChannel } from '@ohos/flutter_ohos';
+import { Any, MethodChannel } from '@ohos/flutter_ohos';
 import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import { Disposable } from '../types/Disposable';
 import PrintJobInfoExt from '../types/PrintJobInfoExt';
@@ -16,11 +16,11 @@ export default class PrintJobController implements Disposable {
   public channelDelegate: PrintJobChannelDelegate | null
 
   ///android.print.PrintJob类型，暂未完善
-  public job: ESObject | null
+  public job: Any | null
 
   public settings: PrintJobSettings | null
 
-  constructor(id: string, job: ESObject, settings: PrintJobSettings, plugin: InAppWebViewFlutterPlugin) {
+  constructor(id: string, job: Any, settings: PrintJobSettings, plugin: InAppWebViewFlutterPlugin) {
     this.id = id
     this.plugin = plugin
     this.job = job

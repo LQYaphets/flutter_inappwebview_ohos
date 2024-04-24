@@ -1,3 +1,5 @@
+import { Any } from '@ohos/flutter_ohos'
+
 export default class AndroidResource {
 
   private name: string
@@ -10,7 +12,7 @@ export default class AndroidResource {
     this.defPackage = defPackage
   }
 
-  public static fromMap(map: Map<string, ESObject>): AndroidResource | null {
+  public static fromMap(map: Map<string, Any>): AndroidResource | null {
     if (map == null) {
       return null;
     }
@@ -20,8 +22,8 @@ export default class AndroidResource {
     return new AndroidResource(name, defType, defPackage);
   }
 
-  public toMap(): Map<string, ESObject> {
-    let urlRequestMap: Map<string, ESObject> = new Map<string, ESObject>();
+  public toMap(): Map<string, Any> {
+    let urlRequestMap: Map<string, Any> = new Map<string, Any>();
     urlRequestMap.set("name", this.name);
     urlRequestMap.set("defType", this.defType);
     urlRequestMap.set("defPackage", this.defPackage);
@@ -57,7 +59,7 @@ export default class AndroidResource {
     return 0
   }
 
-  public equals(o: ESObject): boolean {
+  public equals(o: Any): boolean {
     if (this == o) return true;
     // if (o == null || getClass() != o.getClass()) return false;
 
