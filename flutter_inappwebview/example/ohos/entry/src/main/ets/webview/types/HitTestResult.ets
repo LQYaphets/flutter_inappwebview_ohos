@@ -1,3 +1,4 @@
+import web_webview from '@ohos.web.webview'
 import { Any } from '@ohos/flutter_ohos'
 
 export default class HitTestResult {
@@ -9,13 +10,13 @@ export default class HitTestResult {
     this.extra = extra
   }
 
-  // public static fromWebViewHitTestResult(hitTestResult: WebView.HitTestResult | null): HitTestResult | null {
-  //   if (hitTestResult == null) {
-  //     return null;
-  //   }
-  //
-  //   return new HitTestResult(hitTestResult.getType(), hitTestResult.getExtra());
-  // }
+  public static fromWebViewHitTestResult(hitTestResult: web_webview.HitTestValue | null): HitTestResult | null {
+    if (hitTestResult == null) {
+      return null;
+    }
+
+    return new HitTestResult(hitTestResult.type, hitTestResult.extra);
+  }
 
   public getType(): number {
     return this.type;

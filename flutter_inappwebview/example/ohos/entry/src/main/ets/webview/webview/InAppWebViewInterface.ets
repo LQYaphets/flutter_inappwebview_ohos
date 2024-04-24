@@ -47,6 +47,8 @@ export default interface InAppWebViewInterface {
 
   clearAllCache(): void
 
+  clearCookies(): void
+
   scrollTo(x: number, y: number, animated: boolean): void
 
   scrollBy(x: number, y: number, animated: boolean): void
@@ -66,4 +68,60 @@ export default interface InAppWebViewInterface {
   canScrollVertically(): boolean
 
   canScrollHorizontally(): boolean
+
+  getUrl(): string
+
+  getTitle(): string
+
+  getProgress(): number
+
+  reload(): void
+
+  canGoBack(): boolean
+
+  goBack(): void
+
+  canGoForward(): boolean
+
+  goForward(): void
+
+  canGoBackOrForward(steps: number): boolean
+
+  stopLoading(): void
+
+  getLoading(): boolean
+
+  clearSslPreferences(): void
+
+  findAllAsync(find: string): void
+
+  findNext(forward: boolean): void
+
+  clearMatches(): void
+
+  onPause(): void
+
+  onResume(): void
+
+  pauseTimers(): void
+
+  resumeTimers(): void
+
+  getContentHeight(): number
+
+  zoomBy(zoomFactor: number): void
+
+  getOriginalUrl(): string
+
+  getHitTestResult(): web_webview.HitTestValue
+
+  pageDown(bottom: boolean): boolean
+
+  pageUp(top: boolean): boolean
+
+  zoomIn(): boolean
+
+  zoomOut(): boolean
+
+  clearFocus(): void
 }

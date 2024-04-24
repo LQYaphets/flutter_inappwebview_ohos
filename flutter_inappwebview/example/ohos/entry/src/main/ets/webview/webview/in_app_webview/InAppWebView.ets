@@ -39,6 +39,7 @@ import ContentBlockerHandler from '../../content_blocker/ContentBlockerHandler';
 import ContentBlockerAction from '../../content_blocker/ContentBlockerAction';
 import ContentBlockerTrigger from '../../content_blocker/ContentBlockerTrigger';
 import ContentBlocker from '../../content_blocker/ContentBlocker';
+import accessibility from '@ohos.accessibility';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -49,7 +50,6 @@ export default class InAppWebView implements InAppWebViewInterface {
   private id: number;
   private windowId: number | null | undefined;
   public customSettings: InAppWebViewSettings;
-  private webCookieManager: web_webview.WebCookieManager = new web_webview.WebCookieManager();
   private controller: web_webview.WebviewController = new web_webview.WebviewController();
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
@@ -66,6 +66,9 @@ export default class InAppWebView implements InAppWebViewInterface {
   private inFullscreen: boolean = false;
   public webViewAssetLoaderExt: WebViewAssetLoaderExt | null = null;
   public contentBlockerHandler = new ContentBlockerHandler();
+  public isLoading: boolean = false
+  public zoomScale: number = 1.0
+  public contextMenu: Map<string, Any> | null = null
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>) {
@@ -101,6 +104,163 @@ export default class InAppWebView implements InAppWebViewInterface {
       return;
     }
     this.controller.loadUrl(realUrl);
+  }
+
+  getUrl(): string {
+    return this.controller.getUrl()
+  }
+
+  getTitle(): string {
+    return this.controller.getTitle()
+  }
+
+  getProgress(): number {
+    throw Error("Ohos currently does not support this feature")
+  }
+
+  reload(): void {
+    this.controller.refresh();
+  }
+
+  canGoBack(): boolean {
+    return this.controller.accessBackward()
+  }
+
+  goBack(): void {
+    this.controller.backward()
+  }
+
+  canGoForward(): boolean {
+    return this.controller.accessForward()
+  }
+
+  goForward(): void {
+    this.controller.forward()
+  }
+
+  canGoBackOrForward(steps: number): boolean {
+    return this.controller.accessStep(steps)
+  }
+
+  goBackOrForward(steps: number): void {
+    this.controller.backOrForward(steps)
+  }
+
+  stopLoading(): void {
+    this.controller.stop()
+  }
+
+  getLoading(): boolean {
+    return this.isLoading
+  }
+
+  clearSslPreferences(): void {
+    this.controller.clearSslCache()
+  }
+
+  findAllAsync(find: string): void {
+    this.controller.searchAllAsync(find)
+  }
+
+  findNext(forward: boolean): void {
+    this.controller.searchNext(forward)
+  }
+
+  clearMatches(): void {
+    this.controller.clearMatches()
+  }
+
+  onPause(): void {
+    throw Error("Ohos currently does not support this feature")
+  }
+
+  onResume(): void {
+    throw Error("Ohos currently does not support this feature")
+  }
+
+  pauseTimers(): void {
+    throw Error("Ohos currently does not support this feature")
+  }
+
+  resumeTimers(): void {
+    throw Error("Ohos currently does not support this feature")
+  }
+
+  getContentHeight(): number {
+    return this.controller.getPageHeight()
+  }
+
+  public getContentWidth(callback: ValueCallback<number>): void {
+    // this.evaluateJavascript("document.documentElement.scrollWidth;", new ValueCallback<string>() {
+    //     public onReceiveValue(value: string | null): void {
+    //       let contentWidth: number = null;
+    //       if (value != null && !value.equalsIgnoreCase("null")) {
+    //         contentWidth = Integer.parseInt(value);
+    //       }
+    //     callback.onReceiveValue(contentWidth);
+    //   }
+    // });
+  }
+
+  zoomBy(zoomFactor: number): void {
+    if (zoomFactor < 0.01)
+      throw new Error("zoomFactor must be greater than 0.01.");
+    if (zoomFactor > 100.0)
+      throw new Error("zoomFactor must be less than 100.");
+
+    this.controller.zoom(zoomFactor)
+  }
+
+  getOriginalUrl(): string {
+    return this.controller.getOriginalUrl()
+  }
+
+  getZoomScale(): number {
+    return this.zoomScale
+  }
+
+  getHitTestResult(): web_webview.HitTestValue {
+    return this.controller.getHitTestValue()
+  }
+
+  pageDown(bottom: boolean): boolean {
+    try {
+      this.controller.pageDown(bottom)
+      return true
+    } catch (e) {
+      throw Error("Jumping to the bottom of the page failed")
+    }
+  }
+
+  pageUp(top: boolean): boolean {
+    try {
+      this.controller.pageUp(top)
+      return true
+    } catch (e) {
+      throw Error("Jumping to the top of the page failed")
+    }
+  }
+
+  zoomIn(): boolean {
+    try {
+      this.controller.zoomIn()
+      return true
+    } catch (e) {
+      throw Error("Failed to perform amplification operation")
+    }
+  }
+
+  zoomOut(): boolean {
+    try {
+      this.controller.zoomOut()
+      return true
+    } catch (e) {
+      throw Error("Failed to perform shrink operation")
+    }
+  }
+
+  clearFocus(): void {
+    this.controller.onInactive
   }
 
   async postUrl(url: string, postData: ArrayBuffer) {
@@ -143,27 +303,27 @@ export default class InAppWebView implements InAppWebViewInterface {
       let idAttr: string = cssLinkHtmlTagAttributes.get("id") as string;
       if (idAttr != null) {
         // cssLinkAttributes += " link.id = '" + idAttr.replaceAll("'", "\\\\'") + "'; ";
-        cssLinkAttributes += " link.id = '" + idAttr.replace("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.id = '" + idAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let mediaAttr: string = cssLinkHtmlTagAttributes.get("media") as string;
       if (mediaAttr != null) {
         // cssLinkAttributes += " link.media = '" + mediaAttr.replaceAll("'", "\\\\'") + "'; ";
-        cssLinkAttributes += " link.media = '" + mediaAttr.replace("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.media = '" + mediaAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let crossOriginAttr: string = cssLinkHtmlTagAttributes.get("crossOrigin") as string;
       if (crossOriginAttr != null) {
         // cssLinkAttributes += " link.crossOrigin = '" + crossOriginAttr.replaceAll("'", "\\\\'") + "'; ";
-        cssLinkAttributes += " link.crossOrigin = '" + crossOriginAttr.replace("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.crossOrigin = '" + crossOriginAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let integrityAttr: string = cssLinkHtmlTagAttributes.get("integrity") as string;
       if (integrityAttr != null) {
         // cssLinkAttributes += " link.integrity = '" + integrityAttr.replaceAll("'", "\\\\'") + "'; ";
-        cssLinkAttributes += " link.integrity = '" + integrityAttr.replace("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.integrity = '" + integrityAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let referrerPolicyAttr: string = cssLinkHtmlTagAttributes.get("referrerPolicy") as string;
       if (referrerPolicyAttr != null) {
         // cssLinkAttributes += " link.referrerPolicy = '" + referrerPolicyAttr.replaceAll("'", "\\\\'") + "'; ";
-        cssLinkAttributes += " link.referrerPolicy = '" + referrerPolicyAttr.replace("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.referrerPolicy = '" + referrerPolicyAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let disabledAttr: boolean = cssLinkHtmlTagAttributes.get("disabled") as boolean;
       if (disabledAttr != null && disabledAttr) {
@@ -176,7 +336,7 @@ export default class InAppWebView implements InAppWebViewInterface {
       let titleAttr: string = cssLinkHtmlTagAttributes.get("title") as string;
       if (titleAttr != null) {
         // cssLinkAttributes += " link.title = '" + titleAttr.replaceAll("'", "\\\\'") + "'; ";
-        cssLinkAttributes += " link.title = '" + titleAttr.replace("'", "\\\\'") + "'; ";
+        cssLinkAttributes += " link.title = '" + titleAttr.replace(/'/g, "\\\\'") + "'; ";
       }
     }
     let jsWrapper: string = "(function(d) { var link = d.createElement('link'); link.rel='" + alternateStylesheet + "stylesheet'; link.type='text/css'; " +
@@ -190,12 +350,12 @@ export default class InAppWebView implements InAppWebViewInterface {
       let typeAttr: string = scriptHtmlTagAttributes.get("type") as string;
       if (typeAttr != null) {
         // scriptAttributes += " script.type = '" + typeAttr.replaceAll("'", "\\\\'") + "'; ";
-        scriptAttributes += " script.type = '" + typeAttr.replace("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.type = '" + typeAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let idAttr: string = scriptHtmlTagAttributes.get("id") as string;
       if (idAttr != null) {
         // let scriptIdEscaped: string = idAttr.replaceAll("'", "\\\\'");
-        let scriptIdEscaped: string = idAttr.replace("'", "\\\\'");
+        let scriptIdEscaped: string = idAttr.replace(/'/g, "\\\\'");
         scriptAttributes += " script.id = '" + scriptIdEscaped + "'; ";
         scriptAttributes += " script.onload = function() {" +
         "  if (window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + " != null) {" +
@@ -219,12 +379,12 @@ export default class InAppWebView implements InAppWebViewInterface {
       let crossOriginAttr: string = scriptHtmlTagAttributes.get("crossOrigin") as string;
       if (crossOriginAttr != null) {
         // scriptAttributes += " script.crossOrigin = '" + crossOriginAttr.replaceAll("'", "\\\\'") + "'; ";
-        scriptAttributes += " script.crossOrigin = '" + crossOriginAttr.replace("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.crossOrigin = '" + crossOriginAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let integrityAttr: string = scriptHtmlTagAttributes.get("integrity") as string;
       if (integrityAttr != null) {
         // scriptAttributes += " script.integrity = '" + integrityAttr.replaceAll("'", "\\\\'") + "'; ";
-        scriptAttributes += " script.integrity = '" + integrityAttr.replace("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.integrity = '" + integrityAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let noModuleAttr: boolean = scriptHtmlTagAttributes.get("noModule") as boolean;
       if (noModuleAttr != null && noModuleAttr) {
@@ -233,12 +393,12 @@ export default class InAppWebView implements InAppWebViewInterface {
       let nonceAttr: string = scriptHtmlTagAttributes.get("nonce") as string;
       if (nonceAttr != null) {
         // scriptAttributes += " script.nonce = '" + nonceAttr.replaceAll("'", "\\\\'") + "'; ";
-        scriptAttributes += " script.nonce = '" + nonceAttr.replace("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.nonce = '" + nonceAttr.replace(/'/g, "\\\\'") + "'; ";
       }
       let referrerPolicyAttr: string = scriptHtmlTagAttributes.get("referrerPolicy") as string;
       if (referrerPolicyAttr != null) {
         // scriptAttributes += " script.referrerPolicy = '" + referrerPolicyAttr.replaceAll("'", "\\\\'") + "'; ";
-        scriptAttributes += " script.referrerPolicy = '" + referrerPolicyAttr.replace("'", "\\\\'") + "'; ";
+        scriptAttributes += " script.referrerPolicy = '" + referrerPolicyAttr.replace(/'/g, "\\\\'") + "'; ";
       }
     }
     let jsWrapper: string = "(function(d) { var script = d.createElement('script'); " + scriptAttributes +
@@ -297,45 +457,34 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public clearAllCache(): void {
-    // clearCache(true);
+    this.controller.removeCache(true);
     this.clearCookies();
-    // clearFormData();
-    // WebStorage.getInstance().deleteAllData();
   }
 
   public scrollTo(x: number, y: number, animated: boolean): void {
-    // if (animated) {
-    //   let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", x);
-    //   let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", y);
-    //   let anim: ObjectAnimator = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
-    //   anim.setDuration(300).start();
-    // } else {
-    //   scrollTo(x, y);
-    // }
+    if (animated) {
+      // let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", x);
+      // let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", y);
+      // let anim: ObjectAnimator = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
+      // anim.setDuration(300).start();
+    } else {
+      this.controller.scrollTo(x, y);
+    }
   }
 
   public scrollBy(x: number, y: number, animated: boolean): void {
-    // if (animated) {
-    //   let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", getScrollX() + x);
-    //   let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", getScrollY() + y);
-    //   let anim: PropertyValuesHolder = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
-    //   anim.setDuration(300).start();
-    // } else {
-    //   scrollBy(x, y);
-    // }
+    if (animated) {
+      // let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", getScrollX() + x);
+      // let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", getScrollY() + y);
+      // let anim: PropertyValuesHolder = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
+      // anim.setDuration(300).start();
+    } else {
+      this.controller.scrollBy(x, y);
+    }
   }
 
-  private clearCookies(): void {
-    // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-    //   CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
-    //     @Override
-    //     public void onReceiveValue(Boolean aBoolean) {
-    //
-    //     }
-    //   });
-    // } else {
-    //   CookieManager.getInstance().removeAllCookie();
-    // }
+  clearCookies(): void {
+    web_webview.WebCookieManager.clearAllCookiesSync()
   }
 
   public printCurrentPage(settings: PrintJobSettings): string | null {
@@ -351,7 +500,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public setContextMenu(contextMenu: Map<string, Any>): void {
-    // this.contextMenu = contextMenu;
+    this.contextMenu = contextMenu;
   }
 
   public requestFocusNodeHref(): Map<string, Any> {

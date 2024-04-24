@@ -53,13 +53,13 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     }
     switch (method) {
       case WebViewChannelDelegateMethods.getUrl:
-      // result.success((this.webView != null) ? this.webView.getUrl() : null);
+        result.success((this.webView != null) ? this.webView.getUrl() : null);
         break;
       case WebViewChannelDelegateMethods.getTitle:
-      // result.success((this.webView != null) ? this.webView.getTitle() : null);
+        result.success((this.webView != null) ? this.webView.getTitle() : null);
         break;
       case WebViewChannelDelegateMethods.getProgress:
-      // result.success((this.webView != null) ? this.webView.getProgress() : null);
+        result.success((this.webView != null) ? this.webView.getProgress() : null);
         break;
       case WebViewChannelDelegateMethods.loadUrl:
         if (this.webView != null) {
@@ -140,40 +140,40 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.reload:
         if (this.webView != null)
-        // this.webView.reload();
+          this.webView.reload();
           result.success(true);
         break;
       case WebViewChannelDelegateMethods.goBack:
         if (this.webView != null)
-        // webView.goBack();
+          this.webView.goBack();
           result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoBack:
-      // result.success((this.webView != null) && this.webView.canGoBack());
+        result.success((this.webView != null) && this.webView.canGoBack());
         break;
       case WebViewChannelDelegateMethods.goForward:
         if (this.webView != null)
-        // this.webView.goForward();
+          this.webView.goForward();
           result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoForward:
-      // result.success((this.webView != null) && this.webView.canGoForward());
+        result.success((this.webView != null) && this.webView.canGoForward());
         break;
       case WebViewChannelDelegateMethods.goBackOrForward:
         if (this.webView != null)
-        // this.webView.goBackOrForward(call.argument("steps") as number);
+          this.webView.goBackOrForward(call.argument("steps") as number);
           result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoBackOrForward:
-      // result.success((this.webView != null) && this.webView.canGoBackOrForward(call.argument("steps")) as number);
+        result.success((this.webView != null) && this.webView.canGoBackOrForward(call.argument("steps") as number));
         break;
       case WebViewChannelDelegateMethods.stopLoading:
         if (this.webView != null)
-        // this.webView.stopLoading();
+          this.webView.stopLoading();
           result.success(true);
         break;
       case WebViewChannelDelegateMethods.isLoading:
-      // result.success((this.webView != null) && this.webView.isLoading());
+        result.success((this.webView != null) && this.webView.getLoading());
         break;
       case WebViewChannelDelegateMethods.takeScreenshot:
         if (this.webView != null) {
@@ -260,26 +260,26 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.clearSslPreferences:
         if (this.webView != null)
-        // this.webView.clearSslPreferences();
+          this.webView.clearSslPreferences();
           result.success(true);
         break;
       case WebViewChannelDelegateMethods.findAll:
         if (this.webView != null) {
           let find: string = call.argument("find");
-          // this.webView.findAllAsync(find);
+          this.webView.findAllAsync(find);
         }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.findNext:
         if (this.webView != null) {
           let forward: boolean = call.argument("forward") as boolean;
-          // this.webView.findNext(forward);
+          this.webView.findNext(forward);
         }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.clearMatches:
         if (this.webView != null) {
-          // this.webView.clearMatches();
+          this.webView.clearMatches();
         }
         result.success(true);
         break;
@@ -303,30 +303,29 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.pause:
         if (this.webView != null) {
-          // this.webView.onPause();
+          this.webView.onPause();
         }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.resume:
         if (this.webView != null) {
-          // this.webView.onResume();
+          this.webView.onResume();
         }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.pauseTimers:
         if (this.webView != null) {
-          // this.webView.pauseTimers();
+          this.webView.pauseTimers();
         }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.resumeTimers:
         if (this.webView != null) {
-          // this.webView.resumeTimers();
+          this.webView.resumeTimers();
         }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.printCurrentPage:
-      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         if (this.webView != null) {
           let settings: PrintJobSettings = new PrintJobSettings();
           let settingsMap: Map<string, Any> = call.argument("settings") as Map<string, Any>;
@@ -340,41 +339,41 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.getContentHeight:
         if (this.webView instanceof InAppWebView) {
-          // result.success(this.webView.getContentHeight());
+          result.success(this.webView.getContentHeight());
         } else {
           result.success(null);
         }
         break;
       case WebViewChannelDelegateMethods.getContentWidth:
-      // if (this.webView instanceof InAppWebView) {
-      //   this.webView.getContentWidth(new ValueCallback<Integer>() {
-      //     public onReceiveValue(contentWidth: number | null): void {
-      //       result.success(contentWidth);
-      //     }
-      //   });
-      // } else {
-      //   result.success(null);
-      // }
+        // if (this.webView instanceof InAppWebView) {
+        //   this.webView.getContentWidth(new ValueCallback<Integer>() {
+        //     public onReceiveValue(contentWidth: number | null): void {
+        //       result.success(contentWidth);
+        //     }
+        //   });
+        // } else {
+        //   result.success(null);
+        // }
         break;
       case WebViewChannelDelegateMethods.zoomBy:
-      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      //   let zoomFactor: number = call.argument("zoomFactor") as number;
-      //   this.webView.zoomBy(zoomFactor as number);
-      // }
+        if (this.webView != null) {
+          let zoomFactor: number = call.argument("zoomFactor") as number;
+          this.webView.zoomBy(zoomFactor as number);
+        }
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.getOriginalUrl:
-      // result.success((this.webView != null) ? this.webView.getOriginalUrl() : null);
+        result.success((this.webView != null) ? this.webView.getOriginalUrl() : null);
         break;
       case WebViewChannelDelegateMethods.getZoomScale:
         if (this.webView instanceof InAppWebView) {
-          // result.success(this.webView.getZoomScale());
+          result.success(this.webView.getZoomScale());
         } else {
           result.success(null);
         }
         break;
       case WebViewChannelDelegateMethods.getSelectedText:
-      // if ((this.webView instanceof InAppWebView && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) {
+      // if ((this.webView instanceof InAppWebView)) {
       //   this.webView.getSelectedText(new ValueCallback<String>() {
       //     public onReceiveValue(value: string): void {
       //       result.success(value);
@@ -385,16 +384,16 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       // }
         break;
       case WebViewChannelDelegateMethods.getHitTestResult:
-      // if (this.webView instanceof InAppWebView) {
-      //   result.success(HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult()).toMap());
-      // } else {
-      //   result.success(null);
-      // }
+      if (this.webView instanceof InAppWebView) {
+        result.success(HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult())!.toMap());
+      } else {
+        result.success(null);
+      }
         break;
       case WebViewChannelDelegateMethods.pageDown:
         if (this.webView != null) {
           let bottom: boolean = call.argument("bottom") as boolean;
-          // result.success(this.webView.pageDown(bottom));
+          result.success(this.webView.pageDown(bottom));
         } else {
           result.success(false);
         }
@@ -402,7 +401,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       case WebViewChannelDelegateMethods.pageUp:
         if (this.webView != null) {
           let top: boolean = call.argument("top") as boolean;
-          // result.success(this.webView.pageUp(top));
+          result.success(this.webView.pageUp(top));
         } else {
           result.success(false);
         }
@@ -422,21 +421,21 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.zoomIn:
         if (this.webView != null) {
-          // result.success(this.webView.zoomIn());
+          result.success(this.webView.zoomIn());
         } else {
           result.success(false);
         }
         break;
       case WebViewChannelDelegateMethods.zoomOut:
         if (this.webView != null) {
-          // result.success(this.webView.zoomOut());
+          result.success(this.webView.zoomOut());
         } else {
           result.success(false);
         }
         break;
       case WebViewChannelDelegateMethods.clearFocus:
         if (this.webView != null) {
-          // webView.clearFocus();
+          this.webView.clearFocus();
         }
         result.success(true);
         break;
@@ -449,6 +448,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.requestFocusNodeHref:
         if (this.webView != null) {
+          /// 未完善
           result.success(this.webView.requestFocusNodeHref());
         } else {
           result.success(null);
@@ -456,6 +456,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.requestImageRef:
         if (this.webView != null) {
+          /// 未完善
           result.success(this.webView.requestImageRef());
         } else {
           result.success(null);
