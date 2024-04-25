@@ -1,4 +1,4 @@
-import { Any, MethodCall, MethodChannel } from '@ohos/flutter_ohos';
+import { Any, Log, MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
 import InAppBrowserActivity from '../in_app_browser/InAppBrowserActivity';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';
@@ -143,12 +143,12 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       case WebViewChannelDelegateMethods.reload:
         if (this.webView != null)
           this.webView.reload();
-          result.success(true);
+        result.success(true);
         break;
       case WebViewChannelDelegateMethods.goBack:
         if (this.webView != null)
           this.webView.goBack();
-          result.success(true);
+        result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoBack:
         result.success((this.webView != null) && this.webView.canGoBack());
@@ -156,7 +156,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       case WebViewChannelDelegateMethods.goForward:
         if (this.webView != null)
           this.webView.goForward();
-          result.success(true);
+        result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoForward:
         result.success((this.webView != null) && this.webView.canGoForward());
@@ -164,7 +164,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       case WebViewChannelDelegateMethods.goBackOrForward:
         if (this.webView != null)
           this.webView.goBackOrForward(call.argument("steps") as number);
-          result.success(true);
+        result.success(true);
         break;
       case WebViewChannelDelegateMethods.canGoBackOrForward:
         result.success((this.webView != null) && this.webView.canGoBackOrForward(call.argument("steps") as number));
@@ -172,7 +172,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       case WebViewChannelDelegateMethods.stopLoading:
         if (this.webView != null)
           this.webView.stopLoading();
-          result.success(true);
+        result.success(true);
         break;
       case WebViewChannelDelegateMethods.isLoading:
         result.success((this.webView != null) && this.webView.getLoading());
@@ -263,7 +263,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       case WebViewChannelDelegateMethods.clearSslPreferences:
         if (this.webView != null)
           this.webView.clearSslPreferences();
-          result.success(true);
+        result.success(true);
         break;
       case WebViewChannelDelegateMethods.findAll:
         if (this.webView != null) {
@@ -347,15 +347,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         }
         break;
       case WebViewChannelDelegateMethods.getContentWidth:
-        // if (this.webView instanceof InAppWebView) {
-        //   this.webView.getContentWidth(new ValueCallback<Integer>() {
-        //     public onReceiveValue(contentWidth: number | null): void {
-        //       result.success(contentWidth);
-        //     }
-        //   });
-        // } else {
-        //   result.success(null);
-        // }
+      // if (this.webView instanceof InAppWebView) {
+      //   this.webView.getContentWidth(new ValueCallback<Integer>() {
+      //     public onReceiveValue(contentWidth: number | null): void {
+      //       result.success(contentWidth);
+      //     }
+      //   });
+      // } else {
+      //   result.success(null);
+      // }
         break;
       case WebViewChannelDelegateMethods.zoomBy:
         if (this.webView != null) {
@@ -386,11 +386,11 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       // }
         break;
       case WebViewChannelDelegateMethods.getHitTestResult:
-      if (this.webView instanceof InAppWebView) {
-        result.success(HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult())!.toMap());
-      } else {
-        result.success(null);
-      }
+        if (this.webView instanceof InAppWebView) {
+          result.success(HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult())!.toMap());
+        } else {
+          result.success(null);
+        }
         break;
       case WebViewChannelDelegateMethods.pageDown:
         if (this.webView != null) {
@@ -948,14 +948,16 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     return callback.result;
   }
 
-    shouldOverrideUrlLoading(navigationAction: NavigationAction, callback: ShouldOverrideUrlLoadingCallback) {
-        let channel = this.getChannel();
-        if (channel == null) {
-            callback.defaultBehaviour(null);
-            return;
-          }
-      channel.invokeMethod("shouldOverrideUrlLoading", navigationAction.toMap(), callback);
-      }
+  async shouldOverrideUrlLoading(navigationAction: NavigationAction) {
+    let channel = this.getChannel();
+    if (channel == null) {
+      return NavigationActionPolicy.ALLOW;
+    }
+    let callback = new SyncShouldOverrideUrlLoadingCallback();
+    channel.invokeMethod("shouldOverrideUrlLoading", navigationAction.toMap(), callback);
+    await callback.waitResponse()
+    return callback.result;
+  }
 }
 
 export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
@@ -1030,7 +1032,7 @@ class SyncLoadResourceWithCustomSchemeCallback extends SyncBaseCallbackResultImp
   }
 }
 
-export class ShouldOverrideUrlLoadingCallback extends BaseCallbackResultImpl<NavigationActionPolicy> {
+export class SyncShouldOverrideUrlLoadingCallback extends SyncBaseCallbackResultImpl<NavigationActionPolicy> {
   public decodeResult(obj: Any): NavigationActionPolicy {
     if (!(typeof obj == 'number')) {
       return NavigationActionPolicy.CANCEL;

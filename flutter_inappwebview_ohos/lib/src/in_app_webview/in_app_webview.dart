@@ -275,12 +275,12 @@ class OhosInAppWebViewWidget extends PlatformInAppWebViewWidget {
                   .fromPlatformInAppWebViewWidgetCreationParams(params),
         );
 
-  OhosInAppWebViewWidgetCreationParams get _androidParams =>
+  OhosInAppWebViewWidgetCreationParams get _ohosParams =>
       params as OhosInAppWebViewWidgetCreationParams;
 
   OhosInAppWebViewController? _controller;
 
-  OhosHeadlessInAppWebView? get _androidHeadlessInAppWebView =>
+  OhosHeadlessInAppWebView? get _ohosHeadlessInAppWebView =>
       params.headlessWebView as OhosHeadlessInAppWebView?;
 
   @override
@@ -318,6 +318,7 @@ class OhosInAppWebViewWidget extends PlatformInAppWebViewWidget {
     return OhosView(
       key: params.key,
       viewType: 'com.pichillilorenzo/flutter_inappwebview',
+      onPlatformViewCreated: _onPlatformViewCreated,
       layoutDirection: params.layoutDirection,
       gestureRecognizers: params.gestureRecognizers,
       creationParams: {
@@ -374,12 +375,12 @@ class OhosInAppWebViewWidget extends PlatformInAppWebViewWidget {
       viewId = params.headlessWebView?.id;
     }
     viewId = params.keepAlive?.id ?? viewId ?? id;
-    _androidHeadlessInAppWebView?.internalDispose();
+    _ohosHeadlessInAppWebView?.internalDispose();
     _controller = OhosInAppWebViewController(
         PlatformInAppWebViewControllerCreationParams(
             id: viewId, webviewParams: params));
-    _androidParams.pullToRefreshController?.init(viewId);
-    _androidParams.findInteractionController?.init(viewId);
+    _ohosParams.pullToRefreshController?.init(viewId);
+    _ohosParams.findInteractionController?.init(viewId);
     debugLog(
         className: runtimeType.toString(),
         id: viewId?.toString(),

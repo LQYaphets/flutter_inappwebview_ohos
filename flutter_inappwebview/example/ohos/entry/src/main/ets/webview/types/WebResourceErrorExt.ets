@@ -16,6 +16,10 @@ export default class WebResourceErrorExt {
     return webResourceErrorMap;
   }
 
+  static fromWebResourceError(error: WebResourceError) {
+    return new WebResourceErrorExt(error.getErrorCode(), error.getErrorInfo());
+  }
+
   public getType(): number {
     return this.type;
   }

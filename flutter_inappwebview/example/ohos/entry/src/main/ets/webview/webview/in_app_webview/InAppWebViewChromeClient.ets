@@ -10,10 +10,12 @@ import CustomSchemeResponse from '../../types/CustomSchemeResponse';
 import WebResourceRequestExt from '../../types/WebResourceRequestExt';
 import URLRequest from '../../types/URLRequest';
 import NavigationAction from '../../types/NavigationAction';
-import { ShouldOverrideUrlLoadingCallback } from '../WebViewChannelDelegate';
 import { NavigationActionPolicy } from '../../types/NavigationActionPolicy';
 import URLCredential from '../../types/URLCredential';
 import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
+import { image } from '@kit.ImageKit';
+import { InAppBrowserDelegate } from '../../in_app_browser/InAppBrowserDelegate';
+import WebResourceErrorExt from '../../types/WebResourceErrorExt';
 
 const TAG = "InAppWebViewChromeClient";
 
@@ -23,6 +25,7 @@ export default class InAppWebViewChromeClient {
   private static credentialsProposed: Array<URLCredential> | null = null;
   private plugin: InAppWebViewFlutterPlugin;
   private inAppWebView: InAppWebView;
+  private inAppBrowserDelegate: InAppBrowserDelegate | null = null;
 
   constructor(plugin: InAppWebViewFlutterPlugin, inAppWebView: InAppWebView) {
     this.plugin = plugin;
@@ -66,6 +69,29 @@ export default class InAppWebViewChromeClient {
   }
   onErrorReceive = (event: Any) => {
     Log.d(TAG, "onErrorReceive=" + JSON.stringify(event))
+    let request: WebResourceRequest = event.request;
+    let error: WebResourceError = event.error;
+    if (request.isMainFrame()) {
+      if (this.inAppWebView.customSettings.disableDefaultErrorPage) {
+        this.inAppWebView.stopLoading();
+        this.inAppWebView.controller.loadUrl("about:blank");
+      }
+
+      this.inAppWebView.isLoading = false;
+      InAppWebViewChromeClient.previousAuthRequestFailureCount = 0;
+      InAppWebViewChromeClient.credentialsProposed = null;
+
+      if (this.inAppBrowserDelegate != null) {
+        let type = error.getErrorCode();
+        let description = error.getErrorInfo();
+        this.inAppBrowserDelegate.didFailNavigation(request.getRequestUrl(), type, description);
+      }
+    }
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedError(
+        WebResourceRequestExt.fromWebResourceRequest(request),
+        WebResourceErrorExt.fromWebResourceError(error));
+    }
   }
   onHttpErrorReceive = (event: Any) => {
     Log.d(TAG, "onHttpErrorReceive=" + JSON.stringify(event))
@@ -76,9 +102,14 @@ export default class InAppWebViewChromeClient {
     this.inAppWebView.disposeWebMessageChannels();
     this.inAppWebView.userContentController.resetContentWorlds();
     this.loadCustomJavaScriptOnPageStarted(this.inAppWebView);
-    // if (this.inAppWebView.channelDelegate != null) {
-    //   this.inAppWebView.channelDelegate.onLoadStart(event.url);
-    // }
+
+    if (this.inAppBrowserDelegate != null) {
+      this.inAppBrowserDelegate.didStartNavigation(event.url);
+    }
+
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onLoadStart(event.url);
+    }
   }
   onPageEnd = (event: Any) => {
     Log.d(TAG, "onPageBegin=" + JSON.stringify(event))
@@ -87,28 +118,48 @@ export default class InAppWebViewChromeClient {
     InAppWebViewChromeClient.previousAuthRequestFailureCount = 0;
     InAppWebViewChromeClient.credentialsProposed = null;
 
+    if (this.inAppBrowserDelegate != null) {
+      this.inAppBrowserDelegate.didFinishNavigation(event.url);
+    }
+
     web_webview.WebCookieManager.saveCookieAsync()
 
     let js = JavaScriptBridgeJS.PLATFORM_READY_JS_SOURCE;
-    // this.inAppWebView.controller.runJavaScriptExt(js)
+    this.inAppWebView.controller.runJavaScriptExt(js)
 
-    // if (this.inAppWebView.channelDelegate != null) {
-    //   this.inAppWebView.channelDelegate.onLoadStop(event.url);
-    // }
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onLoadStop(event.url);
+    }
   }
   onProgressChange = (event: Any) => {
     Log.d(TAG, "onProgressChange=" + JSON.stringify(event))
+    if (this.inAppBrowserDelegate != null) {
+      this.inAppBrowserDelegate.didChangeProgress(event.newProgress);
+    }
+
     this.loadCustomJavaScriptOnPageStarted(this.inAppWebView);
 
-    // if (this.inAppWebView.channelDelegate != null) {
-    //   this.inAppWebView.channelDelegate.onProgressChanged(event.newProgress);
-    // }
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onProgressChanged(event.newProgress);
+    }
   }
   onTitleReceive = (event: Any) => {
     Log.d(TAG, "onTitleReceive=" + JSON.stringify(event))
+    if (this.inAppBrowserDelegate != null) {
+      this.inAppBrowserDelegate.didChangeTitle(event.title);
+    }
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onTitleChanged(event.title);
+    }
   }
   onRefreshAccessedHistory = (event: Any) => {
     Log.d(TAG, "onRefreshAccessedHistory=" + JSON.stringify(event))
+    if (this.inAppBrowserDelegate != null) {
+      this.inAppBrowserDelegate.didUpdateVisitedHistory(event.url);
+    }
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onUpdateVisitedHistory(event.url, event.isRefreshed);
+    }
   }
   onRenderExited = (event: Any) => {
     Log.d(TAG, "onRenderExited=" + JSON.stringify(event))
@@ -265,9 +316,23 @@ export default class InAppWebViewChromeClient {
   }
   onTouchIconUrlReceived = (event: Any) => {
     Log.d(TAG, "onTouchIconUrlReceived=" + JSON.stringify(event))
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedTouchIconUrl(event.url, event.precomposed);
+    }
   }
-  onFaviconReceived = (event: Any) => {
+  onFaviconReceived = async (event: Any) => {
     Log.d(TAG, "onFaviconReceived=" + JSON.stringify(event))
+    let options: image.PackingOption = {
+      format: 'image/png',
+      quality: 100
+    };
+    let packer = image.createImagePacker();
+    let imageBuffer = await packer.packing(event.favicon, options);
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedIcon(imageBuffer);
+    }
+    await event.favicon.release()
+    await packer.release()
   }
   onAudioStateChanged = (event: Any) => {
     Log.d(TAG, "onAudioStateChanged=" + JSON.stringify(event))
@@ -275,15 +340,11 @@ export default class InAppWebViewChromeClient {
   onFirstContentfulPaint = (event: Any) => {
     Log.d(TAG, "onFirstContentfulPaint=" + JSON.stringify(event))
   }
-  onLoadIntercept = (event: Any) => { //对应安卓 shouldOverrideUrlLoading
-    Log.d(TAG, "onLoadIntercept=" + JSON.stringify(event))
-    Log.d(TAG, "getRequestUrl=" + event.data.getRequestUrl())
-    Log.d(TAG, "isMainFrame=" + event.data.isMainFrame())
-    Log.d(TAG, "isRedirect=" + event.data.isRedirect())
-    Log.d(TAG, "regexToCancelSubFramesLoadingCompiled=" + this.inAppWebView.regexToCancelSubFramesLoadingCompiled)
+  onLoadIntercept = async (event: Any) => { //对应安卓 shouldOverrideUrlLoading
+    Log.d(TAG, "onLoadIntercept=" + event.data.getRequestUrl())
     if (this.inAppWebView.customSettings.useShouldOverrideUrlLoading) {
       let request = WebResourceRequestExt.fromWebResourceRequest(event.data);
-      this.onShouldOverrideUrlLoading(
+      return await this.onShouldOverrideUrlLoading(
         this.inAppWebView,
         request.getUrl(),
         request.getMethod(),
@@ -291,18 +352,8 @@ export default class InAppWebViewChromeClient {
         request.getForMainFrame(),
         request.isHasGesture(),
         request.getRedirect());
-      if (this.inAppWebView.regexToCancelSubFramesLoadingCompiled != null) {
-        if (request.getForMainFrame()) {
-          return true;
-        } else {
-          return this.inAppWebView.regexToCancelSubFramesLoadingCompiled.test(request.getUrl());
-        }
-      } else {
-        // There isn't any way to load an URL for a frame that is not the main frame,
-        // so if the request is not for the main frame, the navigation is allowed.
-        return request.getForMainFrame();
-      }
     }
+    Log.d(TAG, "onLoadInterceptEnd=" + event.data.getRequestUrl())
     return false;
   }
   onRequestSelected = (event: Any) => {
@@ -327,68 +378,28 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onNativeEmbedGestureEvent=")
   }
 
-  private onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string, headers: Map<string, string>,
-                                     isForMainFrame: boolean, hasGesture: boolean, isRedirect: boolean): void {
+  private async onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string, headers: Map<string, string>,
+                                           isForMainFrame: boolean, hasGesture: boolean, isRedirect: boolean) {
     let request = new URLRequest(url, method, null, headers);
     let navigationAction = new NavigationAction(request, isForMainFrame, hasGesture, isRedirect);
 
-    let callback = new ClientShouldOverrideUrlLoadingCallback(webView, url, headers, isForMainFrame)
+    let result: NavigationActionPolicy | null = NavigationActionPolicy.ALLOW
     if (webView.channelDelegate != null) {
-      webView.channelDelegate.shouldOverrideUrlLoading(navigationAction, callback);
+      result = await webView.channelDelegate.shouldOverrideUrlLoading(navigationAction);
     } else {
-      callback.defaultBehaviour(null);
+      result = NavigationActionPolicy.ALLOW
     }
+    Log.d(TAG, "onLoadInterceptEnd=" + url)
+    return result == NavigationActionPolicy.CANCEL
   }
 
   private loadCustomJavaScriptOnPageStarted(webView: InAppWebView) {
     let source = webView.userContentController.generateWrappedCodeForDocumentStart();
-    // webView.controller.runJavaScriptExt(source)
+    webView.controller.runJavaScriptExt(source)
   }
 
   private loadCustomJavaScriptOnPageFinished(webView: InAppWebView) {
     let source = webView.userContentController.generateWrappedCodeForDocumentEnd();
-    // webView.controller.runJavaScriptExt(source)
-  }
-}
-
-class ClientShouldOverrideUrlLoadingCallback extends ShouldOverrideUrlLoadingCallback {
-  private webView: InAppWebView;
-  private url: string;
-  private headers: Map<string, string>;
-  private isForMainFrame: boolean;
-
-  constructor(webView: InAppWebView, url: string, headers: Map<string, string>, isForMainFrame: boolean) {
-    super();
-    this.webView = webView;
-    this.url = url;
-    this.headers = headers;
-    this.isForMainFrame = isForMainFrame;
-  }
-
-  nonNullSuccess(result: NavigationActionPolicy): boolean {
-    switch (result) {
-      case NavigationActionPolicy.ALLOW:
-        this.allowShouldOverrideUrlLoading(this.webView, this.url, this.headers, this.isForMainFrame);
-        break;
-      case NavigationActionPolicy.CANCEL:
-      default:
-        break;
-    }
-    return false;
-  }
-
-  defaultBehaviour(result: NavigationActionPolicy | null): void {
-    this.allowShouldOverrideUrlLoading(this.webView, this.url, this.headers, this.isForMainFrame);
-  }
-
-  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
-    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
-    this.defaultBehaviour(null);
-  }
-
-  private allowShouldOverrideUrlLoading(webView: InAppWebView, url: string, headers: Map<string, string>, isForMainFrame: boolean): void {
-    if (isForMainFrame) {
-      webView.controller.loadUrl(url, webView.toWebHeaders(headers));
-    }
+    webView.controller.runJavaScriptExt(source)
   }
 }

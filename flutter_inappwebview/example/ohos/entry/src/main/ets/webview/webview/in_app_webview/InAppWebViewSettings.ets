@@ -53,6 +53,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public contentBlockers: Array<Map<string, Map<string, Any>>> = new Array<Map<string, Map<string, Any>>>();
   public useShouldOverrideUrlLoading: boolean = false;
   public regexToCancelSubFramesLoading: string | null = null;
+  public disableDefaultErrorPage: boolean = false;
 
   parse(settings: Map<string, Any>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -239,6 +240,9 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "regexToCancelSubFramesLoading":
           this.regexToCancelSubFramesLoading = value;
           break;
+        case "disableDefaultErrorPage":
+          this.disableDefaultErrorPage = value;
+          break;
       }
     }
     return this;
@@ -293,6 +297,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("contentBlockers", this.contentBlockers);
     settings.set("useShouldOverrideUrlLoading", this.useShouldOverrideUrlLoading);
     settings.set("regexToCancelSubFramesLoading", this.regexToCancelSubFramesLoading);
+    settings.set("disableDefaultErrorPage", this.disableDefaultErrorPage);
     return settings;
   }
 
