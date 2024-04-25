@@ -9,6 +9,7 @@ import { ValueCallback } from '../../types/ValueCallback';
 import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
 import WebMessageCompatExt from '../../types/WebMessageCompatExt';
+import web_webview from '@ohos.web.webview';
 
 const LOG_TAG = "WebMessageChannel"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_web_message_channel_"
@@ -16,25 +17,26 @@ const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_web
 export class WebMessageChannel implements Disposable {
   public id: string
 
-  public channelDelegate: WebMessageChannelChannelDelegate | null = null
+  public channelDelegate: WebMessageChannelChannelDelegate | null
 
-  /// 未完善，缺少androidx.webkit.WebMessagePortCompat
-  // public compatPorts: List<WebMessagePortCompat> | null = null
+  public compatPorts: web_webview.WebMessagePort[]
 
-  public ports: List<WebMessagePort> | null = null
+  public ports: List<WebMessagePort>
 
-  public webView: InAppWebViewInterface | null = null
+  public webView: InAppWebViewInterface | null
 
   constructor(id: string, webView: InAppWebViewInterface) {
     this.id = id;
     let channel: MethodChannel = new MethodChannel(webView.getPlugin().messenger!, METHOD_CHANNEL_NAME_PREFIX + id)
     this.channelDelegate = new WebMessageChannelChannelDelegate(this, channel)
-    if(webView instanceof  InAppWebView) {
-      // this.compatPorts = new ArrayList<>(Arrays.asList(WebViewCompat.createWebMessageChannel((InAppWebView) webView))) ;
+    if(webView instanceof InAppWebView) {
+      this.compatPorts = webView.controller.createWebMessagePorts();
       this.ports = new List<WebMessagePort>()
     } else {
-      // this.ports = Arrays.asList(new WebMessagePort("port1", this), new WebMessagePort("port2", this))
-      // this.compatPorts = new Array<WebMessagePortCompat>()
+      this.ports = new List<WebMessagePort>()
+      this.ports.set(0, new WebMessagePort("port1", this))
+      this.ports.set(1, new WebMessagePort("port2", this))
+      this.compatPorts = webView.getController().createWebMessagePorts()
     }
     this.webView = webView
   }
@@ -56,26 +58,26 @@ export class WebMessageChannel implements Disposable {
     }
   }
 
-  //// 未完善，缺少compatPorts，缺少androidx.webkit.WebViewFeature对应类型和方法
-  public setWebMessageCallbackForInAppWebView(index: number, result: MethodResult): void {
-    // if (this.webView != null && this.compatPorts.size() > 0 &&
-    //         WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_PORT_SET_MESSAGE_CALLBACK)) {
-    //   let webMessagePort: WebMessagePortCompat = compatPorts.get(index);
-    //   let webMessageChannel: WebMessageChannel = this;
-    //   try {
-    //     webMessagePort.setWebMessageCallback(new WebMessagePortCompat.WebMessageCallbackCompat() {
-    //       public onMessage(port: WebMessagePortCompat, message: WebMessageCompat): void {
-    //         super.onMessage(port, message);
-    //         webMessageChannel.onMessage(index, message != null ? WebMessageCompatExt.fromMapWebMessageCompat(message) : null);
-    //       }
-    //     });
-    //     result.success(true);
-    //   } catch (e) {
-    //     result.error(LOG_TAG, e.getMessage(), null);
-    //   }
-    // } else {
-    //   result.success(true);
-    // }
+  public setWebMessageCallbackForInAppWebView(index: number, message: WebMessageCompatExt | null, result: MethodResult): void {
+    if (this.webView != null && this.compatPorts.length > 0) {
+      let webMessagePort: web_webview.WebMessagePort = this.compatPorts[index];
+      let webMessageChannel: WebMessageChannel = this;
+      let webMessage: web_webview.WebMessage = message!.getData() as ArrayBuffer
+      try {
+        webMessagePort.postMessageEvent(webMessage)
+        // webMessagePort.setWebMessageCallback(new WebMessagePortCompat.WebMessageCallbackCompat() {
+        //   public onMessage(port: WebMessagePortCompat, message: WebMessageCompat): void {
+        //     super.onMessage(port, message);
+        //     webMessageChannel.onMessage(index, message != null ? WebMessageCompatExt.fromMapWebMessageCompat(message) : null);
+        //   }
+        // });
+        result.success(true);
+      } catch (e) {
+        result.error(LOG_TAG, e.getMessage(), null);
+      }
+    } else {
+      result.success(true);
+    }
   }
 
   //// 未完善，缺少compatPorts，缺少androidx.webkit.WebViewFeature和androidx.webkit.WebMessageCompat对应类型和方法
@@ -110,20 +112,18 @@ export class WebMessageChannel implements Disposable {
     // }
   }
 
-  //// 未完善，缺少compatPorts，缺少androidx.webkit.WebViewFeature对应类型和方法
   public closeForInAppWebView(index: number, result: MethodResult): void {
-    // if (this.webView != null && compatPorts.size() > 0 &&
-    //         WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_PORT_CLOSE)) {
-    //   let port: WebMessagePortCompat = compatPorts.get(index);
-    //   try {
-    //     port.close();
-    //     result.success(true);
-    //   } catch (e) {
-    //     result.error(LOG_TAG, e.getMessage(), null);
-    //   }
-    // } else {
-    //   result.success(true);
-    // }
+    if (this.webView != null && this.compatPorts.length > 0 ) {
+      let port: web_webview.WebMessagePort = this.compatPorts[index];
+      try {
+        port.close();
+        result.success(true);
+      } catch (e) {
+        result.error(LOG_TAG, e.getMessage(), null);
+      }
+    } else {
+      result.success(true);
+    }
   }
 
   public onMessage(index: number, message: WebMessageCompatExt | null): void {
@@ -139,19 +139,14 @@ export class WebMessageChannel implements Disposable {
   }
 
   public dispose(): void {
-    /// 未完善，缺少androidx.webkit.WebViewFeature对应类型和方法
-    // if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_PORT_CLOSE)) {
-    //   for (WebMessagePortCompat port : compatPorts) {
-    //     try {
-    //       port.close();
-    //     } catch (Exception ignored) {}
-    //   }
-    // }
+    for (let i = 0;  i < this.compatPorts.length; i++) {
+      this.compatPorts.pop();
+    }
     if (this.channelDelegate != null) {
       this.channelDelegate.dispose();
       this.channelDelegate = null;
     }
-    // this.compatPorts.clear();
+    // this.compatPorts.pop();
     this.webView = null;
   }
 }

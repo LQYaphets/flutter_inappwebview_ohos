@@ -3,6 +3,7 @@ import ContentWorld from './ContentWorld';
 import { Disposable } from './Disposable';
 import PluginScript from './PluginScript';
 import UserScript from './UserScript';
+import { UserScriptInjectionTime } from './UserScriptInjectionTime';
 
 export default class UserContentController implements Disposable {
   protected static LOG_TAG: string = "UserContentController";
@@ -121,7 +122,24 @@ export default class UserContentController implements Disposable {
     // this.pluginScripts.get(UserScriptInjectionTime.AT_DOCUMENT_END).clear();
   }
 
-  addUserOnlyScripts(userOnlyScripts: Array<UserScript>) {
+  public addUserOnlyScript(userOnlyScript: UserScript): boolean {
+    let contentWorld: ContentWorld = userOnlyScript.getContentWorld()
+    if (contentWorld != null) {
+      this.contentWorlds.add(contentWorld);
+    }
+    throw Error("Ohos currently does not support this feature")
+  }
+
+  public removeUserOnlyScriptAt(index: number, injectionTime: UserScriptInjectionTime): boolean {
+    throw Error("Ohos currently does not support this feature")
+  }
+
+  public removeUserOnlyScriptsByGroupName(groupName: string): void {
+    throw Error("Ohos currently does not support this feature")
+  }
+
+
+addUserOnlyScripts(userOnlyScripts: Array<UserScript>) {
 
   }
 

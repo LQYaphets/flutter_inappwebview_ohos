@@ -34,6 +34,7 @@ import SyncBaseCallbackResultImpl from '../types/SyncBaseCallbackResultImpl';
 import CustomSchemeResponse from '../types/CustomSchemeResponse';
 import { NavigationActionPolicy } from '../types/NavigationActionPolicy';
 import NavigationAction from '../types/NavigationAction';
+import SslCertificateExt from '../types/SslCertificateExt';
 
 const LOG_TAG = "WebViewChannelDelegate";
 
@@ -45,7 +46,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     this.webView = webView;
   }
 
-  public onMethodCall(call: MethodCall, result: MethodResult): void {
+  public async onMethodCall(call: MethodCall, result: MethodResult): Promise<void> {
     let method: WebViewChannelDelegateMethods;
     try {
       method = WebViewChannelDelegateMethods[call.method];
@@ -480,14 +481,14 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.getCertificate:
         if (this.webView != null) {
-          // result.success(SslCertificateExt.toMap(this.webView.getCertificate()));
+          result.success(SslCertificateExt.toMap(await this.webView.getCertificate()));
         } else {
           result.success(null);
         }
         break;
       case WebViewChannelDelegateMethods.clearHistory:
         if (this.webView != null) {
-          // this.webView.clearHistory();
+          this.webView.clearHistory();
         }
         result.success(true);
         break;
@@ -495,7 +496,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         if (this.webView != null && this.webView.getUserContentController() != null) {
           let userScriptMap: Map<string, Any> = call.argument("userScript") as Map<string, Any>;
           let userScript: UserScript | null = UserScript.fromMap(userScriptMap);
-          // result.success(this.webView.getUserContentController().addUserOnlyScript(userScript));
+          result.success(this.webView.getUserContentController().addUserOnlyScript(userScript!));
         } else {
           result.success(false);
         }
@@ -505,7 +506,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
           let index: number = call.argument("index") as number;
           let userScriptMap: Map<string, Any> = call.argument("userScript") as Map<string, Any>;
           let userScript: UserScript | null = UserScript.fromMap(userScriptMap);
-          // result.success(this.webView.getUserContentController().removeUserOnlyScriptAt(index, userScript?.getInjectionTime()));
+          result.success(this.webView.getUserContentController().removeUserOnlyScriptAt(index, userScript!.getInjectionTime()));
         } else {
           result.success(false);
         }
@@ -513,7 +514,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
       case WebViewChannelDelegateMethods.removeUserScriptsByGroupName:
         if (this.webView != null && this.webView.getUserContentController() != null) {
           let groupName: string = call.argument("groupName");
-          // this.webView.getUserContentController().removeUserOnlyScriptsByGroupName(groupName);
+          this.webView.getUserContentController().removeUserOnlyScriptsByGroupName(groupName);
         }
         result.success(true);
         break;
@@ -524,22 +525,22 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.callAsyncJavaScript:
-      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      //   let functionBody: string = call.argument("functionBody");
-      //   let functionArguments: Map<string, Any> = call.argument("arguments") as Map<string, Any>;
-      //   let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
-      //   let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
-      //   this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
-      //     public onReceiveValue(value: string): void {
-      //       result.success(value);
-      //     }
-      //   });
-      // } else {
-      //   result.success(null);
-      // }
+        if (this.webView != null) {
+          let functionBody: string = call.argument("functionBody");
+          let functionArguments: Map<string, Any> = call.argument("arguments") as Map<string, Any>;
+          let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
+          let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
+          // this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
+          //   public onReceiveValue(value: string): void {
+          //     result.success(value);
+          //   }
+          // });
+        } else {
+          result.success(null);
+        }
         break;
       case WebViewChannelDelegateMethods.isSecureContext:
-      // if (this.webView != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      // if (this.webView != null) {
       //   this.webView.isSecureContext(new ValueCallback<Boolean>() {
       //     public onReceiveValue(value: boolean): void {
       //       result.success(value);

@@ -18,7 +18,8 @@ export class WebMessageChannelChannelDelegate extends ChannelDelegateImpl {
       case "setWebMessageCallback":
         if (this.webMessageChannel != null && this.webMessageChannel.webView instanceof InAppWebView) {
           let index: number = call.argument("index") as number;
-          this.webMessageChannel.setWebMessageCallbackForInAppWebView(index, result);
+          let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
+          this.webMessageChannel.setWebMessageCallbackForInAppWebView(index, message, result);
         } else {
           result.success(false);
         }

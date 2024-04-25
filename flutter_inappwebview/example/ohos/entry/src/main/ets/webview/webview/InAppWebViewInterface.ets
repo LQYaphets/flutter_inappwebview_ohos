@@ -11,6 +11,7 @@ import { HashMap } from '@kit.ArkTS';
 import PrintJobSettings from '../print_job/PrintJobSettings';
 import WebMessageListener from './web_message/WebMessageListener';
 import { Any } from '@ohos/flutter_ohos';
+import cert from '@ohos.security.cert';
 
 export default interface InAppWebViewInterface {
   loadUrl(urlRequest: URLRequest): void;
@@ -124,4 +125,8 @@ export default interface InAppWebViewInterface {
   zoomOut(): boolean
 
   clearFocus(): void
+
+  getCertificate(): Promise<Array<cert.X509Cert>>
+
+  clearHistory(): void
 }

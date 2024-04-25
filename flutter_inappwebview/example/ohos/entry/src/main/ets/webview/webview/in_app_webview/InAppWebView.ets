@@ -39,7 +39,7 @@ import ContentBlockerHandler from '../../content_blocker/ContentBlockerHandler';
 import ContentBlockerAction from '../../content_blocker/ContentBlockerAction';
 import ContentBlockerTrigger from '../../content_blocker/ContentBlockerTrigger';
 import ContentBlocker from '../../content_blocker/ContentBlocker';
-import accessibility from '@ohos.accessibility';
+import cert from '@ohos.security.cert';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -262,6 +262,14 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   clearFocus(): void {
     this.controller.onInactive
+  }
+
+  async getCertificate(): Promise<Array<cert.X509Cert>> {
+    return this.controller.getCertificate()
+  }
+
+  clearHistory(): void {
+    this.controller.clearHistory()
   }
 
   async postUrl(url: string, postData: ArrayBuffer | null) {
