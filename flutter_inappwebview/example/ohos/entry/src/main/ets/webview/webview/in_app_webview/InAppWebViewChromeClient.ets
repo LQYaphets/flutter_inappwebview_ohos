@@ -177,7 +177,6 @@ export default class InAppWebViewChromeClient {
   onInterceptRequest = async (event: Any) => { //对应安卓shouldInterceptRequest
     let request = WebResourceRequestExt.fromWebResourceRequest(event.request);
     Log.d(TAG, "onInterceptRequest=" + JSON.stringify(event))
-    Log.d(TAG, "webViewAssetLoaderExt=" + this.inAppWebView.webViewAssetLoaderExt)
     if (this.inAppWebView.webViewAssetLoaderExt != null && this.inAppWebView.webViewAssetLoaderExt.loader != null) {
       try {
         let url = new uri.URI(request.getUrl());

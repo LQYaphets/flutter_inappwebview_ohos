@@ -31,7 +31,7 @@ import InterceptAjaxRequestJS from '../../plugin_scripts_js/InterceptAjaxRequest
 import InterceptFetchRequestJS from '../../plugin_scripts_js/InterceptFetchRequestJS';
 import OnLoadResourceJS from '../../plugin_scripts_js/OnLoadResourceJS';
 import { InAppBrowserDelegate } from '../../in_app_browser/InAppBrowserDelegate';
-import { HashMap, List } from '@kit.ArkTS';
+import { ArrayList, HashMap, List } from '@kit.ArkTS';
 import PrintJobSettings from '../../print_job/PrintJobSettings';
 import WebMessageListener from '../web_message/WebMessageListener';
 import WebViewAssetLoaderExt from '../../types/WebViewAssetLoaderExt';
@@ -46,7 +46,7 @@ const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
 
 export default class InAppWebView implements InAppWebViewInterface {
   private context: Context;
-  private plugin: InAppWebViewFlutterPlugin;
+  public plugin: InAppWebViewFlutterPlugin;
   private id: number;
   private windowId: number | null | undefined;
   public customSettings: InAppWebViewSettings;
@@ -296,7 +296,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public evaluateJavascript(source: string, contentWorld: ContentWorld, resultCallback: ValueCallback<string> | null): void {
-    // this.injectDeferredObject(source, contentWorld, null, resultCallback);
+    this.injectDeferredObject(source, contentWorld, null, resultCallback);
   }
 
   public injectCSSCode(source: string): void {
@@ -415,16 +415,15 @@ export default class InAppWebView implements InAppWebViewInterface {
     this.injectDeferredObject(urlFile, null, jsWrapper, null);
   }
 
-  public injectDeferredObject(source: string, contentWorld: ContentWorld | null, jsWrapper: string, resultCallback: ValueCallback<string> | null): void {
-    let resultUuid: string | null = contentWorld != null && !contentWorld.equals(ContentWorld.PAGE) ? util.generateRandomUUID(true)
-      .toString() : null
+  public injectDeferredObject(source: string, contentWorld: ContentWorld | null, jsWrapper: string | null, resultCallback: ValueCallback<string> | null): void {
+    let resultUuid: string | null = contentWorld != null && !contentWorld.equals(ContentWorld.PAGE) ? util.generateRandomUUID(true).toString() : null
     let scriptToInject: string = source
     if (jsWrapper != null) {
-      // org.json.JSONArray jsonEsc = new org.json.JSONArray();
-      // jsonEsc.put(source);
-      // let jsonRepr: string = jsonEsc.toString();
-      // let jsonSourceString: string = jsonRepr.substring(1, jsonRepr.length() - 1);
-      // scriptToInject = String.format(jsWrapper, jsonSourceString);
+      let jsonEsc = Array<string>();
+      jsonEsc.push(source);
+      let jsonRepr: string = JSON.stringify(jsonEsc);
+      let jsonSourceString: string = jsonRepr.substring(1, jsonRepr.length - 1);
+      scriptToInject = Util.formatString(jsWrapper, jsonSourceString);
     }
     if (resultUuid != null && resultCallback != null) {
       this.evaluateJavaScriptContentWorldCallbacks.set(resultUuid, resultCallback);
@@ -433,6 +432,13 @@ export default class InAppWebView implements InAppWebViewInterface {
         .replace(PluginScriptsUtil.VAR_PLACEHOLDER_VALUE, UserContentController.escapeCode(source))
         .replace(PluginScriptsUtil.VAR_RESULT_UUID, resultUuid);
     }
+
+    scriptToInject = this.userContentController.generateCodeForScriptEvaluation(scriptToInject, contentWorld);
+    this.controller.runJavaScriptExt(scriptToInject).then(res => {
+      if (resultUuid != null || resultCallback == null)
+        return;
+      resultCallback.onReceiveValue(res.getString());
+    })
   }
 
   public getInAppBrowserDelegate(): InAppBrowserDelegate | null {
@@ -683,6 +689,37 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   hideContextMenu() {
     // TODO
+  }
+
+  callAsyncJavaScript(functionBody: string, args: Map<string, Any>, contentWorld: ContentWorld | null, resultCallback: ValueCallback<string>) {
+    let resultUuid = util.generateRandomUUID(true);
+    if (resultCallback != null) {
+      this.callAsyncJavaScriptCallbacks.set(resultUuid, resultCallback);
+    }
+
+    let keys = args.keys();
+
+    let functionArgumentNamesList = new Array<string>();
+    let functionArgumentValuesList = new Array<string>();
+    for (let key of keys) {
+      functionArgumentNamesList.push(key);
+      functionArgumentValuesList.push("obj." + key);
+    }
+
+    let functionArgumentNames = functionArgumentNamesList.join(", ");
+    let functionArgumentValues = functionArgumentValuesList.join(", ");
+    let functionArgumentsObj = JSON.stringify(args);
+
+    let sourceToInject = PluginScriptsUtil.CALL_ASYNC_JAVA_SCRIPT_WRAPPER_JS_SOURCE
+      .replace(PluginScriptsUtil.VAR_FUNCTION_ARGUMENT_NAMES, functionArgumentNames)
+      .replace(PluginScriptsUtil.VAR_FUNCTION_ARGUMENT_VALUES, functionArgumentValues)
+      .replace(PluginScriptsUtil.VAR_FUNCTION_ARGUMENTS_OBJ, functionArgumentsObj)
+      .replace(PluginScriptsUtil.VAR_FUNCTION_BODY, functionBody)
+      .replace(PluginScriptsUtil.VAR_RESULT_UUID, resultUuid)
+      .replace(PluginScriptsUtil.VAR_RESULT_UUID, resultUuid);
+
+    sourceToInject = this.userContentController.generateCodeForScriptEvaluation(sourceToInject, contentWorld);
+    this.controller.runJavaScriptExt(sourceToInject, null);
   }
 
   getView(): DVModel {

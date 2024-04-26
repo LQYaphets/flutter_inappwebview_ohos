@@ -108,12 +108,11 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
           let source: string = call.argument("source");
           let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
           let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
-          this.webView.evaluateJavascript(source, contentWorld!, null);
-          // new ValueCallback<String>() {
-          //    public onReceiveValue(value: string): void {
-          //      result.success(value);
-          //    }
-          //  });
+          this.webView.evaluateJavascript(source, contentWorld!, {
+            onReceiveValue: (value: string | null): void => {
+              result.success(value);
+            }
+          });
         } else {
           result.success(null);
         }
@@ -506,7 +505,8 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
           let index: number = call.argument("index") as number;
           let userScriptMap: Map<string, Any> = call.argument("userScript") as Map<string, Any>;
           let userScript: UserScript | null = UserScript.fromMap(userScriptMap);
-          result.success(this.webView.getUserContentController().removeUserOnlyScriptAt(index, userScript!.getInjectionTime()));
+          result.success(this.webView.getUserContentController()
+            .removeUserOnlyScriptAt(index, userScript!.getInjectionTime()));
         } else {
           result.success(false);
         }
@@ -530,11 +530,11 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
           let functionArguments: Map<string, Any> = call.argument("arguments") as Map<string, Any>;
           let contentWorldMap: Map<string, Any> = call.argument("contentWorld") as Map<string, Any>;
           let contentWorld: ContentWorld | null = ContentWorld.fromMap(contentWorldMap);
-          // this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, new ValueCallback<String>() {
-          //   public onReceiveValue(value: string): void {
-          //     result.success(value);
-          //   }
-          // });
+          this.webView.callAsyncJavaScript(functionBody, functionArguments, contentWorld, {
+            onReceiveValue: (value: string | null): void => {
+              result.success(value);
+            }
+          });
         } else {
           result.success(null);
         }
@@ -644,6 +644,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
           // this.webView.clearFormData();
         }
         result.success(true);
+        break;
     }
   }
 
@@ -959,6 +960,30 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     await callback.waitResponse()
     return callback.result;
   }
+
+  onCallJsHandler(handlerName: string, args: string, callback: CallJsHandlerCallback) {
+    let channel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("handlerName", handlerName);
+    obj.set("args", args);
+    channel.invokeMethod("onCallJsHandler", obj, callback);
+  }
+
+  onPrintRequest(url: string, printJobId: string, callback: PrintRequestCallback) {
+    let channel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("url", url);
+    obj.set("printJobId", printJobId);
+    channel.invokeMethod("onPrintRequest", obj, callback);
+  }
 }
 
 export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
@@ -1038,6 +1063,18 @@ export class SyncShouldOverrideUrlLoadingCallback extends SyncBaseCallbackResult
     if (!(typeof obj == 'number')) {
       return NavigationActionPolicy.CANCEL;
     }
+    return obj;
+  }
+}
+
+export class CallJsHandlerCallback extends BaseCallbackResultImpl<Any> {
+  public decodeResult(obj: Any): Any {
+    return obj;
+  }
+}
+
+export class PrintRequestCallback extends BaseCallbackResultImpl<boolean> {
+  public decodeResult(obj: Any): boolean {
     return obj;
   }
 }
