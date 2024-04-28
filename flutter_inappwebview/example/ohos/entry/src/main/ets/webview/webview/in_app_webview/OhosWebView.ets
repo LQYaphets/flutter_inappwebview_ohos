@@ -23,7 +23,9 @@ export struct OhosWebView {
         .onAlert(DynamicUtils.getParams(this.params, "onAlert"))
         .onBeforeUnload(DynamicUtils.getParams(this.params, "onBeforeUnload"))
         .onConfirm(DynamicUtils.getParams(this.params, "onConfirm"))
-        .onPrompt(DynamicUtils.getParams(this.params, "onPrompt"))
+        .onPrompt((event) => {
+          return DynamicUtils.getParams(this.params, "onPrompt")(event, this)
+        })
         .onConsole(DynamicUtils.getParams(this.params, "onConsole"))
         .onDownloadStart(DynamicUtils.getParams(this.params, "onDownloadStart"))
         .onErrorReceive(DynamicUtils.getParams(this.params, "onErrorReceive"))

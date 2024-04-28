@@ -1,15 +1,18 @@
 import { Any } from '@ohos/flutter_ohos'
 
-export default class JsPromptResponse{
+export default class JsPromptResponse {
   private message: string
+  private defaultValue: string;
   private confirmButtonTitle: string
   private cancelButtonTitle: string
   private handledByClient: boolean
   private value: string | null = null
   private action: number | null = null
 
-  constructor(message: string, confirmButtonTitle: string, cancelButtonTitle: string, handledByClient: boolean, value: string | null, action: number | null) {
+  constructor(message: string, defaultValue: string, confirmButtonTitle: string, cancelButtonTitle: string,
+              handledByClient: boolean, value: string | null, action: number | null) {
     this.message = message
+    this.defaultValue = defaultValue;
     this.confirmButtonTitle = confirmButtonTitle
     this.cancelButtonTitle = cancelButtonTitle
     this.handledByClient = handledByClient
@@ -17,17 +20,18 @@ export default class JsPromptResponse{
     this.action = action
   }
 
-  public static fromMap(map: Map<string, Any>): JsPromptResponse | null{
+  public static fromMap(map: Map<string, Any>): JsPromptResponse | null {
     if (map == null) {
       return null;
     }
-    let message: string = map.get("message") as string
+    let message: string = map.get("message");
+    let defaultValue: string = map.get("defaultValue");
     let confirmButtonTitle: string = map.get("confirmButtonTitle") as string
     let cancelButtonTitle: string = map.get("cancelButtonTitle") as string;
     let handledByClient: boolean = map.get("handledByClient") as boolean
     let value: string = map.get("value") as string;
     let action: number = map.get("action") as number
-    return new JsPromptResponse(message, confirmButtonTitle, cancelButtonTitle, handledByClient, value, action);
+    return new JsPromptResponse(message, defaultValue, confirmButtonTitle, cancelButtonTitle, handledByClient, value, action);
   }
 
   public getMessage(): string {
@@ -36,6 +40,14 @@ export default class JsPromptResponse{
 
   public setMessage(message: string): void {
     this.message = message;
+  }
+
+  getDefaultValue(): string {
+    return this.defaultValue;
+  }
+
+  setDefaultValue(defaultValue: string) {
+    this.defaultValue = defaultValue;
   }
 
   public getConfirmButtonTitle(): string {
@@ -88,7 +100,7 @@ export default class JsPromptResponse{
     if (this.message != null ? !this.message.includes(that.message) : that.message != null) return false;
     if (this.confirmButtonTitle != null ? !this.confirmButtonTitle.includes(that.confirmButtonTitle) : that.confirmButtonTitle != null) return false;
     if (this.cancelButtonTitle != null ? !this.cancelButtonTitle.includes(that.cancelButtonTitle) : that.cancelButtonTitle != null) return false;
-    if (this.value != null ? !this.value.includes(that.value??'') : that.value != null) return false;
+    if (this.value != null ? !this.value.includes(that.value ?? '') : that.value != null) return false;
     return this.action != null ? this.action == that.action : that.action == null;
   }
 

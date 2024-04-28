@@ -32,7 +32,7 @@ export default class BaseCallbackResultImpl<T> implements ICallbackResult<T> {
   }
 
 
-  error(errorCode: string, errorMessage: string, errorDetails: Any) {
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
 
   }
 

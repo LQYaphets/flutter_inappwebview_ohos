@@ -16,6 +16,13 @@ import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
 import { image } from '@kit.ImageKit';
 import { InAppBrowserDelegate } from '../../in_app_browser/InAppBrowserDelegate';
 import WebResourceErrorExt from '../../types/WebResourceErrorExt';
+import Util from '../../Util';
+import { JsAlertCallback, JsConfirmCallback, JsPromptCallback } from '../WebViewChannelDelegate';
+import JsAlertResponse from '../../types/JsAlertResponse';
+import JsConfirmResponse from '../../types/JsConfirmResponse';
+import JsPromptResponse from '../../types/JsPromptResponse';
+import { ohosPromptDialogBuilder } from './OhosPromptDialog';
+import { promptAction } from '@kit.ArkUI';
 
 const TAG = "InAppWebViewChromeClient";
 
@@ -34,6 +41,10 @@ export default class InAppWebViewChromeClient {
 
   onAlert = (event: Any) => {
     Log.d(TAG, "onAlert=" + JSON.stringify(event))
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onJsAlert(event.url, event.message, null, new InnerJsAlertCallback(event.result, event.message));
+      return true;
+    }
     return false;
   }
   onBeforeUnload = (event: Any) => {
@@ -42,15 +53,26 @@ export default class InAppWebViewChromeClient {
   }
   onConfirm = (event: Any) => {
     Log.d(TAG, "onConfirm=" + JSON.stringify(event))
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onJsConfirm(event.url, event.message, null, new InnerJsConfirmCallback(event.result, event.message));
+      return true;
+    }
     return false;
   }
-  onPrompt = (event: Any) => {
+  onPrompt = (event: Any, uiObject: Any) => {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
-    return false;
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null, new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
+      return true;
+    }
+    return true;
   }
   onConsole = (event: Any) => {
-    Log.d(TAG, "onPrompt=" + JSON.stringify(event))
-    return false;
+    Log.d(TAG, "onConsole=" + JSON.stringify(event))
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onConsoleMessage(event.message.getMessage(), event.message.getMessageLevel());
+    }
+    return true;
   }
   onDownloadStart = (event: Any) => { //对应安卓setDownloadListener
     Log.d(TAG, "onDownloadStart=" + JSON.stringify(event))
@@ -95,6 +117,11 @@ export default class InAppWebViewChromeClient {
   }
   onHttpErrorReceive = (event: Any) => {
     Log.d(TAG, "onHttpErrorReceive=" + JSON.stringify(event))
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedHttpError(
+        WebResourceRequestExt.fromWebResourceRequest(event.request),
+        WebResourceResponseExt.fromWebResourceResponse(event.response));
+    }
   }
   onPageBegin = (event: Any) => {
     Log.d(TAG, "onPageBegin=" + JSON.stringify(event))
@@ -173,6 +200,11 @@ export default class InAppWebViewChromeClient {
   }
   onScaleChange = (event: Any) => {
     Log.d(TAG, "onScaleChange=" + JSON.stringify(event))
+    this.inAppWebView.zoomScale = event.newScale / Util.getPixelDensity();
+
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onZoomScaleChanged(event.oldScale, event.newScale);
+    }
   }
   onInterceptRequest = async (event: Any) => { //对应安卓shouldInterceptRequest
     let request = WebResourceRequestExt.fromWebResourceRequest(event.request);
@@ -400,5 +432,216 @@ export default class InAppWebViewChromeClient {
   private loadCustomJavaScriptOnPageFinished(webView: InAppWebView) {
     let source = webView.userContentController.generateWrappedCodeForDocumentEnd();
     webView.controller.runJavaScriptExt(source)
+  }
+}
+
+class InnerJsAlertCallback extends JsAlertCallback {
+  private result: JsResult;
+  private message: string;
+
+  constructor(result: JsResult, message: string) {
+    super();
+    this.result = result;
+    this.message = message;
+  }
+
+  nonNullSuccess(response: JsAlertResponse): boolean {
+    if (response.isHandledByClient()) {
+      let action = response.getAction();
+      action = action != null ? action : 1;
+      switch (action) {
+        case 0:
+          this.result.handleConfirm();
+          break;
+        case 1:
+        default:
+          this.result.handleCancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(response: JsAlertResponse | null): void {
+    let responseMessage: string | null = null;
+    let confirmButtonTitle: string | null = null;
+    if (response != null) {
+      responseMessage = response.getMessage();
+      confirmButtonTitle = response.getConfirmButtonTitle();
+    }
+    this.createAlertDialog(this.message, this.result, responseMessage, confirmButtonTitle);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.result.handleCancel();
+  }
+
+  private createAlertDialog(message: string, result: JsResult, responseMessage: string | null, confirmButtonTitle: string | null) {
+    let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
+    AlertDialog.show(
+      {
+        message: alertMessage,
+        autoCancel: true,
+        alignment: DialogAlignment.Center,
+        confirm: {
+          value: confirmButtonTitle != null ? confirmButtonTitle : "确定",
+          action: () => {
+            result.handleConfirm()
+          }
+        },
+        cancel: () => {
+          result.handleCancel()
+        }
+      }
+    )
+  }
+}
+
+class InnerJsConfirmCallback extends JsConfirmCallback {
+  private result: JsResult;
+  private message: string;
+
+  constructor(result: JsResult, message: string) {
+    super();
+    this.result = result;
+    this.message = message;
+  }
+
+  nonNullSuccess(response: JsConfirmResponse): boolean {
+    if (response.isHandledByClient()) {
+      let action = response.getAction();
+      action = action != null ? action : 1;
+      switch (action) {
+        case 0:
+          this.result.handleConfirm();
+          break;
+        case 1:
+        default:
+          this.result.handleCancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(response: JsConfirmResponse | null): void {
+    let responseMessage: string | null = null;
+    let confirmButtonTitle: string | null = null;
+    let cancelButtonTitle: string | null = null;
+    if (response != null) {
+      responseMessage = response.getMessage();
+      confirmButtonTitle = response.getConfirmButtonTitle();
+      cancelButtonTitle = response.getCancelButtonTitle();
+    }
+    this.createConfirmDialog(this.message, this.result, responseMessage, confirmButtonTitle, cancelButtonTitle);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.result.handleCancel();
+  }
+
+  private createConfirmDialog(message: string, result: JsResult, responseMessage: string | null,
+                              confirmButtonTitle: string | null, cancelButtonTitle: string | null) {
+    let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
+    AlertDialog.show(
+      {
+        message: alertMessage,
+        autoCancel: true,
+        alignment: DialogAlignment.Center,
+        primaryButton: {
+          value: cancelButtonTitle != null ? cancelButtonTitle : "取消",
+          action: () => {
+            result.handleCancel()
+          }
+        },
+        secondaryButton: {
+          defaultFocus: true,
+          value: confirmButtonTitle != null ? confirmButtonTitle : "确定",
+          action: () => {
+            result.handleConfirm()
+          }
+        },
+        cancel: () => {
+          result.handleCancel()
+        }
+      }
+    )
+  }
+}
+
+class InnerJsPromptCallback extends JsPromptCallback {
+  private result: JsResult;
+  private message: string;
+  private defaultValue: string;
+  private uiObject: Any;
+
+  constructor(result: JsResult, message: string, defaultValue: string, uiObject: Any) {
+    super();
+    this.result = result;
+    this.message = message;
+    this.defaultValue = defaultValue;
+    this.uiObject = uiObject;
+  }
+
+  nonNullSuccess(response: JsPromptResponse): boolean {
+    if (response.isHandledByClient()) {
+      let action = response.getAction();
+      action = action != null ? action : 1;
+      switch (action) {
+        case 0:
+          this.result.handlePromptConfirm(response.getValue());
+          break;
+        case 1:
+        default:
+          this.result.handleCancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(response: JsPromptResponse | null): void {
+    let responseMessage: string | null = null;
+    let responseDefaultValue: string | null = null;
+    let value: string | null = null;
+    let confirmButtonTitle: string | null = null;
+    let cancelButtonTitle: string | null = null;
+    if (response != null) {
+      responseMessage = response.getMessage();
+      responseDefaultValue = response.getDefaultValue();
+      value = response.getValue();
+      confirmButtonTitle = response.getConfirmButtonTitle();
+      cancelButtonTitle = response.getCancelButtonTitle();
+    }
+    this.createPromptDialog(this.message, this.defaultValue, this.result, responseMessage, responseDefaultValue, value, cancelButtonTitle, confirmButtonTitle);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.result.handleCancel();
+  }
+
+  private createPromptDialog(message: string, defaultValue: string, result: JsResult, responseMessage: string | null,
+                             responseDefaultValue: string | null, value: string | null, cancelButtonTitle: string | null,
+                             confirmButtonTitle: string | null) {
+    let initValue = (responseDefaultValue != null && responseDefaultValue.length > 0) ? responseDefaultValue : defaultValue;
+    let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
+    let finalValue = value;
+    let customDialogId = -1;
+    //TODO 这里存在一个缺陷，就是点击空白弹窗消失没办法监听所以没办法调用到cancel方法会知道存在bug 需要再API12才可支持 需要后续完善
+    promptAction.openCustomDialog({
+      builder: ohosPromptDialogBuilder.bind(this.uiObject, initValue, alertMessage, cancelButtonTitle, confirmButtonTitle, () => {
+        result.handleCancel()
+        promptAction.closeCustomDialog(customDialogId)
+      }, (value: string | null) => {
+        promptAction.closeCustomDialog(customDialogId)
+        result.handlePromptConfirm(finalValue != null ? finalValue : value);
+      }),
+      alignment: DialogAlignment.Center
+    }).then((dialogId: number) => {
+      customDialogId = dialogId
+    })
   }
 }

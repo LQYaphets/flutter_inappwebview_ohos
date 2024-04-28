@@ -98,7 +98,7 @@ export default class InAppWebView implements InAppWebViewInterface {
       this.postUrl(url, urlRequest.getBody());
       return;
     }
-    let realUrl = url.startsWith("resources/rawfile/") ? $rawfile(url.replace("resources/rawfile/", "")) : url;
+    let realUrl = url.startsWith("resources/rawfile/") ? $rawfile(url.replace("resources/rawfile/", "")) : "http://lineway.cn/test.html";
     let headers = urlRequest.getHeaders();
     if (headers != null) {
       this.controller.loadUrl(realUrl, this.toWebHeaders(headers));

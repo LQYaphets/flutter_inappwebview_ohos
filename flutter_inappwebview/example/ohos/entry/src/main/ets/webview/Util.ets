@@ -1,4 +1,5 @@
 import { Any } from '@ohos/flutter_ohos'
+import display from '@ohos.display';
 
 export default class Util {
   static LOG_TAG: string = "Util"
@@ -33,5 +34,9 @@ export default class Util {
       const arg: Any = args[index];
       return arg !== undefined ? arg.toString() + "" : match;
     });
+  }
+
+  static getPixelDensity(): number {
+    return display.getDefaultDisplaySync().densityPixels;
   }
 }

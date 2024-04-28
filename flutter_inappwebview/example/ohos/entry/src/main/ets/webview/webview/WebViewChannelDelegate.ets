@@ -728,7 +728,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     channel.invokeMethod("onExitFullscreen", obj);
   }
 
-  public onJsAlert(url: string, message: string, isMainFrame: boolean, callback: JsAlertCallback): void {
+  public onJsAlert(url: string, message: string, isMainFrame: boolean | null, callback: JsAlertCallback): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) {
       callback.defaultBehaviour(null);
@@ -741,7 +741,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     channel.invokeMethod("onJsAlert", obj, callback);
   }
 
-  public onJsConfirm(url: string, message: string, isMainFrame: boolean, callback: JsConfirmCallback): void {
+  public onJsConfirm(url: string, message: string, isMainFrame: boolean | null, callback: JsConfirmCallback): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) {
       callback.defaultBehaviour(null);
@@ -751,10 +751,10 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     obj.set("url", url);
     obj.set("message", message);
     obj.set("isMainFrame", isMainFrame);
-    channel.invokeMethod("onJsAlert", obj, callback);
+    channel.invokeMethod("onJsConfirm", obj, callback);
   }
 
-  public onJsPrompt(url: string, message: string, defaultValue: string, isMainFrame: boolean, callback: JsConfirmCallback): void {
+  public onJsPrompt(url: string, message: string, defaultValue: string, isMainFrame: boolean | null, callback: JsPromptCallback): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) {
       callback.defaultBehaviour(null);
@@ -765,7 +765,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     obj.set("message", message);
     obj.set("defaultValue", defaultValue);
     obj.set("isMainFrame", isMainFrame);
-    channel.invokeMethod("onJsAlert", obj, callback);
+    channel.invokeMethod("onJsPrompt", obj, callback);
   }
 
   public onJsBeforeUnload(url: string, message: string, callback: JsBeforeUnloadCallback): void {
@@ -983,6 +983,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     obj.set("url", url);
     obj.set("printJobId", printJobId);
     channel.invokeMethod("onPrintRequest", obj, callback);
+  }
+
+  onZoomScaleChanged(oldScale: number, newScale: number) {
+    let channel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("oldScale", oldScale);
+    obj.set("newScale", newScale);
+    channel.invokeMethod("onZoomScaleChanged", obj);
   }
 }
 
