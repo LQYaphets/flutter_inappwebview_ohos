@@ -1,5 +1,7 @@
 import { Any, Log } from '@ohos/flutter_ohos';
 import web_webview from '@ohos.web.webview';
+import cameraPicker from '@ohos.multimedia.cameraPicker';
+import picker from '@ohos.file.picker';
 import uri from '@ohos.uri'
 import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
 import DownloadStartRequest from '../../types/DownloadStartRequest';
@@ -17,12 +19,21 @@ import { image } from '@kit.ImageKit';
 import { InAppBrowserDelegate } from '../../in_app_browser/InAppBrowserDelegate';
 import WebResourceErrorExt from '../../types/WebResourceErrorExt';
 import Util from '../../Util';
-import { JsAlertCallback, JsConfirmCallback, JsPromptCallback } from '../WebViewChannelDelegate';
+import {
+  JsAlertCallback,
+  JsBeforeUnloadCallback,
+  JsConfirmCallback,
+  JsPromptCallback
+} from '../WebViewChannelDelegate';
 import JsAlertResponse from '../../types/JsAlertResponse';
 import JsConfirmResponse from '../../types/JsConfirmResponse';
 import JsPromptResponse from '../../types/JsPromptResponse';
 import { ohosPromptDialogBuilder } from './OhosPromptDialog';
 import { promptAction } from '@kit.ArkUI';
+import JsBeforeUnloadResponse from '../../types/JsBeforeUnloadResponse';
+import { camera } from '@kit.CameraKit';
+import { BusinessError } from '@kit.BasicServicesKit';
+import MimeTypes from '../../MimeTypes';
 
 const TAG = "InAppWebViewChromeClient";
 
@@ -49,6 +60,10 @@ export default class InAppWebViewChromeClient {
   }
   onBeforeUnload = (event: Any) => {
     Log.d(TAG, "onBeforeUnload=" + JSON.stringify(event))
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onJsBeforeUnload(event.url, event.message, new InnerJsBeforeUnloadCallback(event.result, event.message));
+      return true;
+    }
     return false;
   }
   onConfirm = (event: Any) => {
@@ -190,10 +205,103 @@ export default class InAppWebViewChromeClient {
   }
   onRenderExited = (event: Any) => {
     Log.d(TAG, "onRenderExited=" + JSON.stringify(event))
+    if (this.inAppWebView.customSettings.useOnRenderProcessGone && this.inAppWebView.channelDelegate != null) {
+      let didCrash = event.renderExitReason == RenderExitReason.ProcessCrashed;
+      this.inAppWebView.channelDelegate.onRenderProcessGone(didCrash, event.renderExitReason);
+    }
   }
   onShowFileSelector = (event: Any) => {
     Log.d(TAG, "onShowFileSelector=" + JSON.stringify(event))
-    return false;
+    Log.d(TAG, "onShowFileSelector=" + JSON.stringify(event.fileSelector))
+    let acceptTypes: Array<string> = event.fileSelector.getAcceptType();
+    let allowMultiple = event.fileSelector.getMode() == FileSelectorMode.FileOpenMultipleMode;
+    let captureEnabled: boolean = event.fileSelector.isCapture();
+    let images = this.acceptsImages(acceptTypes);
+    let video = this.acceptsVideo(acceptTypes);
+    if (captureEnabled) {
+      if (!this.needsCameraPermission()) {
+        if (images || video) {
+          let pickerProfile: cameraPicker.PickerProfile = {
+            cameraPosition: camera.CameraPosition.CAMERA_POSITION_BACK
+          };
+          cameraPicker.pick(this.inAppWebView.context, images ? [cameraPicker.PickerMediaType.PHOTO] : [cameraPicker.PickerMediaType.VIDEO], pickerProfile)
+            .then(result => {
+              event.result.handleFileList([result.resultUri]);
+            }).catch((err: BusinessError) => {
+            event.result.handleFileList([]);
+            Log.e(TAG, `the pick call failed. error code: ${err.code}`);
+          });
+          return true;
+        }
+      }
+    }
+
+    //缺少从系统直接选择全部，这里做了一个弹窗选择 这里OHOS存在一个bug。
+    ActionSheet.show({
+      title: '请选择',
+      message: '',
+      autoCancel: true,
+      isModal: true,
+      cancel: () => {
+        Log.d(TAG, 'actionSheet canceled')
+        event.result.handleFileList([]);
+      },
+      alignment: DialogAlignment.Center,
+      offset: {
+        dx: 0, dy: 100
+      },
+      sheets: [
+        {
+          title: '相册',
+          action: () => {
+            Log.d(TAG, 'apples')
+            let photoSelectOptions = new picker.PhotoSelectOptions();
+            photoSelectOptions.MIMEType = (images && video) ? picker.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE :
+              (images ? picker.PhotoViewMIMETypes.IMAGE_TYPE : picker.PhotoViewMIMETypes.VIDEO_TYPE);
+            photoSelectOptions.maxSelectNumber = allowMultiple ? 100000 : 1
+            let photoPicker = new picker.PhotoViewPicker();
+            photoPicker.select(photoSelectOptions).then((photoSelectResult: picker.PhotoSelectResult) => {
+              event.result.handleFileList(photoSelectResult.photoUris);
+              Log.d(TAG, 'PhotoViewPicker.select successfully, photoSelectResult uri: ' + JSON.stringify(photoSelectResult));
+            }).catch((err: BusinessError) => {
+              event.result.handleFileList([]);
+              Log.e(TAG, 'PhotoViewPicker.select failed with err: ' + JSON.stringify(err));
+            });
+          }
+        },
+        {
+          title: '档案',
+          action: () => {
+            let documentPicker = new picker.DocumentViewPicker();
+            let documentSelectOptions = new picker.DocumentSelectOptions();
+            documentSelectOptions.maxSelectNumber = allowMultiple ? 100000 : 1
+            documentSelectOptions.fileSuffixFilters = acceptTypes;
+            documentPicker.select(documentSelectOptions).then((documentSelectResult) => {
+              Log.d(TAG, 'documentViewPicker.select to file succeed and uri is:' + JSON.stringify(documentSelectResult));
+              event.result.handleFileList(documentSelectResult);
+            }).catch((err: BusinessError) => {
+              event.result.handleFileList([]);
+              Log.d(TAG, `Invoke documentViewPicker.select failed, code is ${err.code}, message is ${err.message}`);
+            })
+          }
+        },
+        {
+          title: '音频',
+          action: () => {
+            let audioSelectOptions = new picker.AudioSelectOptions();
+            let audioPicker = new picker.AudioViewPicker();
+            audioPicker.select(audioSelectOptions).then((audioSelectResult: Array<string>) => {
+              event.result.handleFileList(audioSelectResult);
+              Log.d(TAG, 'AudioViewPicker.select successfully, audioSelectResult uri: ' + JSON.stringify(audioSelectResult));
+            }).catch((err: BusinessError) => {
+              Log.d(TAG, 'AudioViewPicker.select failed with err: ' + JSON.stringify(err));
+              event.result.handleFileList([]);
+            });
+          }
+        }
+      ]
+    })
+    return true;
   }
   onResourceLoad = (event: Any) => {
     Log.d(TAG, "onResourceLoad=" + JSON.stringify(event))
@@ -213,7 +321,6 @@ export default class InAppWebViewChromeClient {
       try {
         let url = new uri.URI(request.getUrl());
         let webResourceResponse = await this.inAppWebView.webViewAssetLoaderExt.loader.shouldInterceptRequest(url);
-        Log.d(TAG, "onInterceptRequestend= webResourceResponse=" + webResourceResponse)
         if (webResourceResponse != null) {
           return webResourceResponse;
         }
@@ -433,6 +540,66 @@ export default class InAppWebViewChromeClient {
     let source = webView.userContentController.generateWrappedCodeForDocumentEnd();
     webView.controller.runJavaScriptExt(source)
   }
+
+  private needsCameraPermission(): boolean {
+    return false
+  }
+
+  private acceptsVideo(types: Array<string>): boolean {
+    let mimeTypes = this.getAcceptedMimeType(types);
+    return this.acceptsAny(mimeTypes) || this.arrayContainsString(mimeTypes, "video");
+  }
+
+  private acceptsImages(types: Array<string>): boolean {
+    let mimeTypes = this.getAcceptedMimeType(types);
+    return this.acceptsAny(mimeTypes) || this.arrayContainsString(mimeTypes, "image");
+  }
+
+  private getAcceptedMimeType(types: Array<string>): Array<string> {
+    if (this.isArrayEmpty(types)) {
+      return ["*/*"];
+    }
+    let mimeTypes = new Array<string>();
+    for (let i = 0; i < types.length; i++) {
+      let t = types[i];
+      // convert file extensions to mime types
+      if (t.indexOf(".") > -1) {
+        let mimeType = MimeTypes.getMimeTypeFromExtension(t.replace(".", ""));
+        mimeTypes[i] = mimeType;
+      } else {
+        mimeTypes[i] = t;
+      }
+    }
+    return mimeTypes;
+  }
+
+  private acceptsAny(types: Array<string>) {
+    if (this.isArrayEmpty(types)) {
+      return true;
+    }
+    for (let type of types) {
+      if (type == "*/*") {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private arrayContainsString(array: Array<string>, pattern: string): boolean {
+    for (let content of array) {
+      if (content != null && content.indexOf(pattern) > -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private isArrayEmpty(arr: Array<string>): boolean {
+    // when our array returned from getAcceptTypes() has no values set from the webview
+    // i.e. <input type="file" />, without any "accept" attr
+    // will be an array with one empty string element, afaik
+    return arr.length == 0 || (arr.length == 1 && arr[0].length == 0);
+  }
 }
 
 class InnerJsAlertCallback extends JsAlertCallback {
@@ -643,5 +810,78 @@ class InnerJsPromptCallback extends JsPromptCallback {
     }).then((dialogId: number) => {
       customDialogId = dialogId
     })
+  }
+}
+
+class InnerJsBeforeUnloadCallback extends JsBeforeUnloadCallback {
+  private result: JsResult;
+  private message: string;
+
+  constructor(result: JsResult, message: string) {
+    super();
+    this.result = result;
+    this.message = message;
+  }
+
+  nonNullSuccess(response: JsBeforeUnloadResponse): boolean {
+    if (response.isHandledByClient()) {
+      let action = response.getAction();
+      action = action != null ? action : 1;
+      switch (action) {
+        case 0:
+          this.result.handleConfirm();
+          break;
+        case 1:
+        default:
+          this.result.handleCancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(response: JsBeforeUnloadResponse | null): void {
+    let responseMessage: string | null = null;
+    let confirmButtonTitle: string | null = null;
+    let cancelButtonTitle: string | null = null;
+    if (response != null) {
+      responseMessage = response.getMessage();
+      confirmButtonTitle = response.getConfirmButtonTitle();
+      cancelButtonTitle = response.getCancelButtonTitle();
+    }
+    this.createBeforeUnloadDialog(this.message, this.result, responseMessage, confirmButtonTitle, cancelButtonTitle);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.result.handleCancel();
+  }
+
+  private createBeforeUnloadDialog(message: string, result: JsResult, responseMessage: string | null,
+                                   confirmButtonTitle: string | null, cancelButtonTitle: string | null) {
+    let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
+    AlertDialog.show(
+      {
+        message: alertMessage,
+        autoCancel: true,
+        alignment: DialogAlignment.Center,
+        primaryButton: {
+          value: cancelButtonTitle != null ? cancelButtonTitle : "取消",
+          action: () => {
+            result.handleCancel()
+          }
+        },
+        secondaryButton: {
+          defaultFocus: true,
+          value: confirmButtonTitle != null ? confirmButtonTitle : "确定",
+          action: () => {
+            result.handleConfirm()
+          }
+        },
+        cancel: () => {
+          result.handleCancel()
+        }
+      }
+    )
   }
 }

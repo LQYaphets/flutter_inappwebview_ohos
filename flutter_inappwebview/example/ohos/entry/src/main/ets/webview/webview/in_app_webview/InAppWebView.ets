@@ -45,7 +45,7 @@ const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
 
 export default class InAppWebView implements InAppWebViewInterface {
-  private context: Context;
+  public context: Context;
   public plugin: InAppWebViewFlutterPlugin;
   private id: number;
   private windowId: number | null | undefined;

@@ -4,6 +4,7 @@ import {
   FlutterPlugin,
   FlutterPluginBinding
 } from '@ohos/flutter_ohos/src/main/ets/embedding/engine/plugins/FlutterPlugin';
+import MyCookieManager from './MyCookieManager';
 import PrintJobManager from './print_job/PrintJobManager';
 import FlutterWebViewFactory from './webview/FlutterWebViewFactory';
 
@@ -14,6 +15,7 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
   public flutterWebViewFactory: FlutterWebViewFactory | null = null
   public messenger: BinaryMessenger | null = null
   public printJobManager: PrintJobManager | null = null;
+  public myCookieManager: MyCookieManager | null = null;
 
   constructor() {
   }
@@ -29,6 +31,7 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
     this.messenger = binding.getBinaryMessenger();
     binding.getPlatformViewRegistry().registerViewFactory(FlutterWebViewFactory.VIEW_TYPE_ID, this.flutterWebViewFactory);
 
+    this.myCookieManager = new MyCookieManager(this);
     this.printJobManager = new PrintJobManager(this);
   }
 
@@ -36,6 +39,10 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
     if (this.printJobManager != null) {
       this.printJobManager.dispose();
       this.printJobManager = null;
+    }
+    if (this.myCookieManager != null) {
+      this.myCookieManager.dispose();
+      this.myCookieManager = null;
     }
   }
 }

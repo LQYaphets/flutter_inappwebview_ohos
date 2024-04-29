@@ -777,7 +777,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     obj.set("message", message);
-    channel.invokeMethod("onJsAlert", obj, callback);
+    channel.invokeMethod("onJsBeforeUnload", obj, callback);
   }
 
   public onCreateWindow(createWindowAction: CreateWindowAction, callback: CreateWindowCallback) {
@@ -992,6 +992,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     obj.set("oldScale", oldScale);
     obj.set("newScale", newScale);
     channel.invokeMethod("onZoomScaleChanged", obj);
+  }
+
+  onRenderProcessGone(didCrash: boolean, rendererPriorityAtExit: number) {
+    let channel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("didCrash", didCrash);
+    obj.set("rendererPriorityAtExit", rendererPriorityAtExit);
+    channel.invokeMethod("onRenderProcessGone", obj);
   }
 }
 

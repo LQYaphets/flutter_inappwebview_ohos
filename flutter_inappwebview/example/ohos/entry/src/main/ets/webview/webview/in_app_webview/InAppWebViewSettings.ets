@@ -54,6 +54,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public useShouldOverrideUrlLoading: boolean = false;
   public regexToCancelSubFramesLoading: string | null = null;
   public disableDefaultErrorPage: boolean = false;
+  public useOnRenderProcessGone: boolean = false;
 
   parse(settings: Map<string, Any>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -243,6 +244,9 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "disableDefaultErrorPage":
           this.disableDefaultErrorPage = value;
           break;
+        case "useOnRenderProcessGone":
+          this.useOnRenderProcessGone = value;
+          break;
       }
     }
     return this;
@@ -298,6 +302,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("useShouldOverrideUrlLoading", this.useShouldOverrideUrlLoading);
     settings.set("regexToCancelSubFramesLoading", this.regexToCancelSubFramesLoading);
     settings.set("disableDefaultErrorPage", this.disableDefaultErrorPage);
+    settings.set("useOnRenderProcessGone", this.useOnRenderProcessGone);
     return settings;
   }
 
