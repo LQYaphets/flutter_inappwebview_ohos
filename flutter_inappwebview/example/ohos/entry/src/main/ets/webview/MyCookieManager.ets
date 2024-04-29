@@ -83,98 +83,80 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   public setCookie(url: string, name: string, value: string, domain: string, path: string,
                    expiresDate: number | null, maxAge: number, isSecure: boolean, isHttpOnly: boolean, sameSite: string, result: MethodResult): void {
 
-    let cookieValue: string = name + "=" + value + "; Path=" + path
-
-    if (domain != null)
-      cookieValue += "; Domain=" + domain;
-
-    if (expiresDate != null)
-      cookieValue += "; Expires=" + this.getCookieExpirationDate(expiresDate);
-
-    if (maxAge != null)
-      cookieValue += "; Max-Age=" + maxAge.toString();
-
-    if (isSecure != null && isSecure)
-      cookieValue += "; Secure";
-
-    if (isHttpOnly != null && isHttpOnly)
-      cookieValue += "; HttpOnly";
-
-    if (sameSite != null)
-      cookieValue += "; SameSite=" + sameSite;
-
-    cookieValue += ";";
+    if(web_webview.WebCookieManager.existCookie() == null) {
+      result.success(false)
+      return
+    }
 
     try {
-      web_webview.WebCookieManager.configCookieSync(url, cookieValue);
-      result.success(true);
+      web_webview.WebCookieManager.configCookie(url, "name=" + name)
+      web_webview.WebCookieManager.configCookie(url, "value=" + value)
+      web_webview.WebCookieManager.configCookie(url, "path=" + path)
+      if (domain != null) web_webview.WebCookieManager.configCookie(url, "Domain=" + domain)
+      if (expiresDate != null) web_webview.WebCookieManager.configCookie(url, "Expires=" + this.getCookieExpirationDate(expiresDate))
+      if (maxAge != null) web_webview.WebCookieManager.configCookie(url, "Max-Age=" + maxAge.toString())
+      if (isSecure != null && isSecure) web_webview.WebCookieManager.configCookie(url, "Secure=" + isSecure)
+      if (isHttpOnly != null && isHttpOnly) web_webview.WebCookieManager.configCookie(url, "HttpOnly=" + isHttpOnly)
+      if (sameSite != null) web_webview.WebCookieManager.configCookie(url, "SameSite=" + sameSite)
     } catch (error) {
-      let e:business_error.BusinessError = error as business_error.BusinessError;
-      console.error(`ErrorCode: ${e.code},  Message: ${e.message}`);
+      let e: business_error.BusinessError = error as business_error.BusinessError
+      console.error(`ErrorCode: ${e.code},  Message: ${e.message}`)
     }
+
+    result.success(true)
   }
 
   public async getCookies(url: string): Promise<List<Map<string, Any>>> {
     let cookieListMap: List<Map<string, Any>> = new List<Map<string, Any>>()
 
+    if(web_webview.WebCookieManager.existCookie() == null) return cookieListMap
+
     let cookiesString: string = web_webview.WebCookieManager.fetchCookieSync(url)
+    let cookieMap: Map<string, Any> = new Map<string, Any>()
+    cookieMap.set("expiresDate", null);
+    cookieMap.set("isSessionOnly", null);
+    cookieMap.set("domain", null);
+    cookieMap.set("sameSite", null);
+    cookieMap.set("isSecure", false);
+    cookieMap.set("isHttpOnly", false);
+    cookieMap.set("path", null);
     for(let cookiesValue of cookiesString.split(";")) {
-      let cookieParams: string[] = cookiesValue.split(";")
-      if (cookieParams.length == 0) continue
-
-      let nameValue: string[] = cookieParams[0].split("=", 2)
-      let name: string = nameValue[0].trim()
-      let value: string =  (nameValue.length > 1) ? nameValue[1].trim() : ""
-
-      let cookieMap: Map<string, Any> = new Map<string, Any>()
-      cookieMap.set("name", name);
-      cookieMap.set("value", value);
-      cookieMap.set("expiresDate", null);
-      cookieMap.set("isSessionOnly", null);
-      cookieMap.set("domain", null);
-      cookieMap.set("sameSite", null);
-      cookieMap.set("isSecure", false);
-      cookieMap.set("isHttpOnly", false);
-      cookieMap.set("path", null);
-
-      for (let i: number = 1; i < cookieParams.length; i++) {
-        let cookieParamNameValue: string[] = cookieParams[i].split("=", 2)
-        let cookieParamName: string = cookieParamNameValue[0].trim()
-        let cookieParamValue: string = (cookieParamNameValue.length > 1) ? cookieParamNameValue[1].trim() : ""
-
-        if (cookieParamName.localeCompare("Expires")) {
-          try{
-            let dateFormat = new Intl.DateTimeFormat("en-US", {weekday: 'short', day: '2-digit',
-              month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT'})
-            let expiryDate: Date = new Date(dateFormat.format(new Date(cookieParamValue)))
-            if(expiryDate != null) {
-              cookieMap.set("expiresDate", expiryDate.getTime());
-            }
-          } catch (e) {
-            console.error(LOG_TAG, "", e);
+      if (cookiesValue.split("=")[0].trim() == "name") {
+        cookieMap.set("name", cookiesValue.split("=")[1].trim())
+      } else if (cookiesValue.split("=")[0].trim() == "value") {
+        cookieMap.set("value", cookiesValue.split("=")[1].trim())
+      } else if (cookiesValue.split("=")[0].trim() == "Expires") {
+        try{
+          let dateFormat = new Intl.DateTimeFormat("en-US", {weekday: 'short', day: '2-digit',
+            month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT'})
+          let expiryDate: Date = new Date(dateFormat.format(new Date(cookiesValue.split("=")[1].trim())))
+          if(expiryDate != null) {
+            cookieMap.set("expiresDate", expiryDate.getTime());
           }
-        } else if (cookieParamName.localeCompare("Max-Age")) {
-          try {
-              let maxAge: number = Number(cookieParamValue);
-              cookieMap.set("expiresDate", await systemDateTime.getCurrentTime(false) + maxAge);
-            } catch (e) {
-            console.error(LOG_TAG, "", e);
-            }
-        } else if (cookieParamName.localeCompare("Domain")) {
-          cookieMap.set("domain", cookieParamValue);
-        } else if (cookieParamName.localeCompare("SameSite")) {
-          cookieMap.set("sameSite", cookieParamValue);
-        } else if (cookieParamName.localeCompare("Secure")) {
-          cookieMap.set("isSecure", true);
-        } else if (cookieParamName.localeCompare("HttpOnly")) {
-          cookieMap.set("isHttpOnly", true);
-        } else if (cookieParamName.localeCompare("Path")) {
-          cookieMap.set("path", cookieParamValue);
+        } catch (e) {
+          console.error(LOG_TAG, "", e);
         }
+      } else if (cookiesValue.split("=")[0].trim() == "Max-Age") {
+        try {
+          let maxAge: number = Number(cookiesValue.split("=")[1].trim());
+          cookieMap.set("expiresDate", await systemDateTime.getCurrentTime(false) + maxAge);
+        } catch (e) {
+          console.error(LOG_TAG, "", e);
+        }
+      } else if (cookiesValue.split("=")[0].trim() == "Domain") {
+        cookieMap.set("domain", cookiesValue.split("=")[1].trim());
+      } else if (cookiesValue.split("=")[0].trim() == "SameSite") {
+        cookieMap.set("sameSite", cookiesValue.split("=")[1].trim());
+      } else if (cookiesValue.split("=")[0].trim() == "Secure") {
+        cookieMap.set("isSecure", true);
+      } else if (cookiesValue.split("=")[0].trim() == "HttpOnly") {
+        cookieMap.set("isHttpOnly", true);
+      } else if (cookiesValue.split("=")[0].trim() == "Path") {
+        cookieMap.set("path", cookiesValue.split("=")[1].trim());
       }
-
-      cookieListMap.add(cookieMap);
     }
+
+    cookieListMap.add(cookieMap)
 
     return cookieListMap
   }

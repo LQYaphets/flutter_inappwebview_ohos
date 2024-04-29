@@ -15,7 +15,7 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
   public flutterWebViewFactory: FlutterWebViewFactory | null = null
   public messenger: BinaryMessenger | null = null
   public printJobManager: PrintJobManager | null = null;
-  public myCookieManager: MyCookieManager | null = null;
+  public myCookieManager: MyCookieManager | null = null
 
   constructor() {
   }
@@ -26,12 +26,13 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
 
   onAttachedToEngine(binding: FlutterPluginBinding): void {
     Log.d(TAG, "onAttachedToEngine")
+    this.messenger = binding.getBinaryMessenger()
     this.flutterAssets = binding.getFlutterAssets();
     this.flutterWebViewFactory = new FlutterWebViewFactory(this);
     this.messenger = binding.getBinaryMessenger();
     binding.getPlatformViewRegistry().registerViewFactory(FlutterWebViewFactory.VIEW_TYPE_ID, this.flutterWebViewFactory);
 
-    this.myCookieManager = new MyCookieManager(this);
+    this.myCookieManager = new MyCookieManager(this)
     this.printJobManager = new PrintJobManager(this);
   }
 
