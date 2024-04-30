@@ -83,35 +83,29 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   public setCookie(url: string, name: string, value: string, domain: string, path: string,
                    expiresDate: number | null, maxAge: number, isSecure: boolean, isHttpOnly: boolean, sameSite: string, result: MethodResult): void {
 
-    if(web_webview.WebCookieManager.existCookie() == null) {
-      result.success(false)
-      return
-    }
-
     try {
-      web_webview.WebCookieManager.configCookie(url, "name=" + name)
-      web_webview.WebCookieManager.configCookie(url, "value=" + value)
-      web_webview.WebCookieManager.configCookie(url, "path=" + path)
+      web_webview.WebCookieManager.configCookie(url, name + "=" + value)
+      web_webview.WebCookieManager.configCookie(url, "Path=" + path)
       if (domain != null) web_webview.WebCookieManager.configCookie(url, "Domain=" + domain)
       if (expiresDate != null) web_webview.WebCookieManager.configCookie(url, "Expires=" + this.getCookieExpirationDate(expiresDate))
       if (maxAge != null) web_webview.WebCookieManager.configCookie(url, "Max-Age=" + maxAge.toString())
       if (isSecure != null && isSecure) web_webview.WebCookieManager.configCookie(url, "Secure=" + isSecure)
       if (isHttpOnly != null && isHttpOnly) web_webview.WebCookieManager.configCookie(url, "HttpOnly=" + isHttpOnly)
       if (sameSite != null) web_webview.WebCookieManager.configCookie(url, "SameSite=" + sameSite)
+      result.success(true)
     } catch (error) {
       let e: business_error.BusinessError = error as business_error.BusinessError
       console.error(`ErrorCode: ${e.code},  Message: ${e.message}`)
+      result.success(false)
     }
 
-    result.success(true)
   }
 
   public async getCookies(url: string): Promise<List<Map<string, Any>>> {
     let cookieListMap: List<Map<string, Any>> = new List<Map<string, Any>>()
 
-    if(web_webview.WebCookieManager.existCookie() == null) return cookieListMap
-
     let cookiesString: string = web_webview.WebCookieManager.fetchCookieSync(url)
+
     let cookieMap: Map<string, Any> = new Map<string, Any>()
     cookieMap.set("expiresDate", null);
     cookieMap.set("isSessionOnly", null);
@@ -121,11 +115,7 @@ export default class MyCookieManager extends ChannelDelegateImpl {
     cookieMap.set("isHttpOnly", false);
     cookieMap.set("path", null);
     for(let cookiesValue of cookiesString.split(";")) {
-      if (cookiesValue.split("=")[0].trim() == "name") {
-        cookieMap.set("name", cookiesValue.split("=")[1].trim())
-      } else if (cookiesValue.split("=")[0].trim() == "value") {
-        cookieMap.set("value", cookiesValue.split("=")[1].trim())
-      } else if (cookiesValue.split("=")[0].trim() == "Expires") {
+      if (cookiesValue.split("=")[0].trim().localeCompare("Expires", undefined, { sensitivity: 'accent' })) {
         try{
           let dateFormat = new Intl.DateTimeFormat("en-US", {weekday: 'short', day: '2-digit',
             month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT'})
@@ -136,23 +126,26 @@ export default class MyCookieManager extends ChannelDelegateImpl {
         } catch (e) {
           console.error(LOG_TAG, "", e);
         }
-      } else if (cookiesValue.split("=")[0].trim() == "Max-Age") {
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Max-Age", undefined, { sensitivity: 'accent' })) {
         try {
           let maxAge: number = Number(cookiesValue.split("=")[1].trim());
-          cookieMap.set("expiresDate", await systemDateTime.getCurrentTime(false) + maxAge);
+          cookieMap.set("expiresDate", await systemDateTime.getCurrentTime(false) + maxAge)
         } catch (e) {
-          console.error(LOG_TAG, "", e);
+          console.error(LOG_TAG, "", e)
         }
-      } else if (cookiesValue.split("=")[0].trim() == "Domain") {
-        cookieMap.set("domain", cookiesValue.split("=")[1].trim());
-      } else if (cookiesValue.split("=")[0].trim() == "SameSite") {
-        cookieMap.set("sameSite", cookiesValue.split("=")[1].trim());
-      } else if (cookiesValue.split("=")[0].trim() == "Secure") {
-        cookieMap.set("isSecure", true);
-      } else if (cookiesValue.split("=")[0].trim() == "HttpOnly") {
-        cookieMap.set("isHttpOnly", true);
-      } else if (cookiesValue.split("=")[0].trim() == "Path") {
-        cookieMap.set("path", cookiesValue.split("=")[1].trim());
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Domain", undefined, { sensitivity: 'accent' })) {
+        cookieMap.set("domain", cookiesValue.split("=")[1].trim())
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("SameSite", undefined, { sensitivity: 'accent' })) {
+        cookieMap.set("sameSite", cookiesValue.split("=")[1].trim())
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Secure", undefined, { sensitivity: 'accent' })) {
+        cookieMap.set("isSecure", true)
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("HttpOnly", undefined, { sensitivity: 'accent' })) {
+        cookieMap.set("isHttpOnly", true)
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Path", undefined, { sensitivity: 'accent' })) {
+        cookieMap.set("path", cookiesValue.split("=")[1].trim())
+      } else {
+        cookieMap.set("name", cookiesValue.split("=")[0].trim())
+        cookieMap.set("value", cookiesValue.split("=")[1].trim())
       }
     }
 
@@ -162,34 +155,29 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public deleteCookie(url: string, name: string, domain: string, path: string, result: MethodResult): void {
-
-    let cookieValue: string = name + "=; Path=" + path + "; Max-Age=-1"
-
-    if (domain != null)
-      cookieValue += "; Domain=" + domain;
-
-    cookieValue += ";";
-
-    web_webview.WebCookieManager.configCookieSync(url, cookieValue)
-    result.success(true)
+    try {
+      web_webview.WebCookieManager.configCookie(url, name + "=")
+      web_webview.WebCookieManager.configCookie(url, "Path=" + path)
+      web_webview.WebCookieManager.configCookie(url, "Max-Age=-1")
+      if (domain != null) web_webview.WebCookieManager.configCookie(url, "Domain=" + domain)
+      result.success(true)
+    } catch (error) {
+      let e: business_error.BusinessError = error as business_error.BusinessError
+      console.error(`ErrorCode: ${e.code},  Message: ${e.message}`)
+    }
   }
 
   public deleteCookies(url: string, domain: string, path: string, result: MethodResult): void {
-
     let cookiesString: string = web_webview.WebCookieManager.fetchCookieSync(url)
     if (cookiesString != null) {
       for(let cookiesValue of cookiesString.split(";")) {
         let nameValue: string[] = cookiesValue.split("=", 2)
         let name: string = nameValue[0].trim()
 
-        let cookieValue: string  = name + "=; Path=" + path + "; Max-Age=-1"
-
-        if (domain != null)
-          cookieValue += "; Domain=" + domain;
-
-        cookieValue += ";";
-
-        web_webview.WebCookieManager.configCookieSync(url, cookieValue)
+        web_webview.WebCookieManager.configCookie(url, name + "=")
+        web_webview.WebCookieManager.configCookie(url, "Path=" + path)
+        web_webview.WebCookieManager.configCookie(url, "Max-Age=-1")
+        if (domain != null) web_webview.WebCookieManager.configCookie(url, "Domain=" + domain)
       }
     }
 
