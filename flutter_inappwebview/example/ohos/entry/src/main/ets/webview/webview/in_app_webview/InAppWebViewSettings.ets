@@ -55,6 +55,9 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public regexToCancelSubFramesLoading: string | null = null;
   public disableDefaultErrorPage: boolean = false;
   public useOnRenderProcessGone: boolean = false;
+  public thirdPartyCookiesEnabled: boolean = true;
+  public applicationNameForUserAgent: string | null = "";
+  public transparentBackground: boolean = false;
 
   parse(settings: Map<string, Any>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -247,6 +250,15 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "useOnRenderProcessGone":
           this.useOnRenderProcessGone = value;
           break;
+        case "thirdPartyCookiesEnabled":
+          this.thirdPartyCookiesEnabled = value;
+          break;
+        case "applicationNameForUserAgent":
+          this.applicationNameForUserAgent = value;
+          break;
+        case "transparentBackground":
+          this.transparentBackground = value;
+          break;
       }
     }
     return this;
@@ -303,13 +315,16 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("regexToCancelSubFramesLoading", this.regexToCancelSubFramesLoading);
     settings.set("disableDefaultErrorPage", this.disableDefaultErrorPage);
     settings.set("useOnRenderProcessGone", this.useOnRenderProcessGone);
+    settings.set("thirdPartyCookiesEnabled", this.thirdPartyCookiesEnabled);
+    settings.set("applicationNameForUserAgent", this.applicationNameForUserAgent);
+    settings.set("transparentBackground", this.transparentBackground);
     return settings;
   }
 
   getRealSettings(inAppWebView: InAppWebViewInterface): Map<string, Any> {
     let controller = inAppWebView.getController();
     let realSettings: Map<string, Any> = this.toMap();
-    realSettings.set("userAgent", controller.getUserAgent());
+    realSettings.set("userAgent", controller.getCustomUserAgent());
     return realSettings;
   }
 

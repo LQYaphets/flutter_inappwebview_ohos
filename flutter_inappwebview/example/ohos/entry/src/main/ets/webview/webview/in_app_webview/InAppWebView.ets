@@ -98,7 +98,7 @@ export default class InAppWebView implements InAppWebViewInterface {
       this.postUrl(url, urlRequest.getBody());
       return;
     }
-    let realUrl = url.startsWith("resources/rawfile/") ? $rawfile(url.replace("resources/rawfile/", "")) : "http://lineway.cn/test.html";
+    let realUrl = url.startsWith("resources/rawfile/") ? $rawfile(url.replace("resources/rawfile/", "")) : url;
     let headers = urlRequest.getHeaders();
     if (headers != null) {
       this.controller.loadUrl(realUrl, this.toWebHeaders(headers));
@@ -295,7 +295,7 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   }
 
-  public evaluateJavascript(source: string, contentWorld: ContentWorld, resultCallback: ValueCallback<string> | null): void {
+  public evaluateJavascript(source: string, contentWorld: ContentWorld | null, resultCallback: ValueCallback<string> | null): void {
     this.injectDeferredObject(source, contentWorld, null, resultCallback);
   }
 
@@ -416,7 +416,8 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public injectDeferredObject(source: string, contentWorld: ContentWorld | null, jsWrapper: string | null, resultCallback: ValueCallback<string> | null): void {
-    let resultUuid: string | null = contentWorld != null && !contentWorld.equals(ContentWorld.PAGE) ? util.generateRandomUUID(true).toString() : null
+    let resultUuid: string | null = contentWorld != null && !contentWorld.equals(ContentWorld.PAGE) ? util.generateRandomUUID(true)
+      .toString() : null
     let scriptToInject: string = source
     if (jsWrapper != null) {
       let jsonEsc = Array<string>();
@@ -508,7 +509,92 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public setSettings(newCustomSettings: InAppWebViewSettings, newSettingsMap: Map<string, Any>): void {
-    throw new Error('Method not implemented.')
+
+    if (newSettingsMap.has("useShouldInterceptAjaxRequest") && this.customSettings.useShouldInterceptAjaxRequest != newCustomSettings.useShouldInterceptAjaxRequest) {
+      this.enablePluginScriptAtRuntime(
+        InterceptAjaxRequestJS.FLAG_VARIABLE_FOR_SHOULD_INTERCEPT_AJAX_REQUEST_JS_SOURCE,
+        newCustomSettings.useShouldInterceptAjaxRequest,
+        InterceptAjaxRequestJS.INTERCEPT_AJAX_REQUEST_JS_PLUGIN_SCRIPT
+      );
+    }
+
+    if (newSettingsMap.has("interceptOnlyAsyncAjaxRequests")&& this.customSettings.interceptOnlyAsyncAjaxRequests != newCustomSettings.interceptOnlyAsyncAjaxRequests) {
+      this.enablePluginScriptAtRuntime(
+        InterceptAjaxRequestJS.FLAG_VARIABLE_FOR_INTERCEPT_ONLY_ASYNC_AJAX_REQUESTS_JS_SOURCE,
+        newCustomSettings.interceptOnlyAsyncAjaxRequests,
+        this.interceptOnlyAsyncAjaxRequestsPluginScript!!
+      );
+    }
+
+    if (newSettingsMap.has("useShouldInterceptFetchRequest")  && this.customSettings.useShouldInterceptFetchRequest != newCustomSettings.useShouldInterceptFetchRequest) {
+      this.enablePluginScriptAtRuntime(
+        InterceptFetchRequestJS.FLAG_VARIABLE_FOR_SHOULD_INTERCEPT_FETCH_REQUEST_JS_SOURCE,
+        newCustomSettings.useShouldInterceptFetchRequest,
+        InterceptFetchRequestJS.INTERCEPT_FETCH_REQUEST_JS_PLUGIN_SCRIPT
+      );
+    }
+
+    if (newSettingsMap.has("useOnLoadResource")  && this.customSettings.useOnLoadResource != newCustomSettings.useOnLoadResource) {
+      this.enablePluginScriptAtRuntime(
+        OnLoadResourceJS.FLAG_VARIABLE_FOR_ON_LOAD_RESOURCE_JS_SOURCE,
+        newCustomSettings.useOnLoadResource,
+        OnLoadResourceJS.ON_LOAD_RESOURCE_JS_PLUGIN_SCRIPT
+      );
+    }
+
+    if (newCustomSettings.contentBlockers != null) {
+      this.contentBlockerHandler.getRuleList().clear();
+      newCustomSettings.contentBlockers.forEach((contentBlocker: Any) => {
+        let trigger = ContentBlockerTrigger.fromMap(contentBlocker.get("trigger"));
+        let action = ContentBlockerAction.fromMap(contentBlocker.get("action"));
+        this.contentBlockerHandler.getRuleList().add(new ContentBlocker(trigger, action));
+      })
+    }
+
+    if (newSettingsMap.has("regexToCancelSubFramesLoading") && (this.customSettings.regexToCancelSubFramesLoading == null ||
+      this.customSettings.regexToCancelSubFramesLoading != newCustomSettings.regexToCancelSubFramesLoading)) {
+      if (newCustomSettings.regexToCancelSubFramesLoading == null)
+        this.regexToCancelSubFramesLoadingCompiled = null;
+      else
+        this.regexToCancelSubFramesLoadingCompiled = new RegExp(newCustomSettings.regexToCancelSubFramesLoading);
+    }
+
+    if (newSettingsMap.has("userAgent") != null && this.customSettings.userAgent != newCustomSettings.userAgent && newCustomSettings.userAgent.length > 0)
+      this.controller.setCustomUserAgent(newCustomSettings.userAgent);
+
+    if (newSettingsMap.has("applicationNameForUserAgent") && this.customSettings.applicationNameForUserAgent != newCustomSettings.applicationNameForUserAgent && newCustomSettings.applicationNameForUserAgent != null &&
+      newCustomSettings.applicationNameForUserAgent.length > 0) {
+      let userAgent = (newCustomSettings.userAgent != null && newCustomSettings.userAgent.length > 0) ? newCustomSettings.userAgent : this.controller.getUserAgent();
+      let userAgentWithApplicationName = userAgent + " " + newCustomSettings.applicationNameForUserAgent;
+      this.controller.setCustomUserAgent(userAgentWithApplicationName);
+    }
+
+    if (this.plugin != null) {
+      if (this.webViewAssetLoaderExt != null) {
+        this.webViewAssetLoaderExt.dispose();
+      }
+      this.webViewAssetLoaderExt = WebViewAssetLoaderExt.fromMap(newCustomSettings.webViewAssetLoader, this.plugin, getContext());
+    }
+    this.customSettings = newCustomSettings;
+    this.onSettinsUpdated()
+  }
+
+  enablePluginScriptAtRuntime(flagVariable: string, enable: boolean, pluginScript: PluginScript) {
+     this.evaluateJavascript("window." + flagVariable, null,  {
+       onReceiveValue: (value) => {
+        let alreadyLoaded = value != null && value.toLowerCase() != "null";
+        if (alreadyLoaded) {
+          let enableSource = "window." + flagVariable + " = " + enable + ";";
+          this.evaluateJavascript(enableSource, null, null);
+          if (!enable) {
+            this.userContentController.removePluginScript(pluginScript);
+          }
+        } else if (enable) {
+          this.evaluateJavascript(pluginScript.getSource(), null, null);
+          this.userContentController.addPluginScript(pluginScript);
+        }
+      }
+    });
   }
 
   public getCustomSettings(): Map<string, Any> | null {
@@ -653,6 +739,19 @@ export default class InAppWebView implements InAppWebViewInterface {
 
     await this.waitControllerAttached()
     this.controller.registerJavaScriptProxy(this.javaScriptBridgeInterface, JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME, this.javaScriptBridgeInterface.getMethodList());
+
+    // settings
+    if (this.customSettings.userAgent != null && this.customSettings.userAgent.length > 0) {
+      this.controller.setCustomUserAgent(this.customSettings.userAgent);
+    }
+
+    if (this.customSettings.applicationNameForUserAgent != null && this.customSettings.applicationNameForUserAgent.length > 0) {
+      let userAgent = (this.customSettings.userAgent != null && this.customSettings.userAgent.length > 0) ? this.customSettings.userAgent : this.controller.getUserAgent();
+      let userAgentWithApplicationName = userAgent + " " + this.customSettings.applicationNameForUserAgent;
+      this.controller.setCustomUserAgent(userAgentWithApplicationName);
+    }
+
+    web_webview.WebCookieManager.putAcceptThirdPartyCookieEnabled(this.customSettings.thirdPartyCookiesEnabled);
   }
 
   private prepareAndAddUserScripts(): void {
@@ -819,5 +918,43 @@ export default class InAppWebView implements InAppWebViewInterface {
       ));
     }
     return this.ohosWebViewModel;
+  }
+
+  private onSettinsUpdated() {
+    this.ohosWebViewModel!.params['domStorageAccess'] = this.customSettings.domStorageAccess;
+    this.ohosWebViewModel!.params['fileAccess'] = this.customSettings.fileAccess;
+    this.ohosWebViewModel!.params['imageAccess'] = this.customSettings.imageAccess;
+    this.ohosWebViewModel!.params['javaScriptAccess'] = this.customSettings.javaScriptAccess;
+    this.ohosWebViewModel!.params['overScrollMode'] = this.customSettings.overScrollMode;
+    this.ohosWebViewModel!.params['mixedMode'] = this.customSettings.mixedMode;
+    this.ohosWebViewModel!.params['onlineImageAccess'] = this.customSettings.onlineImageAccess;
+    this.ohosWebViewModel!.params['zoomAccess'] = this.customSettings.zoomAccess;
+    this.ohosWebViewModel!.params['overviewModeAccess'] = this.customSettings.overviewModeAccess;
+    this.ohosWebViewModel!.params['databaseAccess'] = this.customSettings.databaseAccess;
+    this.ohosWebViewModel!.params['geolocationAccess'] = this.customSettings.geolocationAccess;
+    this.ohosWebViewModel!.params['mediaPlayGestureAccess'] = this.customSettings.mediaPlayGestureAccess;
+    this.ohosWebViewModel!.params['multiWindowAccess'] = this.customSettings.multiWindowAccess;
+    this.ohosWebViewModel!.params['horizontalScrollBarAccess'] = this.customSettings.horizontalScrollBarAccess;
+    this.ohosWebViewModel!.params['verticalScrollBarAccess'] = this.customSettings.verticalScrollBarAccess;
+    this.ohosWebViewModel!.params['cacheMode'] = this.customSettings.cacheMode;
+    this.ohosWebViewModel!.params['textZoomRatio'] = this.customSettings.textZoomRatio;
+    this.ohosWebViewModel!.params['initialScale'] = this.customSettings.initialScale;
+    this.ohosWebViewModel!.params['blockNetwork'] = this.customSettings.blockNetwork;
+    this.ohosWebViewModel!.params['defaultFixedFontSize'] = this.customSettings.defaultFixedFontSize;
+    this.ohosWebViewModel!.params['defaultFontSize'] = this.customSettings.defaultFontSize;
+    this.ohosWebViewModel!.params['minFontSize'] = this.customSettings.minFontSize;
+    this.ohosWebViewModel!.params['minLogicalFontSize'] = this.customSettings.minLogicalFontSize;
+    this.ohosWebViewModel!.params['webFixedFont'] = this.customSettings.webFixedFont;
+    this.ohosWebViewModel!.params['webSansSerifFont'] = this.customSettings.webSansSerifFont;
+    this.ohosWebViewModel!.params['webSerifFont'] = this.customSettings.webSerifFont;
+    this.ohosWebViewModel!.params['webStandardFont'] = this.customSettings.webStandardFont;
+    this.ohosWebViewModel!.params['webFantasyFont'] = this.customSettings.webFantasyFont;
+    this.ohosWebViewModel!.params['webCursiveFont'] = this.customSettings.webCursiveFont;
+    this.ohosWebViewModel!.params['darkMode'] = this.customSettings.darkMode;
+    this.ohosWebViewModel!.params['forceDarkAccess'] = this.customSettings.forceDarkAccess;
+    this.ohosWebViewModel!.params['pinchSmooth'] = this.customSettings.pinchSmooth;
+    this.ohosWebViewModel!.params['allowWindowOpenMethod'] = this.customSettings.allowWindowOpenMethod;
+    this.ohosWebViewModel!.params['layoutMode'] = this.customSettings.layoutMode;
+    this.ohosWebViewModel!.params['enableNativeEmbedMode'] = this.customSettings.enableNativeEmbedMode;
   }
 }

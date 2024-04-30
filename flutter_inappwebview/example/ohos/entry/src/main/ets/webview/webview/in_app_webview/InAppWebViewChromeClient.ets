@@ -76,18 +76,20 @@ export default class InAppWebViewChromeClient {
   }
   onPrompt = (event: Any, uiObject: Any) => {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
-    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null, new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
-      return true;
-    }
-    return true;
+    // 等API12适配的时候放开
+    // if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+    //   this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null, new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
+    //   return true;
+    // }
+    return false;
   }
   onConsole = (event: Any) => {
     Log.d(TAG, "onConsole=" + JSON.stringify(event))
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
       this.inAppWebView.channelDelegate.onConsoleMessage(event.message.getMessage(), event.message.getMessageLevel());
+      return true;
     }
-    return true;
+    return false;
   }
   onDownloadStart = (event: Any) => { //对应安卓setDownloadListener
     Log.d(TAG, "onDownloadStart=" + JSON.stringify(event))
