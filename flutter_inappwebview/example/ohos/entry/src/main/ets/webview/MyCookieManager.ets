@@ -115,7 +115,7 @@ export default class MyCookieManager extends ChannelDelegateImpl {
     cookieMap.set("isHttpOnly", false);
     cookieMap.set("path", null);
     for(let cookiesValue of cookiesString.split(";")) {
-      if (cookiesValue.split("=")[0].trim().localeCompare("Expires", undefined, { sensitivity: 'accent' })) {
+      if (cookiesValue.split("=")[0].trim().localeCompare("Expires", undefined, { sensitivity: 'accent' }) == 0) {
         try{
           let dateFormat = new Intl.DateTimeFormat("en-US", {weekday: 'short', day: '2-digit',
             month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT'})
@@ -126,22 +126,22 @@ export default class MyCookieManager extends ChannelDelegateImpl {
         } catch (e) {
           console.error(LOG_TAG, "", e);
         }
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Max-Age", undefined, { sensitivity: 'accent' })) {
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Max-Age", undefined, { sensitivity: 'accent' }) == 0) {
         try {
           let maxAge: number = Number(cookiesValue.split("=")[1].trim());
           cookieMap.set("expiresDate", await systemDateTime.getCurrentTime(false) + maxAge)
         } catch (e) {
           console.error(LOG_TAG, "", e)
         }
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Domain", undefined, { sensitivity: 'accent' })) {
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Domain", undefined, { sensitivity: 'accent' }) == 0) {
         cookieMap.set("domain", cookiesValue.split("=")[1].trim())
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("SameSite", undefined, { sensitivity: 'accent' })) {
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("SameSite", undefined, { sensitivity: 'accent' }) == 0) {
         cookieMap.set("sameSite", cookiesValue.split("=")[1].trim())
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Secure", undefined, { sensitivity: 'accent' })) {
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Secure", undefined, { sensitivity: 'accent' }) == 0) {
         cookieMap.set("isSecure", true)
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("HttpOnly", undefined, { sensitivity: 'accent' })) {
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("HttpOnly", undefined, { sensitivity: 'accent' }) == 0) {
         cookieMap.set("isHttpOnly", true)
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Path", undefined, { sensitivity: 'accent' })) {
+      } else if (cookiesValue.split("=")[0].trim().localeCompare("Path", undefined, { sensitivity: 'accent' }) == 0) {
         cookieMap.set("path", cookiesValue.split("=")[1].trim())
       } else {
         cookieMap.set("name", cookiesValue.split("=")[0].trim())
