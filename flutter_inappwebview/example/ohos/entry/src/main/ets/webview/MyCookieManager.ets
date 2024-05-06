@@ -83,6 +83,11 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   public setCookie(url: string, name: string, value: string, domain: string, path: string,
                    expiresDate: number | null, maxAge: number, isSecure: boolean, isHttpOnly: boolean, sameSite: string, result: MethodResult): void {
 
+    if(web_webview.WebCookieManager.isCookieAllowed()) {
+      result.success(false);
+      return;
+    }
+
     try {
       web_webview.WebCookieManager.configCookie(url, name + "=" + value)
       web_webview.WebCookieManager.configCookie(url, "Path=" + path)
@@ -104,57 +109,83 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   public async getCookies(url: string): Promise<List<Map<string, Any>>> {
     let cookieListMap: List<Map<string, Any>> = new List<Map<string, Any>>()
 
-    let cookiesString: string = web_webview.WebCookieManager.fetchCookieSync(url)
+    if(web_webview.WebCookieManager.fetchCookieSync(url) == "") return cookieListMap
 
-    let cookieMap: Map<string, Any> = new Map<string, Any>()
-    cookieMap.set("expiresDate", null);
-    cookieMap.set("isSessionOnly", null);
-    cookieMap.set("domain", null);
-    cookieMap.set("sameSite", null);
-    cookieMap.set("isSecure", false);
-    cookieMap.set("isHttpOnly", false);
-    cookieMap.set("path", null);
-    for(let cookiesValue of cookiesString.split(";")) {
-      if (cookiesValue.split("=")[0].trim().localeCompare("Expires", undefined, { sensitivity: 'accent' }) == 0) {
-        try{
-          let dateFormat = new Intl.DateTimeFormat("en-US", {weekday: 'short', day: '2-digit',
-            month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT'})
-          let expiryDate: Date = new Date(dateFormat.format(new Date(cookiesValue.split("=")[1].trim())))
-          if(expiryDate != null) {
-            cookieMap.set("expiresDate", expiryDate.getTime());
+    /// Android中同样只获取了setCookies中“name=value”这一段，因此目前先这样写着
+    let cookies: string[] = web_webview.WebCookieManager.fetchCookieSync(url).split(";", 1)
+
+    for(let cookie of cookies) {
+      let cookieParams: string[] = cookie.split(";");
+      if (cookieParams.length == 0) continue;
+
+      let nameValue: string[] = cookieParams[0].split("=", 2);
+      let name: string = nameValue[0].trim();
+      let value: string = (nameValue.length > 1) ? nameValue[1].trim() : "";
+
+      let cookieMap: Map<string, Any> = new Map<string, Any>()
+      cookieMap.set("name", name);
+      cookieMap.set("value", value);
+      cookieMap.set("expiresDate", null);
+      cookieMap.set("isSessionOnly", null);
+      cookieMap.set("domain", null);
+      cookieMap.set("sameSite", null);
+      cookieMap.set("isSecure", null);
+      cookieMap.set("isHttpOnly", null);
+      cookieMap.set("path", null);
+
+      if(web_webview.WebCookieManager.isCookieAllowed()) {
+        cookieMap.set("isSecure", false);
+        cookieMap.set("isHttpOnly", false);
+
+        for (let i = 1; i < cookieParams.length; i++) {
+          let cookieParamNameValue: string[] = cookieParams[i].split("=", 2);
+          let cookieParamName: string = cookieParamNameValue[0].trim();
+          let cookieParamValue: string = (cookieParamNameValue.length > 1) ? cookieParamNameValue[1].trim() : "";
+
+          if (cookieParamName.localeCompare("Expires", undefined, { sensitivity: 'accent' }) == 0) {
+            try{
+              let dateFormat = new Intl.DateTimeFormat("en-US", {weekday: 'short', day: '2-digit',
+                month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'GMT'})
+              let expiryDate: Date = new Date(dateFormat.format(new Date(cookieParamValue)))
+              if(expiryDate != null) {
+                cookieMap.set("expiresDate", expiryDate.getTime());
+              }
+            } catch (e) {
+              console.error(LOG_TAG, "", e);
+            }
+          } else if (cookieParamName.localeCompare("Max-Age", undefined, { sensitivity: 'accent' }) == 0) {
+            try {
+              let maxAge: number = Number(cookieParamValue);
+              cookieMap.set("expiresDate", await systemDateTime.getCurrentTime(false) + maxAge)
+            } catch (e) {
+              console.error(LOG_TAG, "", e)
+            }
+          } else if (cookieParamName.localeCompare("Domain", undefined, { sensitivity: 'accent' }) == 0) {
+            cookieMap.set("domain", cookieParamValue)
+          } else if (cookieParamName.localeCompare("SameSite", undefined, { sensitivity: 'accent' }) == 0) {
+            cookieMap.set("sameSite", cookieParamValue)
+          } else if (cookieParamName.localeCompare("Secure", undefined, { sensitivity: 'accent' }) == 0) {
+            cookieMap.set("isSecure", true)
+          } else if (cookieParamName.localeCompare("HttpOnly", undefined, { sensitivity: 'accent' }) == 0) {
+            cookieMap.set("isHttpOnly", true)
+          } else if (cookieParamName.localeCompare("Path", undefined, { sensitivity: 'accent' }) == 0) {
+            cookieMap.set("path", cookieParamValue)
           }
-        } catch (e) {
-          console.error(LOG_TAG, "", e);
         }
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Max-Age", undefined, { sensitivity: 'accent' }) == 0) {
-        try {
-          let maxAge: number = Number(cookiesValue.split("=")[1].trim());
-          cookieMap.set("expiresDate", await systemDateTime.getCurrentTime(false) + maxAge)
-        } catch (e) {
-          console.error(LOG_TAG, "", e)
-        }
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Domain", undefined, { sensitivity: 'accent' }) == 0) {
-        cookieMap.set("domain", cookiesValue.split("=")[1].trim())
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("SameSite", undefined, { sensitivity: 'accent' }) == 0) {
-        cookieMap.set("sameSite", cookiesValue.split("=")[1].trim())
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Secure", undefined, { sensitivity: 'accent' }) == 0) {
-        cookieMap.set("isSecure", true)
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("HttpOnly", undefined, { sensitivity: 'accent' }) == 0) {
-        cookieMap.set("isHttpOnly", true)
-      } else if (cookiesValue.split("=")[0].trim().localeCompare("Path", undefined, { sensitivity: 'accent' }) == 0) {
-        cookieMap.set("path", cookiesValue.split("=")[1].trim())
-      } else {
-        cookieMap.set("name", cookiesValue.split("=")[0].trim())
-        cookieMap.set("value", cookiesValue.split("=")[1].trim())
       }
-    }
 
-    cookieListMap.add(cookieMap)
+      cookieListMap.add(cookieMap)
+    }
 
     return cookieListMap
   }
 
   public deleteCookie(url: string, name: string, domain: string, path: string, result: MethodResult): void {
+    if(web_webview.WebCookieManager.isCookieAllowed()) {
+      result.success(false);
+      return;
+    }
+
     try {
       web_webview.WebCookieManager.configCookie(url, name + "=")
       web_webview.WebCookieManager.configCookie(url, "Path=" + path)
@@ -168,6 +199,11 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public deleteCookies(url: string, domain: string, path: string, result: MethodResult): void {
+    if(web_webview.WebCookieManager.isCookieAllowed()) {
+      result.success(false);
+      return;
+    }
+
     let cookiesString: string = web_webview.WebCookieManager.fetchCookieSync(url)
     if (cookiesString != null) {
       for(let cookiesValue of cookiesString.split(";")) {
@@ -185,6 +221,11 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public deleteAllCookies(result: MethodResult): void {
+    if(web_webview.WebCookieManager.isCookieAllowed()) {
+      result.success(false);
+      return;
+    }
+
     try {
       web_webview.WebCookieManager.clearAllCookiesSync()
       result.success(true)
@@ -194,6 +235,11 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public removeSessionCookies(result: MethodResult): void {
+    if(web_webview.WebCookieManager.isCookieAllowed()) {
+      result.success(false);
+      return;
+    }
+
     try {
       web_webview.WebCookieManager.clearSessionCookieSync()
       result.success(true)
