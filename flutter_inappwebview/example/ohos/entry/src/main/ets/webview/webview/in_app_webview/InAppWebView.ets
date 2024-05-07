@@ -40,6 +40,10 @@ import ContentBlockerAction from '../../content_blocker/ContentBlockerAction';
 import ContentBlockerTrigger from '../../content_blocker/ContentBlockerTrigger';
 import ContentBlocker from '../../content_blocker/ContentBlocker';
 import cert from '@ohos.security.cert';
+import image from '@ohos.multimedia.image';
+import window from '@ohos.window';
+import animator, { AnimatorOptions,AnimatorResult } from '@ohos.animator';
+import common from '@ohos.app.ability.common';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -291,8 +295,69 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.controller;
   }
 
-  public takeScreenshot(screenshotConfiguration: Map<string, Any> | null, result: MethodResult): void {
+  public async takeScreenshot(screenshotConfiguration: Map<string, Any> | null, result: MethodResult): Promise<void> {
+    let pixelDensity: number = Util.getPixelDensity()
 
+    try {
+      let windowClass: window.Window = await window.getLastWindow(this.context)
+      let screenshotBitmap: image.PixelMap = await image.createPixelMap(new ArrayBuffer(96), {
+        pixelFormat: 3,
+        size: {
+          height: windowClass.getWindowProperties().windowRect.height, width: windowClass.getWindowProperties().windowRect.width
+        }
+      })
+      await screenshotBitmap.translate(-windowClass.getWindowProperties().windowRect.left, -windowClass.getWindowProperties().windowRect.top)
+
+      let compressFormat: string = "image/jpeg"
+      let quality: number = 100
+
+      if (screenshotConfiguration != null) {
+        let rect: Map<string, number> = screenshotConfiguration.get("rect") as Map<string, number>
+        if(rect != null) {
+          let rectX: number = Math.floor(rect.get("x")??0 * pixelDensity + 0.5) as number
+          let rectY: number = Math.floor(rect.get("y")??0 * pixelDensity + 0.5) as number
+          let rectWidth: number = Math.min((await screenshotBitmap.getImageInfo()).size.width, Math.floor(rect.get("width")??0 * pixelDensity + 0.5));
+          let rectHeight: number = Math.min((await screenshotBitmap.getImageInfo()).size.height, Math.floor(rect.get("height")??0 * pixelDensity + 0.5));
+          await screenshotBitmap.crop({x: rectX, y: rectY, size: { height: rectHeight, width: rectWidth }})
+        }
+
+        let snapshotWidth: number = screenshotConfiguration.get("snapshotWidth") as number
+        if(snapshotWidth != null) {
+          let dstWidth: number = Math.floor(snapshotWidth * pixelDensity + 0.5) as number
+          let bitMapInfo: image.ImageInfo = await screenshotBitmap.getImageInfo()
+          let ratioBitmap: number = bitMapInfo.size.width / bitMapInfo.size.height
+          let dstHeight: number = dstWidth / ratioBitmap
+          screenshotBitmap.scale(dstWidth, dstHeight)
+        }
+
+        try {
+          switch (screenshotConfiguration.get("compressFormat")) {
+            case "JPEG":
+              compressFormat = "image/jpeg"
+              break
+            case "PNG":
+              compressFormat = "image/png"
+              break
+            default:
+              compressFormat = "image/jpeg"
+          }
+        } catch (e) {
+          Log.e(TAG, "", e);
+        }
+
+        quality = screenshotConfiguration.get("quality") as number
+      }
+
+      const imagePackerApi = image.createImagePacker()
+      let packOpts: image.PackingOption = { format: compressFormat, quality: quality }
+
+      let bos: ArrayBuffer = await imagePackerApi.packing(screenshotBitmap, packOpts)
+
+      result.success(bos);
+    } catch (e) {
+      Log.e(TAG, "", e);
+      result.success(null);
+    }
   }
 
   public evaluateJavascript(source: string, contentWorld: ContentWorld | null, resultCallback: ValueCallback<string> | null): void {
@@ -480,21 +545,38 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   public scrollTo(x: number, y: number, animated: boolean): void {
     if (animated) {
-      // let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", x);
-      // let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", y);
-      // let anim: ObjectAnimator = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
-      // anim.setDuration(300).start();
+      let options: AnimatorOptions = {
+        duration: 300,
+        easing: "friction",
+        delay: 0,
+        fill: "forwards",
+        direction: "normal",
+        iterations: 3,
+        begin: x,
+        end: y
+      };
+      let animatorResult:AnimatorResult | undefined  = animator.create(options);
+      animatorResult.play()
     } else {
       this.controller.scrollTo(x, y);
     }
   }
 
-  public scrollBy(x: number, y: number, animated: boolean): void {
+  public async scrollBy(x: number, y: number, animated: boolean): Promise<void> {
+    let windowClass: window.Window = await window.getLastWindow(this.context)
     if (animated) {
-      // let pvhX: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollX", getScrollX() + x);
-      // let pvhY: PropertyValuesHolder = PropertyValuesHolder.ofInt("scrollY", getScrollY() + y);
-      // let anim: PropertyValuesHolder = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
-      // anim.setDuration(300).start();
+      let options: AnimatorOptions = {
+        duration: 300,
+        easing: "friction",
+        delay: 0,
+        fill: "forwards",
+        direction: "normal",
+        iterations: 3,
+        begin: windowClass.getWindowProperties().windowRect.left + x,
+        end: windowClass.getWindowProperties().windowRect.top + y
+      };
+      let animatorResult:AnimatorResult | undefined  = animator.create(options);
+      animatorResult.play()
     } else {
       this.controller.scrollBy(x, y);
     }
@@ -518,7 +600,7 @@ export default class InAppWebView implements InAppWebViewInterface {
       );
     }
 
-    if (newSettingsMap.has("interceptOnlyAsyncAjaxRequests")&& this.customSettings.interceptOnlyAsyncAjaxRequests != newCustomSettings.interceptOnlyAsyncAjaxRequests) {
+    if (newSettingsMap.has("interceptOnlyAsyncAjaxRequests") && this.customSettings.interceptOnlyAsyncAjaxRequests != newCustomSettings.interceptOnlyAsyncAjaxRequests) {
       this.enablePluginScriptAtRuntime(
         InterceptAjaxRequestJS.FLAG_VARIABLE_FOR_INTERCEPT_ONLY_ASYNC_AJAX_REQUESTS_JS_SOURCE,
         newCustomSettings.interceptOnlyAsyncAjaxRequests,
@@ -526,7 +608,7 @@ export default class InAppWebView implements InAppWebViewInterface {
       );
     }
 
-    if (newSettingsMap.has("useShouldInterceptFetchRequest")  && this.customSettings.useShouldInterceptFetchRequest != newCustomSettings.useShouldInterceptFetchRequest) {
+    if (newSettingsMap.has("useShouldInterceptFetchRequest") && this.customSettings.useShouldInterceptFetchRequest != newCustomSettings.useShouldInterceptFetchRequest) {
       this.enablePluginScriptAtRuntime(
         InterceptFetchRequestJS.FLAG_VARIABLE_FOR_SHOULD_INTERCEPT_FETCH_REQUEST_JS_SOURCE,
         newCustomSettings.useShouldInterceptFetchRequest,
@@ -534,7 +616,7 @@ export default class InAppWebView implements InAppWebViewInterface {
       );
     }
 
-    if (newSettingsMap.has("useOnLoadResource")  && this.customSettings.useOnLoadResource != newCustomSettings.useOnLoadResource) {
+    if (newSettingsMap.has("useOnLoadResource") && this.customSettings.useOnLoadResource != newCustomSettings.useOnLoadResource) {
       this.enablePluginScriptAtRuntime(
         OnLoadResourceJS.FLAG_VARIABLE_FOR_ON_LOAD_RESOURCE_JS_SOURCE,
         newCustomSettings.useOnLoadResource,
@@ -580,8 +662,8 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   enablePluginScriptAtRuntime(flagVariable: string, enable: boolean, pluginScript: PluginScript) {
-     this.evaluateJavascript("window." + flagVariable, null,  {
-       onReceiveValue: (value) => {
+    this.evaluateJavascript("window." + flagVariable, null, {
+      onReceiveValue: (value) => {
         let alreadyLoaded = value != null && value.toLowerCase() != "null";
         if (alreadyLoaded) {
           let enableSource = "window." + flagVariable + " = " + enable + ";";

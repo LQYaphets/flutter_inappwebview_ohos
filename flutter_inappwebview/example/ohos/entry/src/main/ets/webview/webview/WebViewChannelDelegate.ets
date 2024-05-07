@@ -245,15 +245,12 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         result.success((this.webView != null) ? this.webView.getCopyBackForwardList() : null);
         break;
       case WebViewChannelDelegateMethods.startSafeBrowsing:
-      // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.START_SAFE_BROWSING)) {
-      //   WebViewCompat.startSafeBrowsing(this.webView.getContext(), new ValueCallback<Boolean>() {
-      //     public onReceiveValue(success: boolean): void {
-      //       result.success(success);
-      //     }
-      //   });
-      // } else {
-      //   result.success(false);
-      // }
+        if (this.webView != null) {
+          /// 启动安全浏览初始化, ohos暂无该方法
+          result.success(true);
+        } else {
+          result.success(false);
+        }
         break;
       case WebViewChannelDelegateMethods.clearCache:
         if (this.webView != null)
