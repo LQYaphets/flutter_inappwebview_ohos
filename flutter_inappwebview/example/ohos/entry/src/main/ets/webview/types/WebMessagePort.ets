@@ -44,14 +44,13 @@ export default class WebMessagePort {
               "  }" +
               "})();",
         null,
-        null
-        // new ValueCallback<string>() {
-        //   public onReceiveValue(value: string): void {
-        //     if (callback != null) {
-        //       callback.onReceiveValue(null);
-        //     }
-        //   }
-        // }
+        {
+          onReceiveValue(value: string | null): void {
+            if (callback != null) {
+              callback.onReceiveValue(null);
+            }
+          }
+        }
       );
     } else {
       if (callback != null) {
@@ -94,12 +93,11 @@ export default class WebMessagePort {
               "      webMessageChannel." + this.name + ".postMessage('" + data + "', " + portsString + ");" +
               "  }" +
               "})();";
-      webView.evaluateJavascript(source, null, null
-        // new ValueCallback<String>() {
-        //   public onReceiveValue(String value): void {
-        //     callback.onReceiveValue(null);
-        //   }
-        // }
+      webView.evaluateJavascript(source, null, {
+          onReceiveValue(value: string | null): void {
+            callback.onReceiveValue(null);
+          }
+        }
       );
     } else {
       callback.onReceiveValue(null);
@@ -122,12 +120,11 @@ export default class WebMessagePort {
         "      webMessageChannel." + this.name + ".close();" +
         "  }" +
         "})();";
-      webView.evaluateJavascript(source, null, null
-        // new ValueCallback<String>() {
-        //   public onReceiveValue(value: string): void {
-        //    callback.onReceiveValue(null);
-        //   }
-        // }
+      webView.evaluateJavascript(source, null, {
+          onReceiveValue(value: string | null): void {
+           callback.onReceiveValue(null);
+          }
+        }
       );
     } else {
       callback.onReceiveValue(null);

@@ -46,12 +46,11 @@ export class WebMessageChannel implements Disposable {
       let webMessageChannel: WebMessageChannel = this;
       webView.evaluateJavascript("(function() {" +
               JavaScriptBridgeJS.WEB_MESSAGE_CHANNELS_VARIABLE_NAME + "['" + webMessageChannel.id + "'] = new MessageChannel();" +
-              "})();", null, null
-        // new ValueCallback<String>() {
-        //   public onReceiveValue(value: string): void {
-        //     callback.onReceiveValue(webMessageChannel);
-        //   }
-        // }
+              "})();", null, {
+          onReceiveValue(value: string | null): void {
+            callback.onReceiveValue(webMessageChannel);
+          }
+        }
       );
     } else {
       callback.onReceiveValue(this);

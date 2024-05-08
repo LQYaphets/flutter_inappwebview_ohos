@@ -344,15 +344,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         }
         break;
       case WebViewChannelDelegateMethods.getContentWidth:
-      // if (this.webView instanceof InAppWebView) {
-      //   this.webView.getContentWidth(new ValueCallback<Integer>() {
-      //     public onReceiveValue(contentWidth: number | null): void {
-      //       result.success(contentWidth);
-      //     }
-      //   });
-      // } else {
-      //   result.success(null);
-      // }
+        if (this.webView instanceof InAppWebView) {
+          this.webView.getContentWidth({
+            onReceiveValue(contentWidth: number | null): void {
+              result.success(contentWidth);
+            }
+          });
+        } else {
+          result.success(null);
+        }
         break;
       case WebViewChannelDelegateMethods.zoomBy:
         if (this.webView != null) {
@@ -372,15 +372,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         }
         break;
       case WebViewChannelDelegateMethods.getSelectedText:
-      // if ((this.webView instanceof InAppWebView)) {
-      //   this.webView.getSelectedText(new ValueCallback<String>() {
-      //     public onReceiveValue(value: string): void {
-      //       result.success(value);
-      //     }
-      //   });
-      // } else {
-      //   result.success(null);
-      // }
+        if ((this.webView instanceof InAppWebView)) {
+          this.webView.getSelectedText({
+            onReceiveValue(value: string | null): void {
+              result.success(value);
+            }
+          });
+        } else {
+          result.success(null);
+        }
         break;
       case WebViewChannelDelegateMethods.getHitTestResult:
         if (this.webView instanceof InAppWebView) {
@@ -409,11 +409,11 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         if (this.webView != null) {
           let filePath: string = call.argument("filePath");
           let autoname: boolean = call.argument("autoname") as boolean;
-          // this.webView.saveWebArchive(filePath, autoname, new ValueCallback<String>() {
-          //   public void onReceiveValue(String value) {
-          //     result.success(value);
-          //   }
-          // });
+          this.webView.saveWebArchive(filePath, autoname, {
+            onReceiveValue(value: string | null) {
+              result.success(value);
+            }
+          });
         } else {
           result.success(null);
         }
@@ -537,15 +537,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         }
         break;
       case WebViewChannelDelegateMethods.isSecureContext:
-      // if (this.webView != null) {
-      //   this.webView.isSecureContext(new ValueCallback<Boolean>() {
-      //     public onReceiveValue(value: boolean): void {
-      //       result.success(value);
-      //     }
-      //   });
-      // } else {
-      //   result.success(false);
-      // }
+        if (this.webView != null) {
+          this.webView.isSecureContext({
+            onReceiveValue(value: boolean | null): void {
+              result.success(value);
+            }
+          });
+        } else {
+          result.success(false);
+        }
         break;
       case WebViewChannelDelegateMethods.createWebMessageChannel:
         if (this.webView != null) {

@@ -207,6 +207,20 @@ export default class InAppWebView implements InAppWebViewInterface {
     // });
   }
 
+  public getSelectedText(resultCallback: ValueCallback<string>): void {
+    /// 获取选中文字
+  }
+
+  public saveWebArchive(baseName: string, autoName: boolean, callback: ValueCallback<string>): void {
+    this.controller.storeWebArchive(baseName, autoName).then(fileName => {
+      callback.onReceiveValue(fileName)
+    })
+  }
+
+  public isSecureContext(resultCallback: ValueCallback<boolean>): void {
+
+  }
+
   zoomBy(zoomFactor: number): void {
     if (zoomFactor < 0.01)
       throw new Error("zoomFactor must be greater than 0.01.");
