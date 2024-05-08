@@ -5,6 +5,8 @@ import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';
 import { FlutterWebView } from './in_app_webview/FlutterWebView';
 import { Context } from '@kit.AbilityKit';
+import web_webview from '@ohos.web.webview';
+import business_error from '@ohos.base';
 
 const LOG_TAG = "InAppWebViewManager"
 const METHOD_CHANNEL_NAME = "com.pichillilorenzo/flutter_inappwebview_manager"
@@ -14,6 +16,8 @@ export class InAppWebviewManager extends ChannelDelegateImpl {
   private plugin: InAppWebViewFlutterPlugin | null = null
 
   public keepAliveWebViews: Map<string, FlutterWebView | undefined> = new Map<string, FlutterWebView | undefined>()
+
+  public controller: web_webview.WebviewController = new web_webview.WebviewController();
 
   /// 机制不同，缺少类似于android.os.message方法
   // public windowWebViewMessages: Map<number, Message> = new Map<number, Message>()
@@ -29,49 +33,30 @@ export class InAppWebviewManager extends ChannelDelegateImpl {
     switch (call.method) {
       case "getDefaultUserAgent":
         if (this.plugin != null) {
-          // result.success(WebSettings.getDefaultUserAgent(plugin.applicationContext));
+          result.success(this.controller.getUserAgent());
         } else {
           result.success(null);
         }
         break;
       case "clearClientCertPreferences":
-        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        //   WebView.clearClientCertPreferences(new Runnable() {
-        //     @Override
-        //     public void run() {
-        //       result.success(true);
-        //     }
-        //   });
-        // } else {
-        //   result.success(false);
-        // }
+        try{
+          this.controller.clearClientAuthenticationCache();
+          result.success(true);
+        } catch (error) {
+          let e: business_error.BusinessError = error as business_error.BusinessError;
+          console.error(`ErrorCode: ${e.code},  Message: ${e.message}`);
+          result.success(false);
+        }
         break;
       case "getSafeBrowsingPrivacyPolicyUrl":
-        // if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_PRIVACY_POLICY_URL)) {
-        //   result.success(WebViewCompat.getSafeBrowsingPrivacyPolicyUrl().toString());
-        // } else
-        //   result.success(null);
+        /// 返回指向安全浏览报告的隐私策略的URL。
+        result.success(null);
         break;
       case "setSafeBrowsingAllowlist":
-        // if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_ALLOWLIST)) {
-        //   Set<String> hosts = new HashSet<>((List<String>) call.argument("hosts"));
-        //   WebViewCompat.setSafeBrowsingAllowlist(hosts, new ValueCallback<Boolean>() {
-        //     @Override
-        //     public void onReceiveValue(Boolean value) {
-        //       result.success(value);
-        //     }
-        //   });
-        // }
-        // else if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_WHITELIST)) {
-        //   List<String> hosts = (List<String>) call.argument("hosts");
-        //   WebViewCompat.setSafeBrowsingWhitelist(hosts, new ValueCallback<Boolean>() {
-        //     @Override
-        //     public void onReceiveValue(Boolean value) {
-        //       result.success(value);
-        //     }
-        //   });
-        // } else
-        //   result.success(false);
+        /// 配置一组免于安全浏览检查的主机（域名/IP地址）
+        /// ohos非法和欺诈网站是强制启用的
+        /// 目前还未找到实现方法
+        result.success(false);
         break;
       case "getCurrentWebViewPackage":
         // {
@@ -87,41 +72,29 @@ export class InAppWebviewManager extends ChannelDelegateImpl {
         // }
         break;
       case "setWebContentsDebuggingEnabled":
-        // {
-        //   boolean debuggingEnabled = (boolean) call.argument("debuggingEnabled");
-        //   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        //     WebView.setWebContentsDebuggingEnabled(debuggingEnabled);
-        //   }
-        // }
+        {
+          let debuggingEnabled: boolean = call.argument("debuggingEnabled") as boolean;
+          web_webview.WebviewController.setWebDebuggingAccess(debuggingEnabled)
+        }
         result.success(true);
         break;
       case "getVariationsHeader":
-        // if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_VARIATIONS_HEADER)) {
-        //   result.success(WebViewCompat.getVariationsHeader());
-        // }
-        // else {
-        //   result.success(null);
-        // }
+        /// 获取编码后用作X-Client-Data HTTP标头的WebView变体，未找到实现
+        result.success(null);
         break;
       case "isMultiProcessEnabled":
-        // if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROCESS)) {
-        //   result.success(WebViewCompat.isMultiProcessEnabled());
-        // }
-        // else {
-        //   result.success(false);
-        // }
+        /// 监测WebView是否在多进程模式下运行，未找到对应实现
+        result.success(false);
         break;
       case "disableWebView":
-        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        //   WebView.disableWebView();
-        // }
+        this.controller.stop()
         result.success(true);
         break;
       case "disposeKeepAlive":
-        // final String keepAliveId = (String) call.argument("keepAliveId");
-        // if (keepAliveId != null) {
-        //   disposeKeepAlive(keepAliveId);
-        // }
+        let keepAliveId: string = call.argument("keepAliveId") as string;
+        if (keepAliveId != null) {
+          this.disposeKeepAlive(keepAliveId);
+        }
         result.success(true);
         break;
       case "clearAllCache":
