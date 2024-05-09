@@ -196,19 +196,15 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public getContentWidth(callback: ValueCallback<number>): void {
-    // this.evaluateJavascript("document.documentElement.scrollWidth;", new ValueCallback<string>() {
-    //     public onReceiveValue(value: string | null): void {
-    //       let contentWidth: number = null;
-    //       if (value != null && !value.equalsIgnoreCase("null")) {
-    //         contentWidth = Integer.parseInt(value);
-    //       }
-    //     callback.onReceiveValue(contentWidth);
-    //   }
-    // });
+    this.controller.runJavaScriptExt("document.documentElement.scrollWidth;").then((result) => {
+      callback.onReceiveValue(result.getNumber())
+    })
   }
 
   public getSelectedText(resultCallback: ValueCallback<string>): void {
-    /// 获取选中文字
+    this.controller.runJavaScriptExt(PluginScriptsUtil.GET_SELECTED_TEXT_JS_SOURCE).then((result) => {
+      resultCallback.onReceiveValue(result.getString())
+    })
   }
 
   public saveWebArchive(baseName: string, autoName: boolean, callback: ValueCallback<string>): void {
@@ -526,30 +522,29 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public getCopyBackForwardList(): HashMap<string, Any> {
-    // let currentList: WebBackForwardList = copyBackForwardList();
-    // let currentSize: number = currentList.getSize();
-    // let currentIndex: number = currentList.getCurrentIndex();
-    //
-    // let history: List<HashMap<String, String>> = new List<HashMap<String, String>>();
-    //
-    // for (let i: number = 0; i < currentSize; i++) {
-    //   let historyItem: WebHistoryItem = currentList.getItemAtIndex(i);
-    //   let historyItemMap: HashMap<string, string> = new HashMap<string, string>();
-    //
-    //   historyItemMap.set("originalUrl", historyItem.getOriginalUrl());
-    //   historyItemMap.set("title", historyItem.getTitle());
-    //   historyItemMap.set("url", historyItem.getUrl());
-    //
-    //   history.add(historyItemMap);
-    // }
-    //
-    // let result: HashMap<string, Any> = new HashMap<string, Any>();
-    //
-    // result.set("list", history);
-    // result.set("currentIndex", currentIndex);
-    //
-    // return result;
-    return new HashMap<string, Any>()
+    let currentList: web_webview.BackForwardList = this.controller.getBackForwardEntries();
+    let currentSize: number = currentList.size;
+    let currentIndex: number = currentList.currentIndex;
+
+    let history: List<HashMap<String, String>> = new List<HashMap<String, String>>();
+
+    for (let i: number = 0; i < currentSize; i++) {
+      let historyItem: web_webview.HistoryItem = currentList.getItemAtIndex(i);
+      let historyItemMap: HashMap<string, string> = new HashMap<string, string>();
+
+      historyItemMap.set("originalUrl", historyItem.historyRawUrl);
+      historyItemMap.set("title", historyItem.title);
+      historyItemMap.set("url", historyItem.historyUrl);
+
+      history.add(historyItemMap);
+    }
+
+    let result: HashMap<string, Any> = new HashMap<string, Any>();
+
+    result.set("list", history);
+    result.set("currentIndex", currentIndex);
+
+    return result;
   }
 
   public clearAllCache(): void {
@@ -702,29 +697,27 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public requestFocusNodeHref(): Map<string, Any> {
-    // let msg: Message = InAppWebView.mHandler.obtainMessage();
-    // this.requestFocusNodeHref(msg);
-    // Bundle bundle = msg.peekData();
+    /// Android中方法可获取其他的属性，ohos只能返回对应图片或连接的url
+    let hitValue = this.controller.getHitTestValue();
 
-    // let obj: Map<string, Any> = new Map<string, Any>();
-    // obj.set("src", bundle.getString("src"));
-    // obj.set("url", bundle.getString("url"));
-    // obj.set("title", bundle.getString("title"));
-    //
-    // return obj;
-    return new Map<string, Any>()
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("src", hitValue.extra);
+    obj.set("url", hitValue.extra);
+    obj.set("title", hitValue.type);
+
+    return obj;
   }
 
   public requestImageRef(): Map<string, Any> {
-    // let msg: Message = InAppWebView.mHandler.obtainMessage();
-    // this.requestImageRef(msg);
-    // Bundle bundle = msg.peekData();
-    //
-    // let obj: Map<string, Any> = new Map<string, Any>();
-    // obj.set("url", bundle.getString("url"));
-    //
-    // return obj;
-    return new Map<string, Any>()
+    /// Android中方法可获取其他的属性，ohos只能返回对应图片或连接的url
+    let hitValue = this.controller.getHitTestValue();
+
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("src", hitValue.extra);
+    obj.set("url", hitValue.extra);
+    obj.set("title", hitValue.type);
+
+    return obj;
   }
 
   public createCompatWebMessageChannel(): WebMessageChannel {
@@ -742,11 +735,13 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public canScrollVertically(): boolean {
+    /// 对比可滚动高度及当前内容高度
     // return computeVerticalScrollRange() > computeVerticalScrollExtent();
     return false;
   }
 
   public canScrollHorizontally(): boolean {
+    /// 对比可滑动宽度及当前内容宽度
     // return computeHorizontalScrollRange() > computeHorizontalScrollExtent();
     return false;
   }
