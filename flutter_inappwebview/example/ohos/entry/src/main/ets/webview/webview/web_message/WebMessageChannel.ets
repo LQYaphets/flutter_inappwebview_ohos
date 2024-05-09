@@ -10,6 +10,7 @@ import JavaScriptBridgeJS from '../../plugin_scripts_js/JavaScriptBridgeJS';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
 import WebMessageCompatExt from '../../types/WebMessageCompatExt';
 import web_webview from '@ohos.web.webview';
+import WebMessagePortCompatExt from '../../types/WebMessagePortCompatExt';
 
 const LOG_TAG = "WebMessageChannel"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_web_message_channel_"
@@ -61,15 +62,10 @@ export class WebMessageChannel implements Disposable {
     if (this.webView != null && this.compatPorts.length > 0) {
       let webMessagePort: web_webview.WebMessagePort = this.compatPorts[index];
       let webMessageChannel: WebMessageChannel = this;
-      let webMessage: web_webview.WebMessage = message!.getData() as ArrayBuffer
       try {
-        webMessagePort.postMessageEvent(webMessage)
-        // webMessagePort.setWebMessageCallback(new WebMessagePortCompat.WebMessageCallbackCompat() {
-        //   public onMessage(port: WebMessagePortCompat, message: WebMessageCompat): void {
-        //     super.onMessage(port, message);
-        //     webMessageChannel.onMessage(index, message != null ? WebMessageCompatExt.fromMapWebMessageCompat(message) : null);
-        //   }
-        // });
+        webMessagePort.onMessageEventExt((msg) => {
+          webMessageChannel.onMessage(index, message != null ? WebMessageCompatExt.fromMapWebMessageCompat(msg) : null)
+        })
         result.success(true);
       } catch (e) {
         result.error(LOG_TAG, e.getMessage(), null);
@@ -79,36 +75,40 @@ export class WebMessageChannel implements Disposable {
     }
   }
 
-  //// 未完善，缺少compatPorts，缺少androidx.webkit.WebViewFeature和androidx.webkit.WebMessageCompat对应类型和方法
   public postMessageForInAppWebView(index: number, message: WebMessageCompatExt, result: MethodResult): void {
-    // if (this.webView != null && compatPorts.size() > 0 &&
-    //         WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_PORT_POST_MESSAGE)) {
-    //   let port: WebMessagePortCompat = compatPorts.get(index);
-    //   let webMessagePorts: List<WebMessagePortCompat> = new List<WebMessagePortCompat>();
-    //   let portsExt: List<WebMessagePortCompatExt> = message.getPorts();
-    //   if (portsExt != null) {
-    //     for (let portExt of portsExt) {
-    //       let webMessageChannel: WebMessageChannel | undefined = this.webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
-    //       if (webMessageChannel != null) {
-    //         webMessagePorts.add(webMessageChannel.compatPorts.get(portExt.getIndex()));
-    //       }
-    //     }
-    //   }
-    //   let data: Any = message.getData();
-    //   try {
-    //     if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
-    //             message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
-    //       port.postMessage(new WebMessageCompat((byte[]) data, webMessagePorts.toArray(new WebMessagePortCompat[0])));
-    //     } else {
-    //       port.postMessage(new WebMessageCompat(data != null ? data.toString() : null, webMessagePorts.toArray(new WebMessagePortCompat[0])));
-    //     }
-    //     result.success(true);
-    //   } catch (e) {
-    //     result.error(LOG_TAG, e.getMessage(), null);
-    //   }
-    // } else {
-    //   result.success(true);
-    // }
+    if (this.webView != null && this.compatPorts.length > 0) {
+      let port: web_webview.WebMessagePort = this.compatPorts[index];
+      let webMessagePorts: List<web_webview.WebMessagePort> = new List<web_webview.WebMessagePort>();
+      let portsExt: List<WebMessagePortCompatExt> = message.getPorts();
+      if (portsExt != null) {
+        for (let portExt of portsExt) {
+          let webMessageChannel: WebMessageChannel | undefined = this.webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
+          if (webMessageChannel != null) {
+            webMessagePorts.add(webMessageChannel.compatPorts[portExt.getIndex()]);
+          }
+        }
+      }
+      let data: Any = message.getData();
+      try {
+        /// 安卓端还会传入WebMessagePortCompat[]类型，目前ohos没有
+        if (data != null) {
+          let webMessageExt: web_webview.WebMessageExt = new web_webview.WebMessageExt()
+          webMessageExt.setArrayBuffer(data as ArrayBuffer)
+          webMessageExt.setType(web_webview.WebMessageType.ARRAY_BUFFER)
+          port.postMessageEventExt(webMessageExt);
+        } else {
+          let webMessageExt: web_webview.WebMessageExt = new web_webview.WebMessageExt()
+          webMessageExt.setString(data != null ? data.toString() : null)
+          webMessageExt.setType(web_webview.WebMessageType.STRING)
+          port.postMessageEventExt(webMessageExt);
+        }
+        result.success(true);
+      } catch (e) {
+        result.error(LOG_TAG, e.getMessage(), null);
+      }
+    } else {
+      result.success(true);
+    }
   }
 
   public closeForInAppWebView(index: number, result: MethodResult): void {

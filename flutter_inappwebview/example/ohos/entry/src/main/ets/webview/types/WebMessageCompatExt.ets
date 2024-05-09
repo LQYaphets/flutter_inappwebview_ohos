@@ -1,11 +1,11 @@
 import WebMessagePortCompatExt from './WebMessagePortCompatExt'
 import { List } from '@kit.ArkTS'
 import { Any } from '@ohos/flutter_ohos'
+import web_webview from '@ohos.web.webview';
 
 export default class WebMessageCompatExt {
   private data: Any
 
-  /// 缺少androidx.webkit.WebMessageCompat 中 public @interface Type 类似接口
   private type: number
 
   private ports: List<WebMessagePortCompatExt> | null
@@ -16,17 +16,15 @@ export default class WebMessageCompatExt {
     this.ports = ports;
   }
 
-
-  /// 未实现，未寻找androidx.webkit.WebMessageCompat对应类型和方法
-  // public static fromMapWebMessageCompat(message: WebMessageCompat): WebMessageCompatExt {
-  //  Object data;
-  //   if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
-  //     data = message.getArrayBuffer();
-  //   } else {
-  //     data = message.getData();
-  //   }
-  //   return new WebMessageCompatExt(data, message.getType(), null);
-  // }
+  public static fromMapWebMessageCompat(message: web_webview.WebMessageExt): WebMessageCompatExt {
+    let data: Any
+    if(message.getType() == web_webview.WebMessageType.ARRAY_BUFFER) {
+      data = message.getArrayBuffer()
+    } else {
+      data = message.getString()
+    }
+    return new WebMessageCompatExt(data, message.getType(), null);
+  }
 
   public static fromMap(map: Map<string, Any> | null): WebMessageCompatExt | null {
     if (map == null) {
