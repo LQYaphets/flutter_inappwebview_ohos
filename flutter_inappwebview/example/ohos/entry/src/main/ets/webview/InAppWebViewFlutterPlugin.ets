@@ -4,9 +4,11 @@ import {
   FlutterPlugin,
   FlutterPluginBinding
 } from '@ohos/flutter_ohos/src/main/ets/embedding/engine/plugins/FlutterPlugin';
+import { HeadlessInAppWebViewManager } from './headless_in_webview/HeadlessInAppWebViewManager';
 import MyCookieManager from './MyCookieManager';
 import PrintJobManager from './print_job/PrintJobManager';
 import FlutterWebViewFactory from './webview/FlutterWebViewFactory';
+import { InAppWebViewManager } from './webview/InAppWebViewManager';
 
 const TAG = "InAppWebViewFlutterPlugin";
 
@@ -16,6 +18,8 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
   public messenger: BinaryMessenger | null = null
   public printJobManager: PrintJobManager | null = null;
   public myCookieManager: MyCookieManager | null = null
+  public headlessInAppWebViewManager: HeadlessInAppWebViewManager | null = null;
+  public inAppWebViewManager: InAppWebViewManager | null = null;
 
   constructor() {
   }
@@ -30,7 +34,8 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
     this.flutterAssets = binding.getFlutterAssets();
     this.flutterWebViewFactory = new FlutterWebViewFactory(this);
     this.messenger = binding.getBinaryMessenger();
-    binding.getPlatformViewRegistry().registerViewFactory(FlutterWebViewFactory.VIEW_TYPE_ID, this.flutterWebViewFactory);
+    binding.getPlatformViewRegistry()
+      .registerViewFactory(FlutterWebViewFactory.VIEW_TYPE_ID, this.flutterWebViewFactory);
 
     this.myCookieManager = new MyCookieManager(this)
     this.printJobManager = new PrintJobManager(this);

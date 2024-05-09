@@ -11,7 +11,7 @@ import business_error from '@ohos.base';
 const LOG_TAG = "InAppWebViewManager"
 const METHOD_CHANNEL_NAME = "com.pichillilorenzo/flutter_inappwebview_manager"
 
-export class InAppWebviewManager extends ChannelDelegateImpl {
+export class InAppWebViewManager extends ChannelDelegateImpl {
 
   private plugin: InAppWebViewFlutterPlugin | null = null
 
