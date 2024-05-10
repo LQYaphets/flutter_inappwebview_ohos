@@ -44,6 +44,7 @@ import image from '@ohos.multimedia.image';
 import window from '@ohos.window';
 import animator, { AnimatorOptions,AnimatorResult } from '@ohos.animator';
 import common from '@ohos.app.ability.common';
+import { FindInteractionController } from '../../find_interaction/FindInteractionController';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -58,6 +59,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
   private initialUserOnlyScripts: Array<UserScript>;
+  public  findInteractionController: FindInteractionController | null = null;
   private javaScriptBridgeInterface: JavaScriptBridgeInterface | null = null;
   public channelDelegate: WebViewChannelDelegate;
   public webMessageChannels: Map<string, WebMessageChannel> = new Map<string, WebMessageChannel>()
