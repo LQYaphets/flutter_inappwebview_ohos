@@ -9,6 +9,7 @@ import MyCookieManager from './MyCookieManager';
 import PrintJobManager from './print_job/PrintJobManager';
 import FlutterWebViewFactory from './webview/FlutterWebViewFactory';
 import { InAppWebViewManager } from './webview/InAppWebViewManager';
+import common from '@ohos.app.ability.common';
 
 const TAG = "InAppWebViewFlutterPlugin";
 
@@ -20,6 +21,7 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
   public myCookieManager: MyCookieManager | null = null
   public headlessInAppWebViewManager: HeadlessInAppWebViewManager | null = null;
   public inAppWebViewManager: InAppWebViewManager | null = null;
+  public applicationContext: common.Context | null = null
 
   constructor() {
   }
@@ -34,6 +36,7 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin {
     this.flutterAssets = binding.getFlutterAssets();
     this.flutterWebViewFactory = new FlutterWebViewFactory(this);
     this.messenger = binding.getBinaryMessenger();
+    this.applicationContext = binding.getApplicationContext()
     binding.getPlatformViewRegistry()
       .registerViewFactory(FlutterWebViewFactory.VIEW_TYPE_ID, this.flutterWebViewFactory);
 
