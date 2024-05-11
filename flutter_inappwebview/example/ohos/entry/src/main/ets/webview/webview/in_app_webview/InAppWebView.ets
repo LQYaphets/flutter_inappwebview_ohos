@@ -758,12 +758,6 @@ export default class InAppWebView implements InAppWebViewInterface {
     })
   }
 
-  public getSelectedText(resultCallback: ValueCallback<string>): void {
-    this.controller.runJavaScriptExt(PluginScriptsUtil.GET_SELECTED_TEXT_JS_SOURCE).then((result) => {
-      resultCallback.onReceiveValue(result.getString())
-    })
-  }
-
   public saveWebArchive(baseName: string, autoName: boolean, callback: ValueCallback<string>): void {
     this.controller.storeWebArchive(baseName, autoName).then(fileName => {
       callback.onReceiveValue(fileName)
@@ -983,6 +977,16 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   hideContextMenu() {
     // TODO
+    // removeView(floatingContextMenu);
+    // this.floatingContextMenu = null;
+
+    if (this.channelDelegate != null) this.channelDelegate.onHideContextMenu();
+  }
+
+  public getSelectedText(resultCallback: ValueCallback<string>): void {
+    this.controller.runJavaScriptExt(PluginScriptsUtil.GET_SELECTED_TEXT_JS_SOURCE).then((result) => {
+      resultCallback.onReceiveValue(result.getString())
+    })
   }
 
   callAsyncJavaScript(functionBody: string, args: Map<string, Any>, contentWorld: ContentWorld | null, resultCallback: ValueCallback<string>) {
