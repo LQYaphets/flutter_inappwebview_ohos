@@ -801,7 +801,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     }
     let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("origin", origin)
-    channel.invokeMethod("onCloseWindow", obj);
+    channel.invokeMethod("onGeolocationPermissionsShowPrompt", obj);
   }
 
   public onGeolocationPermissionsHidePrompt(): void {
@@ -853,7 +853,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     channel.invokeMethod("onReceivedTouchIconUrl", obj);
   }
 
-  public onPermissionRequest(origin: string, resources: List<string>, frame: Any, callback: PermissionRequestCallback) {
+  public onPermissionRequest(origin: string, resources: Array<string>, frame: Any | null, callback: PermissionRequestCallback) {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) {
       callback.defaultBehaviour(null);

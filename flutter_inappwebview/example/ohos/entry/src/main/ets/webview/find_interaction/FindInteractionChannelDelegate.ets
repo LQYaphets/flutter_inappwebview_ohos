@@ -7,7 +7,7 @@ import { FindInteractionController } from './FindInteractionController';
 export class FindInteractionChannelDelegate extends ChannelDelegateImpl {
   private findInteractionController: FindInteractionController | null = null;
 
-  constructor(findInteractionController: FindInteractionController | null, channel: MethodChannel | null) {
+  constructor(findInteractionController: FindInteractionController | null, channel: MethodChannel) {
     super(channel);
     this.findInteractionController = findInteractionController;
   }

@@ -42,7 +42,7 @@ export default class FlutterWebViewFactory extends PlatformViewFactory {
       flutterWebView = inAppWebViewManager.keepAliveWebViews.get(keepAliveId);
       if (flutterWebView != null) {
         // be sure to remove the view from the previous parent.
-        let view: View = flutterWebView.getView();
+        let view = flutterWebView.getView();
         // if (view != null) {
         //   let parent:ViewGroup = view.getParent() ;
         //   if (parent != null) {

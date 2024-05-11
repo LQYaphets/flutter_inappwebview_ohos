@@ -11,7 +11,7 @@ export class HeadlessInAppWebView implements Disposable {
   public disposeAndGetFlutterWebView(): FlutterWebView | undefined{
     let newFlutterWebView: FlutterWebView | undefined = this.flutterWebView;
     if (this.flutterWebView != null) {
-      let view: View = this.flutterWebView.getView();
+      let view = this.flutterWebView.getView();
       if (view != null) {
         // restore WebView layout params and visibility
         // view.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

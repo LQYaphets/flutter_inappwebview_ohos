@@ -20,10 +20,12 @@ import { InAppBrowserDelegate } from '../../in_app_browser/InAppBrowserDelegate'
 import WebResourceErrorExt from '../../types/WebResourceErrorExt';
 import Util from '../../Util';
 import {
+  GeolocationPermissionsShowPromptCallback,
   JsAlertCallback,
   JsBeforeUnloadCallback,
   JsConfirmCallback,
-  JsPromptCallback
+  JsPromptCallback,
+  PermissionRequestCallback
 } from '../WebViewChannelDelegate';
 import JsAlertResponse from '../../types/JsAlertResponse';
 import JsConfirmResponse from '../../types/JsConfirmResponse';
@@ -34,6 +36,8 @@ import JsBeforeUnloadResponse from '../../types/JsBeforeUnloadResponse';
 import { camera } from '@kit.CameraKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import MimeTypes from '../../MimeTypes';
+import PermissionResponse from '../../types/PermissionResponse';
+import GeolocationPermissionShowPromptResponse from '../../types/GeolocationPermissionShowPromptResponse';
 
 const TAG = "InAppWebViewChromeClient";
 
@@ -76,6 +80,7 @@ export default class InAppWebViewChromeClient {
   }
   onPrompt = (event: Any, uiObject: Any) => {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
+    // TODO
     // 等API12适配的时候放开
     // if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
     //   this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null, new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
@@ -306,6 +311,7 @@ export default class InAppWebViewChromeClient {
     return true;
   }
   onResourceLoad = (event: Any) => {
+    // TODO 没有找到安卓对于方法
     Log.d(TAG, "onResourceLoad=" + JSON.stringify(event))
   }
   onScaleChange = (event: Any) => {
@@ -401,33 +407,53 @@ export default class InAppWebViewChromeClient {
     return response;
   }
   onHttpAuthRequest = (event: Any) => {
+    // TODO
     Log.d(TAG, "onHttpAuthRequest=" + JSON.stringify(event))
     return true;
   }
   onSslErrorEventReceive = (event: Any) => {
+    // TODO
     Log.d(TAG, "onSslErrorEventReceive=" + JSON.stringify(event))
   }
   onClientAuthenticationRequest = (event: Any) => {
+    // TODO
     Log.d(TAG, "onClientAuthenticationRequest=" + JSON.stringify(event))
   }
   onPermissionRequest = (event: Any) => {
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onPermissionRequest(event.request.getOrigin(), event.request.getAccessibleResource(), null,
+        new InnerPermissionRequestCallback(event.request));
+    } else {
+      event.request.deny();
+    }
     Log.d(TAG, "onPermissionRequest=" + JSON.stringify(event))
   }
   onContextMenuShow = (event: Any) => {
+    // TODO
     Log.d(TAG, "onContextMenuShow=" + JSON.stringify(event))
     return false;
   }
   onContextMenuHide = (callback: OnContextMenuHideCallback) => {
+    // TODO
     Log.d(TAG, "onContextMenuHide=")
   }
   onScroll = (event: Any) => {
     Log.d(TAG, "onScroll=" + JSON.stringify(event))
+    if (this.inAppWebView.channelDelegate != null) this.inAppWebView.channelDelegate.onScrollChanged(event.xOffset, event.yOffset);
   }
   onGeolocationShow = (event: Any) => {
     Log.d(TAG, "onGeolocationShow=" + JSON.stringify(event))
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onGeolocationPermissionsShowPrompt(event.origin, new InnerGeolocationPermissionsShowPromptCallback(event.origin, event.geolocation));
+    } else {
+      event.geolocation.invoke(event.origin, false, false);
+    }
   }
   onGeolocationHide = (event: Any) => {
     Log.d(TAG, "onGeolocationHide=" + JSON.stringify(event))
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onGeolocationPermissionsHidePrompt();
+    }
   }
   onFullScreenEnter = (event: Any) => {
     Log.d(TAG, "onFullScreenEnter=" + JSON.stringify(event))
@@ -885,5 +911,64 @@ class InnerJsBeforeUnloadCallback extends JsBeforeUnloadCallback {
         }
       }
     )
+  }
+}
+
+class InnerPermissionRequestCallback extends PermissionRequestCallback {
+  private request: PermissionRequest;
+
+  constructor(request: PermissionRequest) {
+    super();
+    this.request = request;
+  }
+
+  nonNullSuccess(response: PermissionResponse): boolean {
+    let action = response.getAction();
+    if (action != null) {
+      switch (action) {
+        case 1:
+          this.request.grant(response.getResources().convertToArray());
+          break;
+        case 0:
+        default:
+          this.request.deny();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(response: PermissionResponse | null): void {
+    this.request.deny();
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+}
+
+class InnerGeolocationPermissionsShowPromptCallback extends GeolocationPermissionsShowPromptCallback {
+  private geolocation: JsGeolocation;
+  private origin: string;
+
+  constructor(origin: string, geolocation: JsGeolocation) {
+    super();
+    this.geolocation = geolocation;
+    this.origin = origin;
+  }
+
+  nonNullSuccess(response: GeolocationPermissionShowPromptResponse): boolean {
+    this.geolocation.invoke(response.getOrigin(), response.isAllow(), response.isRetain());
+    return false;
+  }
+
+  defaultBehaviour(response: GeolocationPermissionShowPromptResponse | null): void {
+    this.geolocation.invoke(this.origin, false, false);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
   }
 }

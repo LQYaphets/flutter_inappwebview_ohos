@@ -20,7 +20,7 @@ export class FindInteractionController implements Disposable {
   constructor(webView: InAppWebViewInterface, plugin: InAppWebViewFlutterPlugin, id: Any, settings: FindInteractionSettings | null) {
     this.webView = webView;
     this.settings = settings;
-    let channel: MethodChannel = new MethodChannel(plugin.messenger, METHOD_CHANNEL_NAME_PREFIX + id);
+    let channel: MethodChannel = new MethodChannel(plugin.messenger!, METHOD_CHANNEL_NAME_PREFIX + id);
     this.channelDelegate = new FindInteractionChannelDelegate(this, channel);
   }
 
