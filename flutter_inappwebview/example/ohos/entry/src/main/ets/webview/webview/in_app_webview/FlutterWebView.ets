@@ -51,11 +51,11 @@ export class FlutterWebView extends PlatformWebView {
     // set MATCH_PARENT layout params to the WebView, otherwise it won't take all the available space!
     //TODO
     // this.webView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-    // let pullToRefreshSettings: PullToRefreshSettings = new PullToRefreshSettings();
-    // pullToRefreshSettings.parse(pullToRefreshInitialSettings);
-    // this.pullToRefreshLayout = new PullToRefreshLayout(context, plugin, id, pullToRefreshSettings);
-    // this.pullToRefreshLayout.addView(this.webView);
-    // this.pullToRefreshLayout.prepare();
+    let pullToRefreshSettings: PullToRefreshSettings = new PullToRefreshSettings();
+    pullToRefreshSettings.parse(pullToRefreshInitialSettings);
+    this.pullToRefreshLayout = new PullToRefreshLayout(plugin, id, pullToRefreshSettings);
+    this.pullToRefreshLayout.addView(this.webView);
+    this.pullToRefreshLayout.prepare();
 
     let findInteractionController: FindInteractionController = new FindInteractionController(this.webView, plugin, id, null);
     this.webView.findInteractionController = findInteractionController;

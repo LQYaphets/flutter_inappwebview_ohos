@@ -129,4 +129,8 @@ export default interface InAppWebViewInterface {
   getCertificate(): Promise<Array<cert.X509Cert>>
 
   clearHistory(): void
+
+  refresh(): void
+
+  scrollToTop(): void
 }

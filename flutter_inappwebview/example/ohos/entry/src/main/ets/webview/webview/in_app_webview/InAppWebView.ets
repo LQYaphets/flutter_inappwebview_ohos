@@ -277,6 +277,14 @@ export default class InAppWebView implements InAppWebViewInterface {
     web_webview.WebCookieManager.clearAllCookiesSync()
   }
 
+  refresh(): void{
+    this.controller.refresh()
+  }
+
+  scrollToTop(): void {
+    this.controller.scrollTo(0, 0)
+  }
+
   public clearAllCache(): void {
     this.controller.removeCache(true);
     this.clearCookies();
