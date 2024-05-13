@@ -27,6 +27,7 @@ dependencies:
     git:
       url: https://gitee.com/openharmony-sig/flutter_packages.git
       path: packages/path_provider/path_provider
+      ref: d3f6d21dc3792730ae6499cf196c380575772832
   permission_handler: 
     git:
       url: https://gitee.com/openharmony-sig/flutter_permission_handler.git
@@ -35,6 +36,7 @@ dependencies:
     git:
       url: https://gitee.com/openharmony-sig/flutter_packages.git
       path: packages/url_launcher/url_launcher
+      ref: d3f6d21dc3792730ae6499cf196c380575772832
   pointer_interceptor: ^0.9.3+4
   # mime: ^1.0.4
   # connectivity: ^0.4.5+6
@@ -54,6 +56,16 @@ dependency_overrides:
     path: ../../flutter_inappwebview_web
   flutter_inappwebview_ohos:
     path: ../../flutter_inappwebview_ohos
+  path_provider_ohos:
+    git:
+      url: https://gitee.com/openharmony-sig/flutter_packages.git
+      path: packages/path_provider/path_provider_ohos
+      ref: d3f6d21dc3792730ae6499cf196c380575772832
+  url_launcher_ohos: 
+    git:
+      url: https://gitee.com/openharmony-sig/flutter_packages.git
+      path: packages/url_launcher/url_launcher_ohos
+      ref: d3f6d21dc3792730ae6499cf196c380575772832
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,107 @@
+import { Any } from '@ohos/flutter_ohos'
+import SslCertificate from './SslCertificate'
+import SslError from './SslError'
+
+export default class URLProtectionSpace {
+  private id: number | null = null
+  private host: string
+  private protocol: string
+  private realm: string | null
+  private port: number
+  private sslCertificate: SslCertificate | null
+  private sslError: SslError | null
+
+  constructor(host: string, protocol: string, realm: string | null, port: number, sslCertificate: SslCertificate | null, sslError: SslError | null) {
+    this.host = host
+    this.protocol = protocol
+    this.realm = realm
+    this.port = port
+    this.sslCertificate = sslCertificate
+    this.sslError = sslError
+  }
+
+  public toMap(): Map<string, Any> {
+    let urlProtectionSpaceMap: Map<string, Any> = new Map<string, Any>();
+    urlProtectionSpaceMap.set("host", this.host);
+    urlProtectionSpaceMap.set("protocol", this.protocol);
+    urlProtectionSpaceMap.set("realm", this.realm);
+    urlProtectionSpaceMap.set("port", this.port);
+    // urlProtectionSpaceMap.set("sslCertificate", SslCertificateExt.toMap(this.sslCertificate));
+    urlProtectionSpaceMap.set("sslCertificate", null);
+    // urlProtectionSpaceMap.set("sslError", SslErrorExt.toMap(this.sslError));
+    urlProtectionSpaceMap.set("sslError", null);
+    urlProtectionSpaceMap.set("authenticationMethod", null);
+    urlProtectionSpaceMap.set("distinguishedNames", null);
+    urlProtectionSpaceMap.set("receivesCredentialSecurely", null);
+    urlProtectionSpaceMap.set("isProxy", null);
+    urlProtectionSpaceMap.set("proxyType", null);
+    return urlProtectionSpaceMap;
+  }
+
+  public getId(): number | null {
+    return this.id;
+  }
+
+  public setId(id: number | null): void {
+    this.id = id;
+  }
+
+  public getHost(): string {
+    return this.host;
+  }
+
+  public setHost(host: string): void {
+    this.host = host;
+  }
+
+  public getProtocol(): string {
+    return this.protocol;
+  }
+
+  public setProtocol(protocol: string): void {
+    this.protocol = protocol;
+  }
+
+  public getRealm(): string | null {
+    return this.realm;
+  }
+
+  public setRealm(realm: string): void {
+    this.realm = realm;
+  }
+
+  public getPort(): number {
+    return this.port;
+  }
+
+  public setPort(port: number): void {
+    this.port = port;
+  }
+
+  public getSslCertificate(): SslCertificate | null {
+    return this. sslCertificate;
+  }
+
+  public setSslCertificate(sslCertificateExt: SslCertificate | null): void {
+    this.sslCertificate = sslCertificateExt;
+  }
+
+  public getSslError(): SslError | null {
+    return this.sslError;
+  }
+
+  public setSslError(sslError: SslError | null): void {
+    this.sslError = sslError;
+  }
+
+  public toString(): string {
+    return "URLProtectionSpace{" +
+      "host='" + this.host + '\'' +
+      ", protocol='" + this.protocol + '\'' +
+      ", realm='" + this.realm + '\'' +
+      ", port=" + this.port +
+      ", sslCertificate=" + this.sslCertificate +
+      ", sslError=" + this.sslError +
+      '}';
+  }
+}

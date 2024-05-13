@@ -1,0 +1,20 @@
+import PluginScript from '../types/PluginScript';
+import { UserScriptInjectionTime } from '../types/UserScriptInjectionTime';
+import JavaScriptBridgeJS from './JavaScriptBridgeJS';
+
+export default class OnWindowFocusEventJS {
+  public static ON_WINDOW_FOCUS_EVENT_JS_PLUGIN_SCRIPT_GROUP_NAME = "IN_APP_WEBVIEW_ON_WINDOW_FOCUS_EVENT_JS_PLUGIN_SCRIPT";
+  public static ON_WINDOW_FOCUS_EVENT_JS_SOURCE = "(function(){" +
+    "  window.addEventListener('focus', function(e) {" +
+    "    window." + JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME + ".callHandler('onWindowFocus');" +
+    "  });" +
+    "})();";
+  public static ON_WINDOW_FOCUS_EVENT_JS_PLUGIN_SCRIPT = new PluginScript(
+    OnWindowFocusEventJS.ON_WINDOW_FOCUS_EVENT_JS_PLUGIN_SCRIPT_GROUP_NAME,
+    OnWindowFocusEventJS.ON_WINDOW_FOCUS_EVENT_JS_SOURCE,
+    UserScriptInjectionTime.AT_DOCUMENT_START,
+    null,
+    false,
+    null
+  );
+}
