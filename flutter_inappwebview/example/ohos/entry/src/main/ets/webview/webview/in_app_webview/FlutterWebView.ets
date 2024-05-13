@@ -55,11 +55,11 @@ export class FlutterWebView extends PlatformWebView {
     pullToRefreshSettings.parse(pullToRefreshInitialSettings);
     this.pullToRefreshLayout = new PullToRefreshLayout(plugin, id, pullToRefreshSettings);
     this.pullToRefreshLayout.addView(this.webView);
-    this.pullToRefreshLayout.prepare();
+    // this.pullToRefreshLayout.prepare();
 
     let findInteractionController: FindInteractionController = new FindInteractionController(this.webView, plugin, id, null);
     this.webView.findInteractionController = findInteractionController;
-    findInteractionController.prepare();
+    // findInteractionController.prepare();
 
     this.webView.prepare()
   }
