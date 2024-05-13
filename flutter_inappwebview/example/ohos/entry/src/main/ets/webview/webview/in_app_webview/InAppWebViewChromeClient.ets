@@ -48,6 +48,7 @@ export default class InAppWebViewChromeClient {
   private plugin: InAppWebViewFlutterPlugin;
   private inAppWebView: InAppWebView;
   private inAppBrowserDelegate: InAppBrowserDelegate | null = null;
+  private fullScreenExitHandler: FullScreenExitHandler | null = null;
 
   constructor(plugin: InAppWebViewFlutterPlugin, inAppWebView: InAppWebView) {
     this.plugin = plugin;
@@ -456,10 +457,24 @@ export default class InAppWebViewChromeClient {
     }
   }
   onFullScreenEnter = (event: Any) => {
+    // TODO 设置Ability进入全屏 这里缺少API获取当前window是否全屏状态 获取当前值 在exit时候 需要恢复到原来值。
+    this.fullScreenExitHandler = event.handler
     Log.d(TAG, "onFullScreenEnter=" + JSON.stringify(event))
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onEnterFullscreen();
+    }
+    this.inAppWebView.setInFullscreen(true);
   }
   onFullScreenExit = (event: Any) => {
     Log.d(TAG, "onFullScreenExit=" + JSON.stringify(event))
+    // TODO 设置Ability退出全屏
+    if (this.fullScreenExitHandler) {
+      this.fullScreenExitHandler.exitFullScreen()
+    }
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onExitFullscreen();
+    }
+    this.inAppWebView.setInFullscreen(false);
   }
   onWindowNew = (event: Any) => {
     Log.d(TAG, "onWindowNew=" + JSON.stringify(event))

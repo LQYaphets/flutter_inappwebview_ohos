@@ -921,6 +921,10 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.inFullscreen;
   }
 
+  setInFullscreen(inFullscreen: boolean) {
+    this.inFullscreen = inFullscreen;
+  }
+
   public getPlugin(): InAppWebViewFlutterPlugin {
     return this.plugin;
   }
