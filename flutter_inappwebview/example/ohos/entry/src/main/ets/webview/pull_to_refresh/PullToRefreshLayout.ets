@@ -21,9 +21,7 @@ export default class PullToRefreshLayout implements Disposable {
   }
 
   addView(webView: InAppWebView | null): void {
-    if(webView != null) {
-      this.webView = webView
-    }
+    this.webView = webView
   }
 
   public prepare(): void {
