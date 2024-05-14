@@ -113,6 +113,7 @@
                 <filteritem type='filepath' name="flutter_inappwebview_ohos/ohos/har/flutter.har" desc='二进制文件,不影响兼容性'/>
                 <filteritem type='filepath' name="flutter_inappwebview/example/ohos/dta/icudtl.dat" desc='二进制文件,不影响兼容性'/>
                 <filteritem type='filepath' name="flutter_inappwebview/example/ohos/entry/har/fluttertoast.har" desc='二进制文件,不影响兼容性'/>
+                <filteritem type='filepath' name="flutter_inappwebview_ohos/example/ohos/dta/icudtl.dat" desc='二进制文件,不影响兼容性'/>
             </filefilter>
         </filefilterlist>
     </oatconfig>
