@@ -28,6 +28,20 @@ class EnumAndroidPlatform implements EnumPlatform, AndroidPlatform {
   final targetPlatformName = "android";
 }
 
+class EnumOhosPlatform implements EnumPlatform, OhosPlatform {
+  final String? available;
+  final String? apiName;
+  final String? apiUrl;
+  final String? note;
+  final dynamic value;
+
+  const EnumOhosPlatform(
+      {this.available, this.apiName, this.apiUrl, this.note, this.value});
+
+  final name = "Ohos native WebView";
+  final targetPlatformName = "ohos";
+}
+
 class EnumIOSPlatform implements EnumPlatform, IOSPlatform {
   final String? available;
   final String? apiName;

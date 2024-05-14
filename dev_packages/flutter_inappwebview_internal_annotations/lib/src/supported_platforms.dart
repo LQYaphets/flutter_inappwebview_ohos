@@ -22,6 +22,18 @@ class AndroidPlatform implements Platform {
   final targetPlatformName = "android";
 }
 
+class OhosPlatform implements Platform {
+  final String? available;
+  final String? apiName;
+  final String? apiUrl;
+  final String? note;
+
+  const OhosPlatform({this.available, this.apiName, this.apiUrl, this.note});
+
+  final name = "Ohos native WebView";
+  final targetPlatformName = "ohos";
+}
+
 class IOSPlatform implements Platform {
   final String? available;
   final String? apiName;
