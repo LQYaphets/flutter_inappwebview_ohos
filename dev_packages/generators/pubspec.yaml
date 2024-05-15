@@ -15,9 +15,7 @@ dependencies:
   flutter_inappwebview_internal_annotations:
     git:
       url: "https://gitee.com/simplelove520/flutter_inappwebview.git"
-      path: "/dev_packages/flutter_inappwebview_internal_annotations"
-
-    
+      path: "dev_packages/flutter_inappwebview_internal_annotations"  
 
 dev_dependencies:
   build_runner: ^2.4.0
