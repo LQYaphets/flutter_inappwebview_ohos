@@ -15,6 +15,7 @@
 
 import { MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
+import { Params } from '@ohos/flutter_ohos/src/main/ets/plugin/platform/PlatformView'
 import { DVModel, DVModelParameters } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicView';
 import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';

@@ -15,6 +15,7 @@
 
 import web_webview from '@ohos.web.webview'
 import bundleManager from '@ohos.bundle.bundleManager';
+import { Params } from '@ohos/flutter_ohos/src/main/ets/plugin/platform/PlatformView'
 import { DVModel } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicView';
 import { createDVModelFromJson } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicViewJson';
 import URLRequest from '../../types/URLRequest';

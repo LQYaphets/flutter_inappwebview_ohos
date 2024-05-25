@@ -22,7 +22,7 @@ import InAppWebView from './InAppWebView'
 export struct OhosWebView {
   @Prop params: Params;
   controller: web_webview.WebviewController = new web_webview.WebviewController()
-  inAppWebview: InAppWebView | null = null
+  inAppWebView: InAppWebView | null = null
 
   aboutToAppear(): void {
 
@@ -117,7 +117,7 @@ export struct OhosWebView {
         .darkMode(this.inAppWebView!.customSettings.darkMode)
         .forceDarkAccess(this.inAppWebView!.customSettings.forceDarkAccess)
         .pinchSmooth(this.inAppWebView!.customSettings.pinchSmooth)
-        .allowWindowOpenMethod(this.inAppWebView!.customSettings.allowWindowOenMethod)
+        .allowWindowOpenMethod(this.inAppWebView!.customSettings.allowWindowOpenMethod)
         .layoutMode(this.inAppWebView!.customSettings.layoutMode)
         .enableNativeEmbedMode(this.inAppWebView!.customSettings.enableNativeEmbedMode)
     }
