@@ -953,7 +953,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.userContentController;
   }
 
-  private onControllerAttached = () => {
+  public onControllerAttached = () => {
     Log.d(TAG, "onControllerAttached");
     this.controllerAttached = true
   }
