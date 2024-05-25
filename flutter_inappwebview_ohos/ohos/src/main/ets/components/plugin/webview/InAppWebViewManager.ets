@@ -15,6 +15,7 @@
 
 import { MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
+import { Params } from '@ohos/flutter_ohos/src/main/ets/plugin/platform/PlatformView'
 import { DVModel, DVModelParameters } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicView';
 import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';
@@ -147,7 +148,7 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
     if (flutterWebView != null) {
       flutterWebView.keepAliveId = null;
       // be sure to remove the view from the previous parent.
-      let view: DVModel = flutterWebView.getView();
+      let view: WrappedBuilder<[Params]> = flutterWebView.getView();
       if (view != null) {
         // let parent: ViewGroup = view.getParent();
         // if (parent != null) {
