@@ -14,6 +14,7 @@
 */
 
 import { DVModel } from '@ohos/flutter_ohos/src/main/ets/view/DynamicView/dynamicView';
+import { Params } from '@ohos/flutter_ohos/src/main/ets/plugin/platform/PlatformView';
 import PlatformWebView from '../PlatformWebView';
 import InAppWebViewFlutterPlugin from '../../InAppWebViewFlutterPlugin';
 import InAppWebView from './InAppWebView';
@@ -79,9 +80,17 @@ export class FlutterWebView extends PlatformWebView {
     this.webView.prepare()
   }
 
-  getView(): DVModel {
+  getView(): WrappedBuilder<[Params]> {
     // return this.pullToRefreshLayout != null ? this.pullToRefreshLayout : this.webView;
     return this.webView!.getView()
+  }
+
+  getController() {
+    return this.webView!.getController();
+  }
+
+  getWebView() {
+    return this.webView;
   }
 
   makeInitialLoad(params: Map<string, Any>): void {

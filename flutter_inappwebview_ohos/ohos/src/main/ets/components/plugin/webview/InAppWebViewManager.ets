@@ -147,7 +147,7 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
     if (flutterWebView != null) {
       flutterWebView.keepAliveId = null;
       // be sure to remove the view from the previous parent.
-      let view: DVModel = flutterWebView.getView();
+      let view: WrappedBuilder<[Params]> = flutterWebView.getView();
       if (view != null) {
         // let parent: ViewGroup = view.getParent();
         // if (parent != null) {
