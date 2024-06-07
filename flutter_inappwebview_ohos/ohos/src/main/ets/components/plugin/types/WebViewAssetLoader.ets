@@ -22,7 +22,7 @@ import MimeUtil from './MimeUtil';
 const TAG = "WebViewAssetLoader";
 
 export interface PathHandler {
-  handle(path: string): Promise<WebResourceResponse | null>;
+  handle(path: string): WebResourceResponse;
 }
 
 //读取rawfile目录文件
@@ -33,12 +33,14 @@ export class AssetsPathHandler implements PathHandler {
     this.context = context;
   }
 
-  async handle(path: string): Promise<WebResourceResponse> {
+  handle(path: string): WebResourceResponse {
     let webResponse = new WebResourceResponse();
     try {
-      let contentData = await this.context.resourceManager.getRawFileContent(path);
-      webResponse.setResponseData(contentData);
-      webResponse.setResponseMimeType(MimeUtil.guessMimeType(path));
+      this.context.resourceManager.getRawFileContent(path).then(contentData => {
+        webResponse.setResponseData(contentData);
+        webResponse.setResponseMimeType(MimeUtil.guessMimeType(path));
+        webResponse.setResponseIsReady(true);
+      })
     } catch (e) {
       Log.e(TAG, "Error opening asset path: " + path, e);
     }
@@ -54,12 +56,14 @@ export class ResourcesPathHandler implements PathHandler {
     this.context = context;
   }
 
-  async handle(path: string): Promise<WebResourceResponse> {
+  handle(path: string): WebResourceResponse {
     let webResponse = new WebResourceResponse();
     try {
-      let contentData = await this.context.resourceManager.getRawFileContent(path);
-      webResponse.setResponseData(contentData);
-      webResponse.setResponseMimeType(MimeUtil.guessMimeType(path));
+      this.context.resourceManager.getRawFileContent(path).then(contentData => {
+        webResponse.setResponseData(contentData);
+        webResponse.setResponseMimeType(MimeUtil.guessMimeType(path));
+        webResponse.setResponseIsReady(true);
+      });
     } catch (e) {
       Log.e(TAG, "Error opening asset path: " + path, e);
     }
@@ -77,15 +81,16 @@ export class InternalStoragePathHandler implements PathHandler {
     this.directory = directory.endsWith("/") ? directory : (directory + "/");
   }
 
-  async handle(path: string): Promise<WebResourceResponse> {
+  handle(path: string): WebResourceResponse {
     let webResponse = new WebResourceResponse();
     try {
       let stream = fs.createStreamSync(this.directory + path, "r+")
       let arrayBuffer = new ArrayBuffer(4096);
-      let readLen = await stream.read(arrayBuffer);
+      let readLen = stream.readSync(arrayBuffer);
       let contentData = buffer.from(arrayBuffer, 0, readLen).buffer
       webResponse.setResponseData(contentData);
       webResponse.setResponseMimeType(MimeUtil.guessMimeType(path));
+      webResponse.setResponseIsReady(true);
     } catch (e) {
       Log.e(TAG, "Error opening asset path: " + path, e);
     }
@@ -146,15 +151,19 @@ export default class WebViewAssetLoader {
     this.mMatchers = pathMatchers;
   }
 
-  async shouldInterceptRequest(url: uri.URI) {
+  shouldInterceptRequest(url: uri.URI) {
     for (let matcher of this.mMatchers) {
       let handler = matcher.match(url);
       // The requested URL doesn't match the URL where this handler has been registered.
-      if (handler == null) continue;
+      if (handler == null) {
+        continue;
+      }
       let suffixPath = matcher.getSuffixPath(url.path);
-      let response = await handler.handle(suffixPath);
+      let response = handler.handle(suffixPath);
       // Handler doesn't want to intercept this request, try next handler.
-      if (response == null) continue;
+      if (response == null) {
+        continue;
+      }
       return response;
     }
     return null;

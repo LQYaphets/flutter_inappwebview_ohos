@@ -64,6 +64,7 @@ import common from '@ohos.app.ability.common';
 import { FindInteractionController } from '../../find_interaction/FindInteractionController';
 import { InAppWebViewClient } from './InAppWebViewClient';
 import { InAppWebViewClientCompat } from './InAppWebViewClientCompat';
+import PullToRefreshLayout from '../../pull_to_refresh/PullToRefreshLayout';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -108,6 +109,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   public controller: web_webview.WebviewController = new web_webview.WebviewController();
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
+  private pullToRefreshLayout: PullToRefreshLayout | null = null;
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>, contextMenu?: Map<string, Any>) {
@@ -123,6 +125,14 @@ export default class InAppWebView implements InAppWebViewInterface {
     // if (plugin != null && plugin.activity != null) {
     //   plugin.activity.registerForContextMenu(this);
     // }
+  }
+
+  setPullToRefreshLayout(pullToRefreshLayout: PullToRefreshLayout) {
+    this.pullToRefreshLayout = pullToRefreshLayout;
+  }
+
+  getPullToRefreshLayout(): PullToRefreshLayout {
+    return this.pullToRefreshLayout!!;
   }
 
   public async createWebClient(inAppBrowserDelegate: InAppBrowserDelegate): Promise<void> {

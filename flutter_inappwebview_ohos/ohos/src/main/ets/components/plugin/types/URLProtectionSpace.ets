@@ -23,17 +23,26 @@ export default class URLProtectionSpace {
   private protocol: string
   private realm: string | null
   private port: number
-  private sslCertificate: SslCertificate | null
-  private sslError: SslError | null
+  private sslCertificate: SslCertificate | null = null
+  private sslError: SslError | null = null
 
-  constructor(host: string, protocol: string, realm: string | null, port: number, sslCertificate: SslCertificate | null, sslError: SslError | null) {
+  constructor(host: string, protocol: string, realm: string | null, port: number, id?: number,
+    sslCertificate?: SslCertificate, sslError?: SslError) {
     this.host = host
     this.protocol = protocol
     this.realm = realm
     this.port = port
-    this.sslCertificate = sslCertificate
-    this.sslError = sslError
+    if (id) {
+      this.id = id;
+    }
+    if (sslCertificate) {
+      this.sslCertificate = sslCertificate;
+    }
+    if (sslError) {
+      this.sslError = sslError
+    }
   }
+
 
   public toMap(): Map<string, Any> {
     let urlProtectionSpaceMap: Map<string, Any> = new Map<string, Any>();
@@ -94,7 +103,7 @@ export default class URLProtectionSpace {
   }
 
   public getSslCertificate(): SslCertificate | null {
-    return this. sslCertificate;
+    return this.sslCertificate;
   }
 
   public setSslCertificate(sslCertificateExt: SslCertificate | null): void {

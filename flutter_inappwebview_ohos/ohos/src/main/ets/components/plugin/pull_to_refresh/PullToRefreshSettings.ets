@@ -35,25 +35,25 @@ export default class PullToRefreshSettings implements ISettings<PullToRefreshLay
       if(key == null) {
         continue;
       }
-      
+
       switch (key) {
         case "enabled":
-          this.enabled = settings[key] as boolean;
+          this.enabled = settings.get(key) as boolean;
           break;
         case "color":
-          this.color = settings[key] as string;
+          this.color = settings.get(key) as string;
           break;
         case "backgroundColor":
-          this.backgroundColor = settings[key] as string;
+          this.backgroundColor = settings.get(key)as string;
           break;
         case "distanceToTriggerSync":
-          this.distanceToTriggerSync = settings[key] as number;
+          this.distanceToTriggerSync = settings.get(key) as number;
           break;
         case "slingshotDistance":
-          this.slingshotDistance = settings[key] as number;
+          this.slingshotDistance = settings.get(key) as number;
           break;
         case "size":
-          this.size = settings[key] as number;
+          this.size = settings.get(key) as number;
           break;
       }
     }

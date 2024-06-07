@@ -39,7 +39,8 @@ export default class WebViewAssetLoaderExt implements Disposable {
     this.customPathHandlers = customPathHandlers;
   }
 
-  static fromMap(map: Map<string, Any> | null, plugin: InAppWebViewFlutterPlugin, context: Context): WebViewAssetLoaderExt | null {
+  static fromMap(map: Map<string, Any> | null, plugin: InAppWebViewFlutterPlugin,
+    context: Context): WebViewAssetLoaderExt | null {
     if (map == null) {
       return null;
     }
@@ -110,26 +111,27 @@ class PathHandlerExt implements PathHandler, Disposable {
     this.channelDelegate = new PathHandlerExtChannelDelegate(this, channel);
   }
 
-  async handle(path: string): Promise<WebResourceResponse | null> {
+  handle(path: string): WebResourceResponse {
+    let webResourceResponse = new WebResourceResponse()
     if (this.channelDelegate != null) {
-      let response: WebResourceResponseExt | null = null;
       try {
-        response = await this.channelDelegate.handleSync(path);
+        this.channelDelegate.handleSync(path).then(response => {
+          if (response != null) {
+            webResourceResponse.setResponseMimeType(response!.getContentType())
+            webResourceResponse.setResponseEncoding(response!.getContentEncoding())
+            webResourceResponse.setResponseCode(response!.getStatusCode())
+            webResourceResponse.setReasonMessage(response!.getReasonPhrase())
+            webResourceResponse.setResponseData(response!.getData())
+            webResourceResponse.setResponseIsReady(true);
+          } else {
+            webResourceResponse.setResponseIsReady(false)
+          }
+        })
       } catch (e) {
-        Log.e(TAG, "handle error", e);
-        return null;
-      }
-      if (response != null) {
-        let webResourceResponse = new WebResourceResponse()
-        webResourceResponse.setResponseMimeType(response!.getContentType())
-        webResourceResponse.setResponseEncoding(response!.getContentEncoding())
-        webResourceResponse.setResponseCode(response!.getStatusCode())
-        webResourceResponse.setReasonMessage(response!.getReasonPhrase())
-        webResourceResponse.setResponseData(response!.getData())
-        return webResourceResponse;
+        webResourceResponse.setResponseIsReady(false)
       }
     }
-    return null;
+    return webResourceResponse;
   }
 
   dispose(): void {
@@ -150,7 +152,9 @@ class PathHandlerExtChannelDelegate extends ChannelDelegateImpl {
 
   handle(path: string, callback: HandleCallback): void {
     let channel = this.getChannel();
-    if (channel == null) return;
+    if (channel == null) {
+      return;
+    }
     let obj: Map<String, Any> = new Map<String, Any>();
     obj.set("path", path);
     channel.invokeMethod("handle", obj, callback);
@@ -158,7 +162,9 @@ class PathHandlerExtChannelDelegate extends ChannelDelegateImpl {
 
   async handleSync(path: string) {
     let channel = this.getChannel();
-    if (channel == null) return null;
+    if (channel == null) {
+      return null;
+    }
     let callback = new SyncHandleCallback();
     let obj: Map<String, Any> = new Map<String, Any>();
     obj.set("path", path);

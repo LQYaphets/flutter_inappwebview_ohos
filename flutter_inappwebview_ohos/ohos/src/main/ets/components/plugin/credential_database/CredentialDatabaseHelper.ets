@@ -15,11 +15,13 @@
 
 import URLCredentialContract from './URLCredentialContract';
 import URLProtectionSpaceContract from './URLProtectionSpaceContract';
+import CredentialDatabase from  './CredentialDatabase';
 import { Context } from '@kit.AbilityKit';
+import data_rdb from '@ohos.data.relationalStore'
 
 export default class CredentialDatabaseHelper {
   private static SQL_CREATE_PROTECTION_SPACE_TABLE: string =
-    "CREATE TABLE " + URLProtectionSpaceContract.TABLE_NAME + " (" +
+    "CREATE TABLE IF NOT EXISTS " + URLProtectionSpaceContract.TABLE_NAME + " (" +
     URLProtectionSpaceContract._ID + " INTEGER PRIMARY KEY," +
     URLProtectionSpaceContract.COLUMN_NAME_HOST + " TEXT NOT NULL," +
     URLProtectionSpaceContract.COLUMN_NAME_PROTOCOL + " TEXT," +
@@ -31,7 +33,7 @@ export default class CredentialDatabaseHelper {
       ");";
 
   private static SQL_CREATE_CREDENTIAL_TABLE: string =
-    "CREATE TABLE " + URLCredentialContract.TABLE_NAME + " (" +
+    "CREATE TABLE IF NOT EXISTS " + URLCredentialContract.TABLE_NAME + " (" +
     URLCredentialContract._ID + " INTEGER PRIMARY KEY," +
     URLCredentialContract.COLUMN_NAME_USERNAME + " TEXT NOT NULL," +
     URLCredentialContract.COLUMN_NAME_PASSWORD + " TEXT NOT NULL," +
@@ -49,5 +51,32 @@ export default class CredentialDatabaseHelper {
   private static SQL_DELETE_CREDENTIAL_TABLE: string =
     "DROP TABLE IF EXISTS " + URLCredentialContract.TABLE_NAME;
 
-  constructor(context: Context) {}
+  private rdbStore: data_rdb.RdbStore | null = null;
+  private context : Context;
+
+  constructor(context: Context) {
+    this.context = context;
+  }
+
+  private async initRdb() {
+    if (this.rdbStore != null) {
+      return
+    }
+    this.rdbStore = await data_rdb.getRdbStore(this.context, {
+      name: CredentialDatabase.DATABASE_NAME, securityLevel: data_rdb.SecurityLevel.S1
+    })
+    await this.rdbStore.executeSql(CredentialDatabaseHelper.SQL_CREATE_PROTECTION_SPACE_TABLE);
+    await this.rdbStore.executeSql(CredentialDatabaseHelper.SQL_CREATE_CREDENTIAL_TABLE);
+  }
+
+  async clearAllTables() {
+    await this.initRdb();
+    await this.rdbStore?.executeSql(CredentialDatabaseHelper.SQL_DELETE_PROTECTION_SPACE_TABLE);
+    await this.rdbStore?.executeSql(CredentialDatabaseHelper.SQL_DELETE_CREDENTIAL_TABLE);
+  }
+
+  async getRdbStore() {
+    await this.initRdb();
+    return this.rdbStore!;
+  }
 }
