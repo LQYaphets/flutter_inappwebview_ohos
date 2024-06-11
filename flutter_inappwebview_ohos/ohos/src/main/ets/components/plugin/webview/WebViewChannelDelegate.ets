@@ -639,7 +639,11 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.canScrollHorizontally:
         if (this.webView != null) {
-          result.success(this.webView.canScrollHorizontally());
+          this.webView.canScrollHorizontally({
+            onReceiveValue(canScroll: boolean | null): void {
+              result.success(canScroll);
+            }
+          });
         } else {
           result.success(false);
         }

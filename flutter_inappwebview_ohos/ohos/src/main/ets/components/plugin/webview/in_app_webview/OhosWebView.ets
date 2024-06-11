@@ -121,6 +121,7 @@ export struct OhosWebView {
       .onSafeBrowsingCheckResult(this.inAppWebView!.inAppWebViewChromeClient?.onSafeBrowsingCheckResult)
       .onNativeEmbedLifecycleChange(this.inAppWebView!.inAppWebViewChromeClient?.onNativeEmbedLifecycleChange)
       .onNativeEmbedGestureEvent(this.inAppWebView!.inAppWebViewChromeClient?.onNativeEmbedGestureEvent)
+      .onAreaChange(this.inAppWebView!.onAreaChange)
       .domStorageAccess(this.inAppWebView!.customSettings.domStorageAccess)
       .fileAccess(this.inAppWebView!.customSettings.fileAccess)
       .imageAccess(this.inAppWebView!.customSettings.imageAccess)
