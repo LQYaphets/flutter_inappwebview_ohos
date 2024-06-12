@@ -15,4 +15,5 @@
 
 export default class EventConstant {
     public static readonly EVENT_PULL_SETREFRESHING = "pull_setRefreshing";
+    public static readonly EVENT_UPDATE_STARTSCRIPTS = "update_startScripts";
 }

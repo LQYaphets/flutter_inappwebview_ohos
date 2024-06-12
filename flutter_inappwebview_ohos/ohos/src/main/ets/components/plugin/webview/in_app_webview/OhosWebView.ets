@@ -20,6 +20,7 @@ import { Params } from '@ohos/flutter_ohos/src/main/ets/plugin/platform/Platform
 import { FlutterWebView } from './FlutterWebView'
 import InAppWebView from './InAppWebView'
 import EventConstant from '../../EventConstant'
+import { JSON } from '@kit.ArkTS';
 
 @Component
 export struct OhosWebView {
@@ -28,18 +29,25 @@ export struct OhosWebView {
   inAppWebView: InAppWebView | null = null
   @State isRefreshing: boolean = false
   @State isEnableRefresh: boolean = false
+  @State startScripts: Array<ScriptItem> = [];
 
   aboutToAppear(): void {
     this.isEnableRefresh = this.inAppWebView!.getPullToRefreshLayout().settings.enabled;
+    this.startScripts = this.inAppWebView!.userContentController.getStartScripts()
     let context = getContext() as common.UIAbilityContext;
     context.eventHub.on(EventConstant.EVENT_PULL_SETREFRESHING, (refreshing : boolean) => {
       this.isRefreshing = refreshing;
+    });
+
+    context.eventHub.on(EventConstant.EVENT_UPDATE_STARTSCRIPTS, (scripts : Array<ScriptItem>) => {
+      this.startScripts = scripts;
     });
   }
 
   aboutToDisappear(): void {
     let context = getContext() as common.UIAbilityContext;
     context.eventHub.off(EventConstant.EVENT_PULL_SETREFRESHING);
+    context.eventHub.off(EventConstant.EVENT_UPDATE_STARTSCRIPTS);
   }
 
   build() {
@@ -157,6 +165,7 @@ export struct OhosWebView {
       .allowWindowOpenMethod(this.inAppWebView!.customSettings.allowWindowOpenMethod)
       .layoutMode(this.inAppWebView!.customSettings.layoutMode)
       .enableNativeEmbedMode(this.inAppWebView!.customSettings.enableNativeEmbedMode)
+      .javaScriptOnDocumentStart(this.startScripts)
   }
 }
 
