@@ -23,9 +23,9 @@ export default class URLAuthenticationChallenge {
     this.protectionSpace = protectionSpace
   }
 
-  public toMap(): Map<string, Any> {
+  public async toMap() {
     let challengeMap: Map<string, Any> = new Map<string, Any>();
-    challengeMap.set("protectionSpace", this.protectionSpace.toMap());
+    challengeMap.set("protectionSpace", await this.protectionSpace.toMap());
     return challengeMap;
   }
 

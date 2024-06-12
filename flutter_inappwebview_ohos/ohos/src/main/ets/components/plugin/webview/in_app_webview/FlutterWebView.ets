@@ -61,7 +61,7 @@ export class FlutterWebView extends PlatformWebView {
       })
     }
 
-    this.webView = new InAppWebView(context, plugin, id, windowId, customSettings, userScripts)
+    this.webView = new InAppWebView(context, plugin, id, windowId, customSettings, userScripts, contextMenu)
     displayListenerProxy.onPostWebViewInitialization(); //displayListenerProxy.onPostWebViewInitialization(displayManager);
 
     // set MATCH_PARENT layout params to the WebView, otherwise it won't take all the available space!
@@ -102,23 +102,14 @@ export class FlutterWebView extends PlatformWebView {
     let initialData: Map<string, Any> = params.get("initialData");
     if (windowId != null && windowId != undefined) {
       if (this.webView.plugin != null && this.webView.plugin.inAppWebViewManager != null) {
-        //TODO
-        // let resultMsg: Message = this.webView.plugin.inAppWebViewManager.windowWebViewMessages.get(windowId);
-        // if (resultMsg != null) {
-        //   ((WebView.WebViewTransport) resultMsg.obj).setWebView(webView);
-        //   resultMsg.sendToTarget();
-        //
-        //   if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-        //     webView.post(new Runnable() {
-        //       @Override
-        //       public void run() {
-        //         if (webView != null) {
-        //           webView.prepareAndAddUserScripts();
-        //         }
-        //     }
-        //     });
-        //   }
-        // }
+        let resultMsg = this.webView.plugin.inAppWebViewManager.windowWebViewMessages.get(windowId);
+        if (resultMsg) {
+          resultMsg.setWebController(this.getController())
+
+          if (this.webView != null) {
+            this.webView.prepareAndAddUserScripts();
+          }
+        }
       }
     } else {
       if (initialFile != null) {

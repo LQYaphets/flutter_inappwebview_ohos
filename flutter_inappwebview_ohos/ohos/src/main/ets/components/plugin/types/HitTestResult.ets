@@ -29,7 +29,6 @@ export default class HitTestResult {
     if (hitTestResult == null) {
       return null;
     }
-
     return new HitTestResult(hitTestResult.type, hitTestResult.extra);
   }
 

@@ -35,8 +35,7 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
 
   public controller: web_webview.WebviewController = new web_webview.WebviewController();
 
-  /// 机制不同，缺少类似于android.os.message方法
-  // public windowWebViewMessages: Map<number, Message> = new Map<number, Message>()
+  public windowWebViewMessages: Map<number, ControllerHandler> = new Map<number, ControllerHandler>()
 
   public windowAutoincrementId: number = 0
 
@@ -65,27 +64,27 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
         }
         break;
       case "getSafeBrowsingPrivacyPolicyUrl":
-        /// 返回指向安全浏览报告的隐私策略的URL。
+      /// 返回指向安全浏览报告的隐私策略的URL。
         result.success(null);
         break;
       case "setSafeBrowsingAllowlist":
-        /// 配置一组免于安全浏览检查的主机（域名/IP地址）
-        /// ohos非法和欺诈网站是强制启用的
-        /// 目前还未找到实现方法
+      /// 配置一组免于安全浏览检查的主机（域名/IP地址）
+      /// ohos非法和欺诈网站是强制启用的
+      /// 目前还未找到实现方法
         result.success(false);
         break;
       case "getCurrentWebViewPackage":
-        // {
-        //   Context context = null;
-        //   if (plugin != null) {
-        //     context = plugin.activity;
-        //     if (context == null) {
-        //       context = plugin.applicationContext;
-        //     }
-        //   }
-        //   PackageInfo packageInfo = context != null ? WebViewCompat.getCurrentWebViewPackage(context) : null;
-        //   result.success(packageInfo != null ? convertWebViewPackageToMap(packageInfo) : null);
-        // }
+      // {
+      //   Context context = null;
+      //   if (plugin != null) {
+      //     context = plugin.activity;
+      //     if (context == null) {
+      //       context = plugin.applicationContext;
+      //     }
+      //   }
+      //   PackageInfo packageInfo = context != null ? WebViewCompat.getCurrentWebViewPackage(context) : null;
+      //   result.success(packageInfo != null ? convertWebViewPackageToMap(packageInfo) : null);
+      // }
         break;
       case "setWebContentsDebuggingEnabled":
         {
@@ -95,11 +94,11 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
         result.success(true);
         break;
       case "getVariationsHeader":
-        /// 获取编码后用作X-Client-Data HTTP标头的WebView变体，未找到实现
+      /// 获取编码后用作X-Client-Data HTTP标头的WebView变体，未找到实现
         result.success(null);
         break;
       case "isMultiProcessEnabled":
-        /// 监测WebView是否在多进程模式下运行，未找到对应实现
+      /// 监测WebView是否在多进程模式下运行，未找到对应实现
         result.success(false);
         break;
       case "disableWebView":
@@ -114,19 +113,19 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
         result.success(true);
         break;
       case "clearAllCache":
-        // {
-        //   Context context = null;
-        //   if (plugin != null) {
-        //     context = plugin.activity;
-        //     if (context == null) {
-        //       context = plugin.applicationContext;
-        //     }
-        //     if (context != null) {
-        //       boolean includeDiskFiles = (boolean) call.argument("includeDiskFiles");
-        //       clearAllCache(context, includeDiskFiles);
-        //     }
-        //   }
-        // }
+      // {
+      //   Context context = null;
+      //   if (plugin != null) {
+      //     context = plugin.activity;
+      //     if (context == null) {
+      //       context = plugin.applicationContext;
+      //     }
+      //     if (context != null) {
+      //       boolean includeDiskFiles = (boolean) call.argument("includeDiskFiles");
+      //       clearAllCache(context, includeDiskFiles);
+      //     }
+      //   }
+      // }
         result.success(true);
         break;
       default:
@@ -184,7 +183,7 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
     //   }
     // }
     this.keepAliveWebViews.clear();
-    // this.windowWebViewMessages.clear();
+    this.windowWebViewMessages.clear();
     this.plugin = null;
   }
 }
