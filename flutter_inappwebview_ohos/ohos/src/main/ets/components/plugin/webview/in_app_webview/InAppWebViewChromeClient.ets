@@ -40,11 +40,13 @@ import {
   JsBeforeUnloadCallback,
   JsConfirmCallback,
   JsPromptCallback,
-  PermissionRequestCallback
+  PermissionRequestCallback,
+  ReceivedHttpAuthRequestCallback
 } from '../WebViewChannelDelegate';
 import JsAlertResponse from '../../types/JsAlertResponse';
 import JsConfirmResponse from '../../types/JsConfirmResponse';
 import JsPromptResponse from '../../types/JsPromptResponse';
+import HttpAuthResponse from '../../types/HttpAuthResponse';
 import { ohosPromptDialogBuilder } from './OhosPromptDialog';
 import { promptAction } from '@kit.ArkUI';
 import JsBeforeUnloadResponse from '../../types/JsBeforeUnloadResponse';
@@ -53,13 +55,18 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import MimeTypes from '../../MimeTypes';
 import PermissionResponse from '../../types/PermissionResponse';
 import GeolocationPermissionShowPromptResponse from '../../types/GeolocationPermissionShowPromptResponse';
+import CredentialDatabase from '../../credential_database/CredentialDatabase';
+import HttpAuthenticationChallenge from '../../types/HttpAuthenticationChallenge';
+import URLProtectionSpace from '../../types/URLProtectionSpace';
+import { cert } from '@kit.DeviceCertificateKit'
+import { List } from '@kit.ArkTS';
 
 const TAG = "InAppWebViewChromeClient";
 
 // 参考文档 所有事件 https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#onalert
 export default class InAppWebViewChromeClient {
-  private static previousAuthRequestFailureCount = 0;
-  private static credentialsProposed: Array<URLCredential> | null = null;
+  public static previousAuthRequestFailureCount = 0;
+  public static credentialsProposed: List<URLCredential> | null = null;
   private plugin: InAppWebViewFlutterPlugin;
   private inAppWebView: InAppWebView;
   private inAppBrowserDelegate: InAppBrowserDelegate | null = null;
@@ -102,7 +109,8 @@ export default class InAppWebViewChromeClient {
     // TODO
     // 等API12适配的时候放开
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null, new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
+      this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null,
+        new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
       return true;
     }
     return false;
@@ -443,8 +451,8 @@ export default class InAppWebViewChromeClient {
     return response;
   }
   onHttpAuthRequest = (event: Any) => {
-    // TODO
     Log.d(TAG, "onHttpAuthRequest=" + JSON.stringify(event))
+    this.onReceivedHttpAuthRequest(event.handler, event.host, event.realm)
     return true;
   }
   onSslErrorEventReceive = (event: Any) => {
@@ -614,6 +622,50 @@ export default class InAppWebViewChromeClient {
     }
     Log.d(TAG, "onLoadInterceptEnd=" + url)
     return result == NavigationActionPolicy.CANCEL
+  }
+
+  private async onReceivedHttpAuthRequest(handler: HttpAuthHandler, host: string, realm: string) {
+    let url = this.inAppWebView!.controller!.getUrl();
+    let protocol = "https";
+    let port = 0;
+
+    if (url != null) {
+      try {
+        let uriurl = new uri.URI(url);
+        protocol = uriurl.scheme;
+        port = Number.parseInt(uriurl.port);
+      } catch (e) {
+        Log.e(TAG, "", e);
+      }
+    }
+
+    InAppWebViewChromeClient.previousAuthRequestFailureCount++;
+
+    if (InAppWebViewChromeClient.credentialsProposed == null) {
+      InAppWebViewChromeClient.credentialsProposed = await CredentialDatabase.getInstance(this.inAppWebView.context)
+        .getHttpAuthCredentials(host, protocol, realm, port);
+    }
+
+    let credentialProposed: URLCredential | null = null;
+    if (InAppWebViewChromeClient.credentialsProposed != null &&
+      InAppWebViewChromeClient.credentialsProposed.length > 0) {
+      credentialProposed = InAppWebViewChromeClient.credentialsProposed.get(0);
+    }
+
+    let certificate: cert.X509Cert | null = null;
+    let certificates = await this.inAppWebView!.controller!.getCertificate();
+    if(certificates && certificates.length > 0){
+      certificate = certificates[0];
+    }
+    let protectionSpace = new URLProtectionSpace(host, protocol, realm, port, null, certificate, null);
+    let challenge = new HttpAuthenticationChallenge(protectionSpace, InAppWebViewChromeClient.previousAuthRequestFailureCount, credentialProposed);
+
+    let callback = new InnerReceivedHttpAuthRequestCallback(this.inAppWebView, handler, host, protocol, realm, port);
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedHttpAuthRequest(challenge, callback);
+    } else {
+      callback.defaultBehaviour(null);
+    }
   }
 
   private loadCustomJavaScriptOnPageStarted(webView: InAppWebView) {
@@ -899,7 +951,7 @@ class InnerJsPromptCallback extends JsPromptCallback {
         }),
       alignment: DialogAlignment.Center,
       onDidDisappear: () => {
-        if(isCancel){
+        if (isCancel) {
           result.handleCancel()
         }
       }
@@ -1033,6 +1085,68 @@ class InnerGeolocationPermissionsShowPromptCallback extends GeolocationPermissio
 
   defaultBehaviour(response: GeolocationPermissionShowPromptResponse | null): void {
     this.geolocation.invoke(this.origin, false, false);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+}
+
+class InnerReceivedHttpAuthRequestCallback extends ReceivedHttpAuthRequestCallback {
+  private handler: HttpAuthHandler;
+  private host: string;
+  private finalProtocol: string;
+  private realm: string;
+  private finalPort: number;
+  private inAppWebView: InAppWebView;
+
+  constructor(inAppWebView: InAppWebView, handler: HttpAuthHandler, host: string, protocol: string, realm: string, port: number) {
+    super();
+    this.handler = handler;
+    this.host = host;
+    this.finalProtocol = protocol;
+    this.realm = realm;
+    this.finalPort = port;
+    this.inAppWebView = inAppWebView;
+  }
+
+  nonNullSuccess(response: HttpAuthResponse): boolean {
+    let action = response.getAction();
+    if (action != null) {
+      switch (action) {
+        case 1:
+          let username = response.getUsername();
+          let password = response.getPassword();
+          let permanentPersistence = response.isPermanentPersistence();
+          if (permanentPersistence) {
+            CredentialDatabase.getInstance(this.inAppWebView.context).setHttpAuthCredential(this.host, this.finalProtocol, this.realm, this.finalPort, username, password);
+          }
+          this.handler.confirm(username, password);
+          break;
+        case 2:
+          if (InAppWebViewChromeClient.credentialsProposed!.length > 0) {
+            let credential = InAppWebViewChromeClient.credentialsProposed!.removeByIndex(0);
+            this.handler.confirm(credential.getUsername(), credential.getPassword());
+          } else {
+            this.handler.cancel();
+          }
+        // used custom CredentialDatabase!
+        // handler.useHttpAuthUsernamePassword();
+          break;
+        case 0:
+        default:
+          InAppWebViewChromeClient.credentialsProposed = null;
+          InAppWebViewChromeClient.previousAuthRequestFailureCount = 0;
+          this.handler.cancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(result: HttpAuthResponse | null): void {
+    this.handler.cancel();
   }
 
   error(errorCode: string, errorMessage: string, errorDetails: Any): void {

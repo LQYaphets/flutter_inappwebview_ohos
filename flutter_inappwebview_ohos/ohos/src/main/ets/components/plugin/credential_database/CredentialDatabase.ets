@@ -51,7 +51,7 @@ export default class CredentialDatabase {
     let credentials: List<URLCredential> = new List<URLCredential>();
     let protectionSpace = await this.protectionSpaceDao.find(host, protocol, realm, port);
     if (protectionSpace != null) {
-      credentials = await this.credentialDao.getAllByProtectionSpaceId(protectionSpace.getId());
+      credentials = await this.credentialDao.getAllByProtectionSpaceId(protectionSpace.getId()!);
     }
     return credentials;
   }
@@ -66,8 +66,7 @@ export default class CredentialDatabase {
       protectionSpaceId = protectionSpace.getId();
 
     }
-
-    let credential = await this.credentialDao.find(username, password, protectionSpaceId);
+    let credential = await this.credentialDao.find(username, password, protectionSpaceId!);
     if (credential != null) {
       let needUpdate = false;
       if (credential.getUsername() != username) {
@@ -98,8 +97,10 @@ export default class CredentialDatabase {
     password: string) {
     let protectionSpace = await this.protectionSpaceDao.find(host, protocol, realm, port);
     if (protectionSpace != null) {
-      let credential = await this.credentialDao.find(username, password, protectionSpace.getId());
-      this.credentialDao.delete(credential);
+      let credential = await this.credentialDao.find(username, password, protectionSpace.getId()!);
+      if (credential != null) {
+        this.credentialDao.delete(credential!);
+      }
     }
   }
 
