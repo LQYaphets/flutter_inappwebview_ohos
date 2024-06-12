@@ -123,7 +123,7 @@ export default class CredentialDatabaseHandler extends ChannelDelegateImpl {
       let protectionSpaces = await this.credentialDatabase!.protectionSpaceDao.getAll();
       protectionSpaces.forEach(async (item) => {
         let credentials: List<Map<string, Any>> = new List<Map<string, Any>>();
-        let URLCredentials = await this.credentialDatabase!.credentialDao.getAllByProtectionSpaceId(item.getId())
+        let URLCredentials = await this.credentialDatabase!.credentialDao.getAllByProtectionSpaceId(item.getId()!)
         URLCredentials.forEach(credential => {
           credentials.add(credential.toMap());
         })
