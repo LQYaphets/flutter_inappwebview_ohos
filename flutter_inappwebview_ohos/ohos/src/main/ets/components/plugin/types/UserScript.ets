@@ -90,6 +90,14 @@ export default class UserScript {
     return this.allowedOriginRules;
   }
 
+  getAllowedOriginRulesArray(): Array<string> {
+    let rules = Array<string>()
+    for (let valuesElement of this.allowedOriginRules.values()) {
+      rules.push(valuesElement);
+    }
+    return rules;
+  }
+
   setAllowedOriginRules(allowedOriginRules: Set<string>) {
     this.allowedOriginRules = allowedOriginRules;
   }

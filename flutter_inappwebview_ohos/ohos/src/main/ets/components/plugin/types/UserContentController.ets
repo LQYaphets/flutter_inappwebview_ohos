@@ -19,10 +19,12 @@ import { Disposable } from './Disposable';
 import PluginScript from './PluginScript';
 import UserScript from './UserScript';
 import { UserScriptInjectionTime } from './UserScriptInjectionTime';
-import { HashMap, HashSet } from '@kit.ArkTS';
+import { HashMap, HashSet, List } from '@kit.ArkTS';
 import Util from '../Util';
 import PluginScriptsUtil from '../plugin_scripts_js/PluginScriptsUtil';
 import JavaScriptBridgeJS from '../plugin_scripts_js/JavaScriptBridgeJS';
+import { common } from '@kit.AbilityKit';
+import EventConstant from '../EventConstant'
 
 const DOCUMENT_READY_WRAPPER_JS_SOURCE = "if (document.readyState === 'interactive' || document.readyState === 'complete') { " +
   "  " + PluginScriptsUtil.VAR_PLACEHOLDER_VALUE +
@@ -90,6 +92,9 @@ export default class UserContentController implements Disposable {
   private userOnlyScripts = new HashMap<UserScriptInjectionTime, HashSet<UserScript>>();
   private pluginScripts = new HashMap<UserScriptInjectionTime, HashSet<PluginScript>>()
   private isSupportedDocumentStartScript = false
+  private allStartScriptItem = new List<ScriptItem>()
+  private contentWorldsCreatorScript: ScriptItem | null = null
+  private scriptHandlerMap = new HashMap<UserScript, ScriptItem>()
 
   constructor(inAppWebView: InAppWebView) {
     this.inAppWebView = inAppWebView;
@@ -181,20 +186,12 @@ export default class UserContentController implements Disposable {
 
   private updateContentWorldsCreatorScript(): void {
     let source: string = this.generateContentWorldsCreatorCode();
-    // if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-    //   if (contentWorldsCreatorScript != null) {
-    //     contentWorldsCreatorScript.remove();
-    //   }
-    //   if (!source.isEmpty() && webView != null) {
-    //     contentWorldsCreatorScript = WebViewCompat.addDocumentStartJavaScript(
-    //     webView,
-    //     source,
-    //     new HashSet<String>() {{
-    //       add("*");
-    //     }}
-    //     );
-    //   }
-    // }
+    if (this.contentWorldsCreatorScript != null) {
+      this.allStartScriptItem.remove(this.contentWorldsCreatorScript)
+    }
+    if (source && source.length > 0) {
+      this.contentWorldsCreatorScript = this.addDocumentStartJavaScript(source, ["*"]);
+    }
   }
 
   public generateContentWorldsCreatorCode(): string {
@@ -226,15 +223,14 @@ export default class UserContentController implements Disposable {
       this.contentWorlds.add(contentWorld);
     }
     this.updateContentWorldsCreatorScript();
-    // if (this.webView != null && pluginScript.getInjectionTime() == UserScriptInjectionTime.AT_DOCUMENT_START
-    //   && WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-    //       ScriptHandler scriptHandler = WebViewCompat.addDocumentStartJavaScript(
-    //               webView,
-    //               wrapSourceCodeInContentWorld(pluginScript.getContentWorld(), pluginScript.getSource()),
-    //               pluginScript.getAllowedOriginRules()
-    //       );
-    //       this.scriptHandlerMap.put(pluginScript, scriptHandler);
-    //     }
+    if (pluginScript.getInjectionTime() == UserScriptInjectionTime.AT_DOCUMENT_START) {
+      let scriptHandler = this.addDocumentStartJavaScript(
+        this.wrapSourceCodeInContentWorld(pluginScript.getContentWorld(), pluginScript.getSource()),
+        pluginScript.getAllowedOriginRulesArray()
+      );
+      this.scriptHandlerMap.set(pluginScript, scriptHandler);
+    }
+    this.onDocumentStartChanged()
     return this.pluginScripts.get(pluginScript.getInjectionTime()).add(pluginScript);
   }
 
@@ -245,41 +241,38 @@ export default class UserContentController implements Disposable {
   }
 
   removePluginScript(pluginScript: PluginScript) {
-    //   if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-    //   ScriptHandler scriptHandler = this.scriptHandlerMap.get(pluginScript);
-    //   if (scriptHandler != null) {
-    //   scriptHandler.remove();
-    //   this.scriptHandlerMap.remove(pluginScript);
-    // }
-    // this.updateContentWorldsCreatorScript();
-    // }
+    let scriptHandler = this.scriptHandlerMap.get(pluginScript);
+    if (scriptHandler != null) {
+      this.allStartScriptItem.remove(scriptHandler);
+      this.scriptHandlerMap.remove(pluginScript);
+      this.updateContentWorldsCreatorScript();
+      this.onDocumentStartChanged()
+    }
     return this.pluginScripts.get(pluginScript.getInjectionTime()).remove(pluginScript);
   }
 
   public removeAllUserOnlyScripts(): void {
-    // if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-    //   for (let userOnlyScript of this.userOnlyScripts.get(UserScriptInjectionTime.AT_DOCUMENT_START)) {
-    //     ScriptHandler scriptHandler = this.scriptHandlerMap.get(userOnlyScript);
-    //     if (scriptHandler != null) {
-    //       scriptHandler.remove();
-    //       this.scriptHandlerMap.remove(userOnlyScript);
-    //     }
-    //   }
-    // }
+    for (let userOnlyScript of this.userOnlyScripts.get(UserScriptInjectionTime.AT_DOCUMENT_START)) {
+      let scriptHandler = this.scriptHandlerMap.get(userOnlyScript);
+      if (scriptHandler != null) {
+        this.allStartScriptItem.remove(scriptHandler);
+        this.scriptHandlerMap.remove(userOnlyScript);
+      }
+    }
+    this.onDocumentStartChanged()
     this.userOnlyScripts.get(UserScriptInjectionTime.AT_DOCUMENT_START).clear();
     this.userOnlyScripts.get(UserScriptInjectionTime.AT_DOCUMENT_END).clear();
   }
 
   public removeAllPluginScripts(): void {
-    // if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-    //   for (PluginScript pluginScript : this.pluginScripts.get(UserScriptInjectionTime.AT_DOCUMENT_START)) {
-    //     ScriptHandler scriptHandler = this.scriptHandlerMap.get(pluginScript);
-    //     if (scriptHandler != null) {
-    //       scriptHandler.remove();
-    //       this.scriptHandlerMap.remove(pluginScript);
-    //     }
-    //   }
-    // }
+    for (let pluginScript of this.pluginScripts.get(UserScriptInjectionTime.AT_DOCUMENT_START)) {
+      let scriptHandler = this.scriptHandlerMap.get(pluginScript);
+      if (scriptHandler != null) {
+        this.allStartScriptItem.remove(scriptHandler);
+        this.scriptHandlerMap.remove(pluginScript);
+      }
+    }
+    this.onDocumentStartChanged()
     this.pluginScripts.get(UserScriptInjectionTime.AT_DOCUMENT_START).clear();
     this.pluginScripts.get(UserScriptInjectionTime.AT_DOCUMENT_END).clear();
   }
@@ -289,7 +282,16 @@ export default class UserContentController implements Disposable {
     if (contentWorld != null) {
       this.contentWorlds.add(contentWorld);
     }
-    throw Error("Ohos currently does not support this feature")
+    this.updateContentWorldsCreatorScript();
+    if (userOnlyScript.getInjectionTime() == UserScriptInjectionTime.AT_DOCUMENT_START) {
+      let scriptHandler = this.addDocumentStartJavaScript(
+        this.wrapSourceCodeInContentWorld(userOnlyScript.getContentWorld(), userOnlyScript.getSource()),
+        userOnlyScript.getAllowedOriginRulesArray()
+      );
+      this.scriptHandlerMap.set(userOnlyScript, scriptHandler);
+    }
+    this.onDocumentStartChanged()
+    return this.userOnlyScripts.get(userOnlyScript.getInjectionTime()).add(userOnlyScript);
   }
 
   getUserOnlyScriptAsList(): HashSet<UserScript> {
@@ -315,14 +317,13 @@ export default class UserContentController implements Disposable {
   }
 
   removeUserOnlyScript(userOnlyScript: UserScript): boolean {
-    //   if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-    //   ScriptHandler scriptHandler = this.scriptHandlerMap.get(userOnlyScript);
-    //   if (scriptHandler != null) {
-    //   scriptHandler.remove();
-    //   this.scriptHandlerMap.remove(userOnlyScript);
-    // }
-    // this.updateContentWorldsCreatorScript();
-    // }
+    let scriptHandler = this.scriptHandlerMap.get(userOnlyScript);
+    if (scriptHandler != null) {
+      this.allStartScriptItem.remove(scriptHandler);
+      this.scriptHandlerMap.remove(userOnlyScript);
+      this.updateContentWorldsCreatorScript();
+      this.onDocumentStartChanged()
+    }
     return this.userOnlyScripts.get(userOnlyScript.getInjectionTime()).remove(userOnlyScript);
   }
 
@@ -405,11 +406,28 @@ export default class UserContentController implements Disposable {
   }
 
   public dispose(): void {
-    // if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT) && contentWorldsCreatorScript != null) {
-    //   contentWorldsCreatorScript.remove();
-    // }
+    if (this.contentWorldsCreatorScript != null) {
+      this.allStartScriptItem.remove(this.contentWorldsCreatorScript)
+    }
     this.removeAllUserOnlyScripts();
     this.removeAllPluginScripts();
     this.inAppWebView = null;
+  }
+
+  private addDocumentStartJavaScript(source: string, scriptRule: Array<string>): ScriptItem {
+    let scriptItem: ScriptItem = {
+      script: source, scriptRules: scriptRule
+    }
+    this.allStartScriptItem.add(scriptItem)
+    return scriptItem;
+  }
+
+  getStartScripts() {
+    return this.allStartScriptItem.convertToArray()
+  }
+
+  private onDocumentStartChanged(){
+    let context = this.inAppWebView!.context as common.UIAbilityContext;
+    context.eventHub.emit(EventConstant.EVENT_UPDATE_STARTSCRIPTS, this.allStartScriptItem.convertToArray())
   }
 }

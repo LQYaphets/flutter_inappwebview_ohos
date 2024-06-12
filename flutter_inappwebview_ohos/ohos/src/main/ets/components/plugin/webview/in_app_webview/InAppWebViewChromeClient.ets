@@ -40,11 +40,13 @@ import {
   JsBeforeUnloadCallback,
   JsConfirmCallback,
   JsPromptCallback,
-  PermissionRequestCallback
+  PermissionRequestCallback,
+  ReceivedHttpAuthRequestCallback
 } from '../WebViewChannelDelegate';
 import JsAlertResponse from '../../types/JsAlertResponse';
 import JsConfirmResponse from '../../types/JsConfirmResponse';
 import JsPromptResponse from '../../types/JsPromptResponse';
+import HttpAuthResponse from '../../types/HttpAuthResponse';
 import { ohosPromptDialogBuilder } from './OhosPromptDialog';
 import { promptAction } from '@kit.ArkUI';
 import JsBeforeUnloadResponse from '../../types/JsBeforeUnloadResponse';
@@ -53,13 +55,18 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import MimeTypes from '../../MimeTypes';
 import PermissionResponse from '../../types/PermissionResponse';
 import GeolocationPermissionShowPromptResponse from '../../types/GeolocationPermissionShowPromptResponse';
+import CredentialDatabase from '../../credential_database/CredentialDatabase';
+import HttpAuthenticationChallenge from '../../types/HttpAuthenticationChallenge';
+import URLProtectionSpace from '../../types/URLProtectionSpace';
+import { cert } from '@kit.DeviceCertificateKit'
+import { List } from '@kit.ArkTS';
 
 const TAG = "InAppWebViewChromeClient";
 
 // 参考文档 所有事件 https://docs.openharmony.cn/pages/v4.1/zh-cn/application-dev/reference/apis-arkweb/ts-basic-components-web.md#onalert
 export default class InAppWebViewChromeClient {
-  private static previousAuthRequestFailureCount = 0;
-  private static credentialsProposed: Array<URLCredential> | null = null;
+  public static previousAuthRequestFailureCount = 0;
+  public static credentialsProposed: List<URLCredential> | null = null;
   private plugin: InAppWebViewFlutterPlugin;
   private inAppWebView: InAppWebView;
   private inAppBrowserDelegate: InAppBrowserDelegate | null = null;
@@ -73,7 +80,8 @@ export default class InAppWebViewChromeClient {
   onAlert = (event: Any) => {
     Log.d(TAG, "onAlert=" + JSON.stringify(event))
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onJsAlert(event.url, event.message, null, new InnerJsAlertCallback(event.result, event.message));
+      this.inAppWebView.channelDelegate.onJsAlert(event.url, event.message, null,
+        new InnerJsAlertCallback(event.result, event.message));
       return true;
     }
     return false;
@@ -81,7 +89,8 @@ export default class InAppWebViewChromeClient {
   onBeforeUnload = (event: Any) => {
     Log.d(TAG, "onBeforeUnload=" + JSON.stringify(event))
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onJsBeforeUnload(event.url, event.message, new InnerJsBeforeUnloadCallback(event.result, event.message));
+      this.inAppWebView.channelDelegate.onJsBeforeUnload(event.url, event.message,
+        new InnerJsBeforeUnloadCallback(event.result, event.message));
       return true;
     }
     return false;
@@ -89,7 +98,8 @@ export default class InAppWebViewChromeClient {
   onConfirm = (event: Any) => {
     Log.d(TAG, "onConfirm=" + JSON.stringify(event))
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onJsConfirm(event.url, event.message, null, new InnerJsConfirmCallback(event.result, event.message));
+      this.inAppWebView.channelDelegate.onJsConfirm(event.url, event.message, null,
+        new InnerJsConfirmCallback(event.result, event.message));
       return true;
     }
     return false;
@@ -98,10 +108,11 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
     // TODO
     // 等API12适配的时候放开
-    // if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-    //   this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null, new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
-    //   return true;
-    // }
+    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null,
+        new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
+      return true;
+    }
     return false;
   }
   onConsole = (event: Any) => {
@@ -247,7 +258,8 @@ export default class InAppWebViewChromeClient {
           let pickerProfile: cameraPicker.PickerProfile = {
             cameraPosition: camera.CameraPosition.CAMERA_POSITION_BACK
           };
-          cameraPicker.pick(this.inAppWebView.context, images ? [cameraPicker.PickerMediaType.PHOTO] : [cameraPicker.PickerMediaType.VIDEO], pickerProfile)
+          cameraPicker.pick(this.inAppWebView.context,
+            images ? [cameraPicker.PickerMediaType.PHOTO] : [cameraPicker.PickerMediaType.VIDEO], pickerProfile)
             .then(result => {
               event.result.handleFileList([result.resultUri]);
             }).catch((err: BusinessError) => {
@@ -285,7 +297,8 @@ export default class InAppWebViewChromeClient {
             let photoPicker = new picker.PhotoViewPicker();
             photoPicker.select(photoSelectOptions).then((photoSelectResult: picker.PhotoSelectResult) => {
               event.result.handleFileList(photoSelectResult.photoUris);
-              Log.d(TAG, 'PhotoViewPicker.select successfully, photoSelectResult uri: ' + JSON.stringify(photoSelectResult));
+              Log.d(TAG,
+                'PhotoViewPicker.select successfully, photoSelectResult uri: ' + JSON.stringify(photoSelectResult));
             }).catch((err: BusinessError) => {
               event.result.handleFileList([]);
               Log.e(TAG, 'PhotoViewPicker.select failed with err: ' + JSON.stringify(err));
@@ -300,7 +313,8 @@ export default class InAppWebViewChromeClient {
             documentSelectOptions.maxSelectNumber = allowMultiple ? 100000 : 1
             documentSelectOptions.fileSuffixFilters = acceptTypes;
             documentPicker.select(documentSelectOptions).then((documentSelectResult) => {
-              Log.d(TAG, 'documentViewPicker.select to file succeed and uri is:' + JSON.stringify(documentSelectResult));
+              Log.d(TAG,
+                'documentViewPicker.select to file succeed and uri is:' + JSON.stringify(documentSelectResult));
               event.result.handleFileList(documentSelectResult);
             }).catch((err: BusinessError) => {
               event.result.handleFileList([]);
@@ -315,7 +329,8 @@ export default class InAppWebViewChromeClient {
             let audioPicker = new picker.AudioViewPicker();
             audioPicker.select(audioSelectOptions).then((audioSelectResult: Array<string>) => {
               event.result.handleFileList(audioSelectResult);
-              Log.d(TAG, 'AudioViewPicker.select successfully, audioSelectResult uri: ' + JSON.stringify(audioSelectResult));
+              Log.d(TAG,
+                'AudioViewPicker.select successfully, audioSelectResult uri: ' + JSON.stringify(audioSelectResult));
             }).catch((err: BusinessError) => {
               Log.d(TAG, 'AudioViewPicker.select failed with err: ' + JSON.stringify(err));
               event.result.handleFileList([]);
@@ -338,13 +353,13 @@ export default class InAppWebViewChromeClient {
       this.inAppWebView.channelDelegate.onZoomScaleChanged(event.oldScale, event.newScale);
     }
   }
-  onInterceptRequest = async (event: Any) => { //对应安卓shouldInterceptRequest
+  onInterceptRequest = (event: Any) => { //对应安卓shouldInterceptRequest
     let request = WebResourceRequestExt.fromWebResourceRequest(event.request);
     Log.d(TAG, "onInterceptRequest=" + JSON.stringify(event))
     if (this.inAppWebView.webViewAssetLoaderExt != null && this.inAppWebView.webViewAssetLoaderExt.loader != null) {
       try {
         let url = new uri.URI(request.getUrl());
-        let webResourceResponse = await this.inAppWebView.webViewAssetLoaderExt.loader.shouldInterceptRequest(url);
+        let webResourceResponse = this.inAppWebView.webViewAssetLoaderExt.loader.shouldInterceptRequest(url);
         if (webResourceResponse != null) {
           return webResourceResponse;
         }
@@ -353,24 +368,27 @@ export default class InAppWebViewChromeClient {
       }
     }
     if (this.inAppWebView.customSettings.useShouldInterceptRequest) {
-      let response: WebResourceResponseExt | null = null;
       if (this.inAppWebView.channelDelegate != null) {
+        let webResourceResponse = new WebResourceResponse();
         try {
-          response = await this.inAppWebView.channelDelegate.shouldInterceptRequest(request);
+          this.inAppWebView.channelDelegate.shouldInterceptRequest(request).then(response => {
+            if (response != null) {
+              webResourceResponse.setResponseData(response.getData())
+              webResourceResponse.setResponseMimeType(response.getContentType())
+              webResourceResponse.setResponseEncoding(response.getContentEncoding())
+              webResourceResponse.setResponseCode(response.getStatusCode())
+              webResourceResponse.setReasonMessage(response.getReasonPhrase())
+              webResourceResponse.setResponseHeader(response.getHeaderArray())
+              webResourceResponse.setResponseIsReady(true)
+            } else {
+              webResourceResponse.setResponseIsReady(false);
+            }
+          })
         } catch (e) {
           Log.e(TAG, "", e);
-          return null;
+          webResourceResponse.setResponseIsReady(false);
         }
-      }
-      if (response != null) {
-        let webResourceResponse = new WebResourceResponse();
-        webResourceResponse.setResponseData(response.getData())
-        webResourceResponse.setResponseMimeType(response.getContentType())
-        webResourceResponse.setResponseEncoding(response.getContentEncoding())
-        webResourceResponse.setResponseCode(response.getStatusCode())
-        webResourceResponse.setReasonMessage(response.getReasonPhrase())
-        webResourceResponse.setResponseHeader(response.getHeaderArray())
-        return new WebResourceResponse();
+        return webResourceResponse;
       }
       return null;
     }
@@ -383,30 +401,40 @@ export default class InAppWebViewChromeClient {
 
     }
 
-    if (this.inAppWebView.customSettings.resourceCustomSchemes != null && this.inAppWebView.customSettings.resourceCustomSchemes.indexOf(scheme) > -1) {
-      let customSchemeResponse: CustomSchemeResponse | null = null;
+    if (this.inAppWebView.customSettings.resourceCustomSchemes != null &&
+      this.inAppWebView.customSettings.resourceCustomSchemes.indexOf(scheme) > -1) {
       if (this.inAppWebView.channelDelegate != null) {
-        try {
-          customSchemeResponse = await this.inAppWebView.channelDelegate.onLoadResourceWithCustomScheme(request);
-        } catch (e) {
-          Log.e(TAG, "", e);
-          return null;
-        }
-      }
-
-      if (customSchemeResponse != null) {
-        let response: WebResourceResponse | null = null;
-        try {
-          response = this.inAppWebView.contentBlockerHandler.checkUrl(this.inAppWebView, request, customSchemeResponse.getContentType());
-        } catch (e) {
-          Log.e(TAG, "", e);
-        }
-        if (response != null)
-          return response;
         let resourceResponse = new WebResourceResponse();
-        resourceResponse.setResponseMimeType(customSchemeResponse.getContentType());
-        resourceResponse.setResponseEncoding(customSchemeResponse.getContentEncoding());
-        resourceResponse.setResponseData(customSchemeResponse.getData())
+        try {
+          this.inAppWebView.channelDelegate.onLoadResourceWithCustomScheme(request).then(customSchemeResponse => {
+            if (customSchemeResponse != null) {
+              try {
+                response = this.inAppWebView.contentBlockerHandler.checkUrl(this.inAppWebView, request,
+                  customSchemeResponse.getContentType());
+              } catch (e) {
+                Log.e(TAG, "", e);
+              }
+              if (response != null) {
+                resourceResponse.setResponseData(response.getResponseData())
+                resourceResponse.setResponseMimeType(response.getResponseMimeType())
+                resourceResponse.setResponseEncoding(response.getResponseEncoding())
+                resourceResponse.setResponseCode(response.getResponseCode())
+                resourceResponse.setReasonMessage(response.getReasonMessage())
+                resourceResponse.setResponseHeader(response.getResponseHeader())
+                resourceResponse.setResponseIsReady(true)
+              } else {
+                resourceResponse.setResponseMimeType(customSchemeResponse.getContentType());
+                resourceResponse.setResponseEncoding(customSchemeResponse.getContentEncoding());
+                resourceResponse.setResponseData(customSchemeResponse.getData())
+              }
+            } else {
+              resourceResponse.setResponseIsReady(false)
+            }
+          });
+        } catch (e) {
+          Log.e(TAG, "", e);
+          resourceResponse.setResponseIsReady(false)
+        }
         return resourceResponse;
       }
     }
@@ -423,8 +451,8 @@ export default class InAppWebViewChromeClient {
     return response;
   }
   onHttpAuthRequest = (event: Any) => {
-    // TODO
     Log.d(TAG, "onHttpAuthRequest=" + JSON.stringify(event))
+    this.onReceivedHttpAuthRequest(event.handler, event.host, event.realm)
     return true;
   }
   onSslErrorEventReceive = (event: Any) => {
@@ -437,7 +465,8 @@ export default class InAppWebViewChromeClient {
   }
   onPermissionRequest = (event: Any) => {
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onPermissionRequest(event.request.getOrigin(), event.request.getAccessibleResource(), null,
+      this.inAppWebView.channelDelegate.onPermissionRequest(event.request.getOrigin(),
+        event.request.getAccessibleResource(), null,
         new InnerPermissionRequestCallback(event.request));
     } else {
       event.request.deny();
@@ -449,24 +478,28 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onContextMenuShow=" + JSON.stringify(event))
     return false;
   }
-  onContextMenuHide = (callback: OnContextMenuHideCallback) => {
+  onContextMenuHide = () => {
     // TODO
     Log.d(TAG, "onContextMenuHide=")
   }
   onScroll = (event: Any) => {
     Log.d(TAG, "onScroll=" + JSON.stringify(event))
-    if (this.inAppWebView.channelDelegate != null) this.inAppWebView.channelDelegate.onScrollChanged(event.xOffset, event.yOffset);
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onScrollChanged(event.xOffset,
+        event.yOffset);
+    }
   }
   onGeolocationShow = (event: Any) => {
     Log.d(TAG, "onGeolocationShow=" + JSON.stringify(event))
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onGeolocationPermissionsShowPrompt(event.origin, new InnerGeolocationPermissionsShowPromptCallback(event.origin, event.geolocation));
+      this.inAppWebView.channelDelegate.onGeolocationPermissionsShowPrompt(event.origin,
+        new InnerGeolocationPermissionsShowPromptCallback(event.origin, event.geolocation));
     } else {
       event.geolocation.invoke(event.origin, false, false);
     }
   }
-  onGeolocationHide = (event: Any) => {
-    Log.d(TAG, "onGeolocationHide=" + JSON.stringify(event))
+  onGeolocationHide = () => {
+    Log.d(TAG, "onGeolocationHide=")
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
       this.inAppWebView.channelDelegate.onGeolocationPermissionsHidePrompt();
     }
@@ -480,8 +513,8 @@ export default class InAppWebViewChromeClient {
     }
     this.inAppWebView.setInFullscreen(true);
   }
-  onFullScreenExit = (event: Any) => {
-    Log.d(TAG, "onFullScreenExit=" + JSON.stringify(event))
+  onFullScreenExit = () => {
+    Log.d(TAG, "onFullScreenExit=")
     // TODO 设置Ability退出全屏
     if (this.fullScreenExitHandler) {
       this.fullScreenExitHandler.exitFullScreen()
@@ -494,8 +527,8 @@ export default class InAppWebViewChromeClient {
   onWindowNew = (event: Any) => {
     Log.d(TAG, "onWindowNew=" + JSON.stringify(event))
   }
-  onWindowExit = (event: Any) => {
-    Log.d(TAG, "onWindowExit=" + JSON.stringify(event))
+  onWindowExit = () => {
+    Log.d(TAG, "onWindowExit=")
   }
   onSearchResultReceive = (event: Any) => {
     Log.d(TAG, "onSearchResultReceive=" + JSON.stringify(event))
@@ -536,24 +569,25 @@ export default class InAppWebViewChromeClient {
   onFirstContentfulPaint = (event: Any) => {
     Log.d(TAG, "onFirstContentfulPaint=" + JSON.stringify(event))
   }
-  onLoadIntercept = async (event: Any) => { //对应安卓 shouldOverrideUrlLoading
+  onLoadIntercept = (event: Any) => { //对应安卓 shouldOverrideUrlLoading OHOS不知道异步 不知道如何适配了
+    // TODO
     Log.d(TAG, "onLoadIntercept=" + event.data.getRequestUrl())
-    if (this.inAppWebView.customSettings.useShouldOverrideUrlLoading) {
-      let request = WebResourceRequestExt.fromWebResourceRequest(event.data);
-      return await this.onShouldOverrideUrlLoading(
-        this.inAppWebView,
-        request.getUrl(),
-        request.getMethod(),
-        request.getHeaders(),
-        request.getForMainFrame(),
-        request.isHasGesture(),
-        request.getRedirect());
-    }
+    // if (this.inAppWebView.customSettings.useShouldOverrideUrlLoading) {
+    //   let request = WebResourceRequestExt.fromWebResourceRequest(event.data);
+    //   return await this.onShouldOverrideUrlLoading(
+    //     this.inAppWebView,
+    //     request.getUrl(),
+    //     request.getMethod(),
+    //     request.getHeaders(),
+    //     request.getForMainFrame(),
+    //     request.isHasGesture(),
+    //     request.getRedirect());
+    // }
     Log.d(TAG, "onLoadInterceptEnd=" + event.data.getRequestUrl())
     return false;
   }
-  onRequestSelected = (event: Any) => {
-    Log.d(TAG, "onRequestSelected=" + JSON.stringify(event))
+  onRequestSelected = () => {
+    Log.d(TAG, "onRequestSelected=")
   }
   onScreenCaptureRequest = (event: Any) => {
     Log.d(TAG, "onScreenCaptureRequest=" + JSON.stringify(event))
@@ -561,10 +595,10 @@ export default class InAppWebViewChromeClient {
   onOverScroll = (event: Any) => {
     Log.d(TAG, "onOverScroll=" + JSON.stringify(event))
   }
-  onNavigationEntryCommitted = (callback: OnNavigationEntryCommittedCallback) => {
+  onNavigationEntryCommitted = () => {
     Log.d(TAG, "onNavigationEntryCommitted=")
   }
-  onSafeBrowsingCheckResult = (callback: OnSafeBrowsingCheckResultCallback) => {
+  onSafeBrowsingCheckResult = () => {
     Log.d(TAG, "onSafeBrowsingCheckResult=")
   }
   onNativeEmbedLifecycleChange = (callback: NativeEmbedDataInfo) => {
@@ -574,8 +608,9 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onNativeEmbedGestureEvent=")
   }
 
-  private async onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string, headers: Map<string, string>,
-                                           isForMainFrame: boolean, hasGesture: boolean, isRedirect: boolean) {
+  private async onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string,
+    headers: Map<string, string>,
+    isForMainFrame: boolean, hasGesture: boolean, isRedirect: boolean) {
     let request = new URLRequest(url, method, null, headers);
     let navigationAction = new NavigationAction(request, isForMainFrame, hasGesture, isRedirect);
 
@@ -587,6 +622,50 @@ export default class InAppWebViewChromeClient {
     }
     Log.d(TAG, "onLoadInterceptEnd=" + url)
     return result == NavigationActionPolicy.CANCEL
+  }
+
+  private async onReceivedHttpAuthRequest(handler: HttpAuthHandler, host: string, realm: string) {
+    let url = this.inAppWebView!.controller!.getUrl();
+    let protocol = "https";
+    let port = 0;
+
+    if (url != null) {
+      try {
+        let uriurl = new uri.URI(url);
+        protocol = uriurl.scheme;
+        port = Number.parseInt(uriurl.port);
+      } catch (e) {
+        Log.e(TAG, "", e);
+      }
+    }
+
+    InAppWebViewChromeClient.previousAuthRequestFailureCount++;
+
+    if (InAppWebViewChromeClient.credentialsProposed == null) {
+      InAppWebViewChromeClient.credentialsProposed = await CredentialDatabase.getInstance(this.inAppWebView.context)
+        .getHttpAuthCredentials(host, protocol, realm, port);
+    }
+
+    let credentialProposed: URLCredential | null = null;
+    if (InAppWebViewChromeClient.credentialsProposed != null &&
+      InAppWebViewChromeClient.credentialsProposed.length > 0) {
+      credentialProposed = InAppWebViewChromeClient.credentialsProposed.get(0);
+    }
+
+    let certificate: cert.X509Cert | null = null;
+    let certificates = await this.inAppWebView!.controller!.getCertificate();
+    if(certificates && certificates.length > 0){
+      certificate = certificates[0];
+    }
+    let protectionSpace = new URLProtectionSpace(host, protocol, realm, port, null, certificate, null);
+    let challenge = new HttpAuthenticationChallenge(protectionSpace, InAppWebViewChromeClient.previousAuthRequestFailureCount, credentialProposed);
+
+    let callback = new InnerReceivedHttpAuthRequestCallback(this.inAppWebView, handler, host, protocol, realm, port);
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedHttpAuthRequest(challenge, callback);
+    } else {
+      callback.defaultBehaviour(null);
+    }
   }
 
   private loadCustomJavaScriptOnPageStarted(webView: InAppWebView) {
@@ -702,7 +781,8 @@ class InnerJsAlertCallback extends JsAlertCallback {
     this.result.handleCancel();
   }
 
-  private createAlertDialog(message: string, result: JsResult, responseMessage: string | null, confirmButtonTitle: string | null) {
+  private createAlertDialog(message: string, result: JsResult, responseMessage: string | null,
+    confirmButtonTitle: string | null) {
     let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
     AlertDialog.show(
       {
@@ -768,7 +848,7 @@ class InnerJsConfirmCallback extends JsConfirmCallback {
   }
 
   private createConfirmDialog(message: string, result: JsResult, responseMessage: string | null,
-                              confirmButtonTitle: string | null, cancelButtonTitle: string | null) {
+    confirmButtonTitle: string | null, cancelButtonTitle: string | null) {
     let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
     AlertDialog.show(
       {
@@ -840,7 +920,8 @@ class InnerJsPromptCallback extends JsPromptCallback {
       confirmButtonTitle = response.getConfirmButtonTitle();
       cancelButtonTitle = response.getCancelButtonTitle();
     }
-    this.createPromptDialog(this.message, this.defaultValue, this.result, responseMessage, responseDefaultValue, value, cancelButtonTitle, confirmButtonTitle);
+    this.createPromptDialog(this.message, this.defaultValue, this.result, responseMessage, responseDefaultValue, value,
+      cancelButtonTitle, confirmButtonTitle);
   }
 
   error(errorCode: string, errorMessage: string, errorDetails: Any): void {
@@ -849,22 +930,31 @@ class InnerJsPromptCallback extends JsPromptCallback {
   }
 
   private createPromptDialog(message: string, defaultValue: string, result: JsResult, responseMessage: string | null,
-                             responseDefaultValue: string | null, value: string | null, cancelButtonTitle: string | null,
-                             confirmButtonTitle: string | null) {
-    let initValue = (responseDefaultValue != null && responseDefaultValue.length > 0) ? responseDefaultValue : defaultValue;
+    responseDefaultValue: string | null, value: string | null, cancelButtonTitle: string | null,
+    confirmButtonTitle: string | null) {
+    let initValue =
+      (responseDefaultValue != null && responseDefaultValue.length > 0) ? responseDefaultValue : defaultValue;
     let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
     let finalValue = value;
     let customDialogId = -1;
-    //TODO 这里存在一个缺陷，就是点击空白弹窗消失没办法监听所以没办法调用到cancel方法会知道存在bug 需要再API12才可支持 需要后续完善
+    let isCancel = true;
     promptAction.openCustomDialog({
-      builder: ohosPromptDialogBuilder.bind(this.uiObject, initValue, alertMessage, cancelButtonTitle, confirmButtonTitle, () => {
-        result.handleCancel()
-        promptAction.closeCustomDialog(customDialogId)
-      }, (value: string | null) => {
-        promptAction.closeCustomDialog(customDialogId)
-        result.handlePromptConfirm(finalValue != null ? finalValue : value);
-      }),
-      alignment: DialogAlignment.Center
+      builder: ohosPromptDialogBuilder.bind(this.uiObject, initValue, alertMessage, cancelButtonTitle,
+        confirmButtonTitle, () => {
+          isCancel = false
+          result.handleCancel()
+          promptAction.closeCustomDialog(customDialogId)
+        }, (value: string | null) => {
+          isCancel = false
+          promptAction.closeCustomDialog(customDialogId)
+          result.handlePromptConfirm(finalValue != null ? finalValue : value);
+        }),
+      alignment: DialogAlignment.Center,
+      onDidDisappear: () => {
+        if (isCancel) {
+          result.handleCancel()
+        }
+      }
     }).then((dialogId: number) => {
       customDialogId = dialogId
     })
@@ -916,7 +1006,7 @@ class InnerJsBeforeUnloadCallback extends JsBeforeUnloadCallback {
   }
 
   private createBeforeUnloadDialog(message: string, result: JsResult, responseMessage: string | null,
-                                   confirmButtonTitle: string | null, cancelButtonTitle: string | null) {
+    confirmButtonTitle: string | null, cancelButtonTitle: string | null) {
     let alertMessage = (responseMessage != null && responseMessage.length > 0) ? responseMessage : message;
     AlertDialog.show(
       {
@@ -995,6 +1085,68 @@ class InnerGeolocationPermissionsShowPromptCallback extends GeolocationPermissio
 
   defaultBehaviour(response: GeolocationPermissionShowPromptResponse | null): void {
     this.geolocation.invoke(this.origin, false, false);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+}
+
+class InnerReceivedHttpAuthRequestCallback extends ReceivedHttpAuthRequestCallback {
+  private handler: HttpAuthHandler;
+  private host: string;
+  private finalProtocol: string;
+  private realm: string;
+  private finalPort: number;
+  private inAppWebView: InAppWebView;
+
+  constructor(inAppWebView: InAppWebView, handler: HttpAuthHandler, host: string, protocol: string, realm: string, port: number) {
+    super();
+    this.handler = handler;
+    this.host = host;
+    this.finalProtocol = protocol;
+    this.realm = realm;
+    this.finalPort = port;
+    this.inAppWebView = inAppWebView;
+  }
+
+  nonNullSuccess(response: HttpAuthResponse): boolean {
+    let action = response.getAction();
+    if (action != null) {
+      switch (action) {
+        case 1:
+          let username = response.getUsername();
+          let password = response.getPassword();
+          let permanentPersistence = response.isPermanentPersistence();
+          if (permanentPersistence) {
+            CredentialDatabase.getInstance(this.inAppWebView.context).setHttpAuthCredential(this.host, this.finalProtocol, this.realm, this.finalPort, username, password);
+          }
+          this.handler.confirm(username, password);
+          break;
+        case 2:
+          if (InAppWebViewChromeClient.credentialsProposed!.length > 0) {
+            let credential = InAppWebViewChromeClient.credentialsProposed!.removeByIndex(0);
+            this.handler.confirm(credential.getUsername(), credential.getPassword());
+          } else {
+            this.handler.cancel();
+          }
+        // used custom CredentialDatabase!
+        // handler.useHttpAuthUsernamePassword();
+          break;
+        case 0:
+        default:
+          InAppWebViewChromeClient.credentialsProposed = null;
+          InAppWebViewChromeClient.previousAuthRequestFailureCount = 0;
+          this.handler.cancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(result: HttpAuthResponse | null): void {
+    this.handler.cancel();
   }
 
   error(errorCode: string, errorMessage: string, errorDetails: Any): void {

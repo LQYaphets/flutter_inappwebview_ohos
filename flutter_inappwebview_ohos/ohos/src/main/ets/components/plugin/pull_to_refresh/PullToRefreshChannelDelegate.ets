@@ -32,7 +32,7 @@ export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
         if (this.pullToRefreshView != null) {
           let enabled: boolean = call.argument("enabled") as boolean;
           this.pullToRefreshView.settings.enabled = enabled; // used by InAppWebView.onOverScrolled
-          // this.pullToRefreshView.setEnabled(enabled);
+          this.pullToRefreshView.setEnabled(enabled);
           result.success(true);
         } else {
           result.success(false);
@@ -40,7 +40,7 @@ export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
         break;
       case "isEnabled":
         if (this.pullToRefreshView != null) {
-          // result.success(this.pullToRefreshView.isEnabled());
+          result.success(this.pullToRefreshView.isEnabled());
         } else {
           result.success(false);
         }
@@ -48,18 +48,19 @@ export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
       case "setRefreshing":
         if (this.pullToRefreshView != null) {
           let refreshing: boolean = call.argument("refreshing") as boolean;
-          // this.pullToRefreshView.setRefreshing(refreshing);
+          this.pullToRefreshView.setRefreshing(refreshing);
           result.success(true);
         } else {
           result.success(false);
         }
         break;
       case "isRefreshing":
-        // result.success(this.pullToRefreshView != null && this.pullToRefreshView.isRefreshing());
+        result.success(this.pullToRefreshView != null && this.pullToRefreshView.isRefreshing());
         break;
       case "setColor":
         if (this.pullToRefreshView != null) {
           let color: string = call.argument("color");
+          // TODO
           // this.pullToRefreshView.setColorSchemeColors(Color.parseColor(color));
           result.success(true);
         } else {
@@ -69,6 +70,7 @@ export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
       case "setBackgroundColor":
         if (this.pullToRefreshView != null) {
           let color: string = call.argument("color");
+          // TODO
           // this.pullToRefreshView.setProgressBackgroundColorSchemeColor(Color.parseColor(color));
           result.success(true);
         } else {
@@ -78,6 +80,7 @@ export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
       case "setDistanceToTriggerSync":
         if (this.pullToRefreshView != null) {
           let distanceToTriggerSync: number = call.argument("distanceToTriggerSync");
+          // TODO
           // this.pullToRefreshView.setDistanceToTriggerSync(distanceToTriggerSync);
           result.success(true);
         } else {
@@ -87,6 +90,7 @@ export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
       case "setSlingshotDistance":
         if (this.pullToRefreshView != null) {
           let slingshotDistance: number = call.argument("slingshotDistance");
+          // TODO
           // this.pullToRefreshView.setSlingshotDistance(slingshotDistance);
           result.success(true);
         } else {
@@ -94,11 +98,14 @@ export default class PullToRefreshChannelDelegate extends ChannelDelegateImpl {
         }
         break;
       case "getDefaultSlingshotDistance":
+        // TODO
         // result.success(SwipeRefreshLayout.DEFAULT_SLINGSHOT_DISTANCE);
+        result.success(100)
         break;
       case "setSize":
         if (this.pullToRefreshView != null) {
           let size: number = call.argument("size");
+          // TODO
           // this.pullToRefreshView.setSize(size);
           result.success(true);
         } else {

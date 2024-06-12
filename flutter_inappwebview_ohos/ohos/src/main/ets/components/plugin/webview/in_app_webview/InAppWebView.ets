@@ -64,6 +64,7 @@ import common from '@ohos.app.ability.common';
 import { FindInteractionController } from '../../find_interaction/FindInteractionController';
 import { InAppWebViewClient } from './InAppWebViewClient';
 import { InAppWebViewClientCompat } from './InAppWebViewClientCompat';
+import PullToRefreshLayout from '../../pull_to_refresh/PullToRefreshLayout';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -108,6 +109,9 @@ export default class InAppWebView implements InAppWebViewInterface {
   public controller: web_webview.WebviewController = new web_webview.WebviewController();
   private ohosWebViewModel: DVModel | null = null;
   private controllerAttached: boolean = false;
+  private pullToRefreshLayout: PullToRefreshLayout | null = null;
+  private viewWidth = 0;
+  private viewHeight= 0;
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>, contextMenu?: Map<string, Any>) {
@@ -123,6 +127,14 @@ export default class InAppWebView implements InAppWebViewInterface {
     // if (plugin != null && plugin.activity != null) {
     //   plugin.activity.registerForContextMenu(this);
     // }
+  }
+
+  setPullToRefreshLayout(pullToRefreshLayout: PullToRefreshLayout) {
+    this.pullToRefreshLayout = pullToRefreshLayout;
+  }
+
+  getPullToRefreshLayout(): PullToRefreshLayout {
+    return this.pullToRefreshLayout!!;
   }
 
   public async createWebClient(inAppBrowserDelegate: InAppBrowserDelegate): Promise<void> {
@@ -915,6 +927,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public addWebMessageListener(webMessageListener: WebMessageListener): void {
+    //TODO
     // if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
     //   WebViewCompat.addWebMessageListener(this, webMessageListener.jsObjectName, webMessageListener.allowedOriginRules, webMessageListener.listener);
     //   webMessageListeners.add(webMessageListener);
@@ -922,15 +935,13 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public canScrollVertically(): boolean {
-    /// 对比可滚动高度及当前内容高度
-    // return computeVerticalScrollRange() > computeVerticalScrollExtent();
-    return false;
+    return this.controller.getPageHeight() > this.viewHeight;
   }
 
-  public canScrollHorizontally(): boolean {
-    /// 对比可滑动宽度及当前内容宽度
-    // return computeHorizontalScrollRange() > computeHorizontalScrollExtent();
-    return false;
+  public canScrollHorizontally(callback: ValueCallback<boolean>) {
+    this.controller.runJavaScriptExt("document.documentElement.scrollWidth;").then(result => {
+      callback.onReceiveValue(result.getNumber() > this.viewWidth)
+    })
   }
 
   public isInFullscreen(): boolean {
@@ -956,6 +967,11 @@ export default class InAppWebView implements InAppWebViewInterface {
   public onControllerAttached = () => {
     Log.d(TAG, "onControllerAttached");
     this.controllerAttached = true
+  }
+
+  onAreaChange = (oldValue: Area, newValue: Area) => {
+    this.viewWidth = vp2px(newValue.width as number)
+    this.viewHeight = vp2px(newValue.height as number)
   }
 
   toWebHeaders(headers: Map<string, string>): Array<web_webview.WebHeader> {

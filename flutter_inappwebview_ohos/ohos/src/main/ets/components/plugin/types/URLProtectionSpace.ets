@@ -16,6 +16,7 @@
 import { Any } from '@ohos/flutter_ohos'
 import SslCertificate from './SslCertificate'
 import SslError from './SslError'
+import { cert } from '@kit.DeviceCertificateKit'
 
 export default class URLProtectionSpace {
   private id: number | null = null
@@ -23,19 +24,28 @@ export default class URLProtectionSpace {
   private protocol: string
   private realm: string | null
   private port: number
-  private sslCertificate: SslCertificate | null
-  private sslError: SslError | null
+  private sslCertificate: cert.X509Cert | null = null
+  private sslError: SslError | null = null
 
-  constructor(host: string, protocol: string, realm: string | null, port: number, sslCertificate: SslCertificate | null, sslError: SslError | null) {
+  constructor(host: string, protocol: string, realm: string | null, port: number, id?: number | null,
+    sslCertificate?: cert.X509Cert | null, sslError?: SslError | null) {
     this.host = host
     this.protocol = protocol
     this.realm = realm
     this.port = port
-    this.sslCertificate = sslCertificate
-    this.sslError = sslError
+    if (id) {
+      this.id = id;
+    }
+    if (sslCertificate) {
+      this.sslCertificate = sslCertificate;
+    }
+    if (sslError) {
+      this.sslError = sslError
+    }
   }
 
   public toMap(): Map<string, Any> {
+    // TODO
     let urlProtectionSpaceMap: Map<string, Any> = new Map<string, Any>();
     urlProtectionSpaceMap.set("host", this.host);
     urlProtectionSpaceMap.set("protocol", this.protocol);
@@ -93,11 +103,11 @@ export default class URLProtectionSpace {
     this.port = port;
   }
 
-  public getSslCertificate(): SslCertificate | null {
-    return this. sslCertificate;
+  public getSslCertificate(): cert.X509Cert | null {
+    return this.sslCertificate;
   }
 
-  public setSslCertificate(sslCertificateExt: SslCertificate | null): void {
+  public setSslCertificate(sslCertificateExt: cert.X509Cert | null): void {
     this.sslCertificate = sslCertificateExt;
   }
 

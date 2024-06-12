@@ -14,11 +14,13 @@
 */
 
 import { Any, MethodChannel } from '@ohos/flutter_ohos';
+import common from '@ohos.app.ability.common';
 import InAppWebViewFlutterPlugin from '../InAppWebViewFlutterPlugin';
 import { Disposable } from '../types/Disposable';
 import PullToRefreshChannelDelegate from './PullToRefreshChannelDelegate';
 import PullToRefreshSettings from './PullToRefreshSettings';
 import InAppWebView from '../webview/in_app_webview/InAppWebView';
+import EventConstant from '../EventConstant'
 
 const LOG_TAG = "PullToRefreshLayout";
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_pull_to_refresh_";
@@ -35,12 +37,38 @@ export default class PullToRefreshLayout implements Disposable {
     this.channelDelegate = new PullToRefreshChannelDelegate(this, channel);
   }
 
-  addView(webView: InAppWebView | null): void {
-    this.webView = webView
+  setEnabled(enable: boolean) {
+
+  }
+
+  isEnabled(): boolean {
+    return this.settings.enabled
+  }
+
+  setRefreshing(refreshing: boolean) {
+    let context = this.webView!.context as common.UIAbilityContext;
+    context.eventHub.emit(EventConstant.EVENT_PULL_SETREFRESHING, refreshing)
+  }
+
+  isRefreshing(): boolean {
+    return false
+  }
+
+  onRefresh() {
+    if (this.channelDelegate == null) {
+      this.setRefreshing(false);
+      return;
+    }
+    this.channelDelegate!!.onRefresh();
+  }
+
+  addView(webView: InAppWebView): void {
+    this.webView = webView;
+    webView.setPullToRefreshLayout(this);
   }
 
   public prepare(): void {
-    if(this.webView != null) {
+    if (this.webView != null) {
       this.webView.refresh()
       this.webView.scrollToTop()
     }

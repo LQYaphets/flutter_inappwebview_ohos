@@ -63,7 +63,7 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
         });
 
     pullToRefreshController = kIsWeb ||
-            ![TargetPlatform.iOS, TargetPlatform.android]
+            ![TargetPlatform.iOS, TargetPlatform.android, TargetPlatform.ohos]
                 .contains(defaultTargetPlatform)
         ? null
         : PullToRefreshController(
@@ -71,7 +71,7 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
               color: Colors.blue,
             ),
             onRefresh: () async {
-              if (defaultTargetPlatform == TargetPlatform.android) {
+              if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.ohos) {
                 webViewController?.reload();
               } else if (defaultTargetPlatform == TargetPlatform.iOS ||
                   defaultTargetPlatform == TargetPlatform.macOS) {

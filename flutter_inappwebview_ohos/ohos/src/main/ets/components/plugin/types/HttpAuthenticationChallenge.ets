@@ -22,7 +22,7 @@ export default class HttpAuthenticationChallenge extends URLAuthenticationChalle
   private previousFailureCount: number
   proposedCredential: URLCredential | null
 
-  constructor(protectionSpace: URLProtectionSpace, previousFailureCount: number, proposedCredential: URLCredential) {
+  constructor(protectionSpace: URLProtectionSpace, previousFailureCount: number, proposedCredential: URLCredential | null) {
     super(protectionSpace)
     this.previousFailureCount = previousFailureCount
     this.proposedCredential = proposedCredential

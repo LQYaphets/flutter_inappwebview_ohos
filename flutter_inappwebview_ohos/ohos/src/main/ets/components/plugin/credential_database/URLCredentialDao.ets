@@ -17,6 +17,7 @@ import URLCredential from '../types/URLCredential'
 import CredentialDatabaseHelper from './CredentialDatabaseHelper'
 import URLCredentialContract from './URLCredentialContract'
 import List from '@ohos.util.List'
+import { relationalStore } from '@kit.ArkData'
 
 export default class URLCredentialDao {
   credentialDatabaseHelper: CredentialDatabaseHelper
@@ -31,89 +32,69 @@ export default class URLCredentialDao {
     this.credentialDatabaseHelper = credentialDatabaseHelper
   }
 
-  public getAllByProtectionSpaceId(protectionSpaceId: number): List<URLCredential> {
-    let selection: string = URLCredentialContract.COLUMN_NAME_PROTECTION_SPACE_ID + " = ?";
-    let selectionArgs: string[] = [protectionSpaceId.toString()]
+  public async getAllByProtectionSpaceId(protectionSpaceId: number) {
     let URLCredentials: List<URLCredential> = new List<URLCredential>();
-
-    //TODO
-    // Cursor cursor = credentialDatabaseHelper.getReadableDatabase().query(
-    //   URLCredentialContract.FeedEntry.TABLE_NAME,
-    //   projection,
-    //   selection,
-    //   selectionArgs,
-    //   null,
-    //   null,
-    //   null
-    // );
-    // while (cursor.moveToNext()) {
-    //   Long id = cursor.getLong(cursor.getColumnIndexOrThrow(URLCredentialContract.FeedEntry._ID));
-    //   String username = cursor.getString(cursor.getColumnIndexOrThrow(URLCredentialContract.FeedEntry.COLUMN_NAME_USERNAME));
-    //   String password = cursor.getString(cursor.getColumnIndexOrThrow(URLCredentialContract.FeedEntry.COLUMN_NAME_PASSWORD));
-    //   URLCredentials.add(new URLCredential(id, username, password, protectionSpaceId));
-    // }
-    // cursor.close();
+    let predicates = new relationalStore.RdbPredicates(URLCredentialContract.TABLE_NAME);
+    predicates.equalTo(URLCredentialContract.COLUMN_NAME_PROTECTION_SPACE_ID, protectionSpaceId.toString());
+    let rdbStore = await this.credentialDatabaseHelper.getRdbStore();
+    let resultSet = await rdbStore.query(predicates);
+    while (resultSet.goToNextRow()) {
+      const id = resultSet.getLong(resultSet.getColumnIndex(URLCredentialContract._ID));
+      const username = resultSet.getString(resultSet.getColumnIndex(URLCredentialContract.COLUMN_NAME_USERNAME));
+      const password = resultSet.getString(resultSet.getColumnIndex(URLCredentialContract.COLUMN_NAME_PASSWORD));
+      URLCredentials.add(new URLCredential(id, username, password, protectionSpaceId));
+    }
+    resultSet.close();
     return URLCredentials
   }
 
-  public find(username: string, password: string, protectionSpaceId: number): URLCredential | null {
-    //TODO
-    // String selection = URLCredentialContract.FeedEntry.COLUMN_NAME_USERNAME + " = ? AND " +
-    // URLCredentialContract.FeedEntry.COLUMN_NAME_PASSWORD + " = ? AND " +
-    // URLCredentialContract.FeedEntry.COLUMN_NAME_PROTECTION_SPACE_ID + " = ?";
-    // String[] selectionArgs = {username, password, protectionSpaceId.toString()};
-    //
-    // Cursor cursor = credentialDatabaseHelper.getReadableDatabase().query(
-    //   URLCredentialContract.FeedEntry.TABLE_NAME,
-    //   projection,
-    //   selection,
-    //   selectionArgs,
-    //   null,
-    //   null,
-    //   null
-    // );
+  public async find(username: string, password: string, protectionSpaceId: number){
+    let predicates = new relationalStore.RdbPredicates(URLCredentialContract.TABLE_NAME);
+    predicates.equalTo(URLCredentialContract.COLUMN_NAME_USERNAME, username);
+    predicates.and();
+    predicates.equalTo(URLCredentialContract.COLUMN_NAME_PASSWORD, password);
+    predicates.and();
+    predicates.equalTo(URLCredentialContract.COLUMN_NAME_PROTECTION_SPACE_ID, protectionSpaceId.toString());
+    let dbStore = await this.credentialDatabaseHelper.getRdbStore();
+    let resultSet = await dbStore.query(predicates);
 
-    let URLCredential: URLCredential | null = null;
-    //   if (cursor.moveToNext()) {
-    //   Long rowId = cursor.getLong(cursor.getColumnIndexOrThrow(URLCredentialContract.FeedEntry._ID));
-    //   String rowUsername = cursor.getString(cursor.getColumnIndexOrThrow(URLCredentialContract.FeedEntry.COLUMN_NAME_USERNAME));
-    //   String rowPassword = cursor.getString(cursor.getColumnIndexOrThrow(URLCredentialContract.FeedEntry.COLUMN_NAME_PASSWORD));
-    //   URLCredential = new URLCredential(rowId, rowUsername, rowPassword, protectionSpaceId);
-    // }
-    // cursor.close();
+    let urlCredential: URLCredential | null = null;
+    if (resultSet.goToNextRow()) {
+      const rowId = resultSet.getLong(resultSet.getColumnIndex(URLCredentialContract._ID));
+      const rowUsername = resultSet.getString(resultSet.getColumnIndex(URLCredentialContract.COLUMN_NAME_USERNAME));
+      const rowPassword = resultSet.getString(resultSet.getColumnIndex(URLCredentialContract.COLUMN_NAME_PASSWORD));
+      urlCredential = new URLCredential(rowId, rowUsername, rowPassword, protectionSpaceId);
+    }
+    resultSet.close();
 
-    return URLCredential;
+    return urlCredential;
   }
 
-  public insert(urlCredential: URLCredential): number {
-    //TODO
-    // let credentialValues: ContentValues = new ContentValues();
-    //   credentialValues.put(URLCredentialContract.FeedEntry.COLUMN_NAME_USERNAME, urlCredential.getUsername());
-    //   credentialValues.put(URLCredentialContract.FeedEntry.COLUMN_NAME_PASSWORD, urlCredential.getPassword());
-    //   credentialValues.put(URLCredentialContract.FeedEntry.COLUMN_NAME_PROTECTION_SPACE_ID, urlCredential.getProtectionSpaceId());
-    //
-    //   return credentialDatabaseHelper.getWritableDatabase().insert(URLCredentialContract.FeedEntry.TABLE_NAME, null, credentialValues);
-    return 0;
+  public async insert(urlCredential: URLCredential) {
+    const valueBucket: relationalStore.ValuesBucket = {};
+    valueBucket[URLCredentialContract.COLUMN_NAME_USERNAME] = urlCredential.getUsername();
+    valueBucket[URLCredentialContract.COLUMN_NAME_PASSWORD] = urlCredential.getPassword();
+    valueBucket[URLCredentialContract.COLUMN_NAME_PROTECTION_SPACE_ID] = urlCredential.getProtectionSpaceId();
+    let rdbStore = await this.credentialDatabaseHelper.getRdbStore();
+    return await rdbStore.insert(URLCredentialContract.TABLE_NAME, valueBucket);
   }
 
+  public async update(urlCredential: URLCredential) {
+    const valueBucket: relationalStore.ValuesBucket = {};
+    valueBucket[URLCredentialContract.COLUMN_NAME_USERNAME] = urlCredential.getUsername();
+    valueBucket[URLCredentialContract.COLUMN_NAME_PASSWORD] = urlCredential.getPassword();
 
-  public update( urlCredential: URLCredential): number {
-    //TODO
-    // ContentValues credentialValues = new ContentValues();
-    // credentialValues.put(URLCredentialContract.FeedEntry.COLUMN_NAME_USERNAME, urlCredential.getUsername());
-    // credentialValues.put(URLCredentialContract.FeedEntry.COLUMN_NAME_PASSWORD, urlCredential.getPassword());
-    //
-    // String whereClause = URLCredentialContract.FeedEntry.COLUMN_NAME_PROTECTION_SPACE_ID + " = ?";
-    // String[] whereArgs = {urlCredential.getProtectionSpaceId().toString()};
-    //
-    // return credentialDatabaseHelper.getWritableDatabase().update(URLCredentialContract.FeedEntry.TABLE_NAME, credentialValues, whereClause, whereArgs);
-    return 0;
+    let predicates = new relationalStore.RdbPredicates(URLCredentialContract.TABLE_NAME);
+    predicates.equalTo(URLCredentialContract.COLUMN_NAME_PROTECTION_SPACE_ID, urlCredential.getProtectionSpaceId()?.toString());
+
+    let rdbStore = await this.credentialDatabaseHelper.getRdbStore();
+    return rdbStore.update(valueBucket, predicates);
   }
 
-  public  delete( urlCredential: URLCredential): number {
-    let whereClause: string = URLCredentialContract._ID + " = ?";
-    let whereArgs = [urlCredential.getId()?.toString()];
-    // return this.credentialDatabaseHelper.getWritableDatabase().delete(URLCredentialContract.TABLE_NAME, whereClause, whereArgs);
-    return 0;
+  public async delete( urlCredential: URLCredential) {
+    let predicates = new relationalStore.RdbPredicates(URLCredentialContract.TABLE_NAME);
+    predicates.equalTo(URLCredentialContract._ID, urlCredential.getId()?.toString());
+    let rdbStore = await this.credentialDatabaseHelper.getRdbStore();
+    return rdbStore.delete(predicates);
   }
 }

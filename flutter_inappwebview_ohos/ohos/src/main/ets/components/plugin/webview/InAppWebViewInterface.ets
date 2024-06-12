@@ -83,7 +83,7 @@ export default interface InAppWebViewInterface {
 
   canScrollVertically(): boolean
 
-  canScrollHorizontally(): boolean
+  canScrollHorizontally(callback: ValueCallback<boolean>): void
 
   getUrl(): string
 
