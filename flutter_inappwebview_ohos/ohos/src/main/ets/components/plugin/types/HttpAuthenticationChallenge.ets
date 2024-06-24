@@ -28,8 +28,8 @@ export default class HttpAuthenticationChallenge extends URLAuthenticationChalle
     this.proposedCredential = proposedCredential
   }
 
-  public toMap(): Map<string, Any> {
-    let challengeMap: Map<string, Any> = super.toMap();
+  public async toMap() {
+    let challengeMap: Map<string, Any> = await super.toMap();
     challengeMap.set("previousFailureCount", this.previousFailureCount);
     challengeMap.set("proposedCredential", (this.proposedCredential != null) ? this.proposedCredential.toMap() : null);
     challengeMap.set("failureResponse", null);

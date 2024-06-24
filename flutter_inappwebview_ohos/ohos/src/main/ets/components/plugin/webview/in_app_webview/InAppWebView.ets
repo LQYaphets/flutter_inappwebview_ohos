@@ -239,7 +239,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     web_webview.WebCookieManager.putAcceptThirdPartyCookieEnabled(this.customSettings.thirdPartyCookiesEnabled);
   }
 
-  private prepareAndAddUserScripts(): void {
+  prepareAndAddUserScripts(): void {
     this.userContentController.addPluginScript(PromisePolyfillJS.PROMISE_POLYFILL_JS_PLUGIN_SCRIPT);
     this.userContentController.addPluginScript(JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_JS_PLUGIN_SCRIPT);
     this.userContentController.addPluginScript(ConsoleLogJS.CONSOLE_LOG_JS_PLUGIN_SCRIPT);
@@ -865,8 +865,13 @@ export default class InAppWebView implements InAppWebViewInterface {
     this.controller.onInactive
   }
 
-  async getCertificate(): Promise<Array<cert.X509Cert>> {
-    return this.controller.getCertificate()
+  async getCertificate() {
+    let certificates = await this.controller.getCertificate()
+    if (certificates && certificates.length > 0) {
+      return certificates[0]
+    } else {
+      return null
+    }
   }
 
   clearHistory(): void {

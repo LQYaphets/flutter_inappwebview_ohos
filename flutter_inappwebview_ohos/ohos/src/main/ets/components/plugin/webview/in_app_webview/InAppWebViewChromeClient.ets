@@ -41,7 +41,11 @@ import {
   JsConfirmCallback,
   JsPromptCallback,
   PermissionRequestCallback,
-  ReceivedHttpAuthRequestCallback
+  ReceivedHttpAuthRequestCallback,
+  ReceivedServerTrustAuthRequestCallback,
+  ReceivedClientCertRequestCallback,
+  CreateWindowCallback,
+  FormResubmissionCallback
 } from '../WebViewChannelDelegate';
 import JsAlertResponse from '../../types/JsAlertResponse';
 import JsConfirmResponse from '../../types/JsConfirmResponse';
@@ -58,8 +62,14 @@ import GeolocationPermissionShowPromptResponse from '../../types/GeolocationPerm
 import CredentialDatabase from '../../credential_database/CredentialDatabase';
 import HttpAuthenticationChallenge from '../../types/HttpAuthenticationChallenge';
 import URLProtectionSpace from '../../types/URLProtectionSpace';
+import ServerTrustAuthResponse from '../../types/ServerTrustAuthResponse';
+import ServerTrustChallenge from '../../types/ServerTrustChallenge';
+import ClientCertChallenge from '../../types/ClientCertChallenge';
+import ClientCertResponse from '../../types/ClientCertResponse';
+import CreateWindowAction from '../../types/CreateWindowAction';
 import { cert } from '@kit.DeviceCertificateKit'
 import { List } from '@kit.ArkTS';
+import { common } from '@kit.AbilityKit';
 
 const TAG = "InAppWebViewChromeClient";
 
@@ -71,6 +81,8 @@ export default class InAppWebViewChromeClient {
   private inAppWebView: InAppWebView;
   private inAppBrowserDelegate: InAppBrowserDelegate | null = null;
   private fullScreenExitHandler: FullScreenExitHandler | null = null;
+  private isOriginalLayoutFullScreen = false;
+  private isOriginalFullScreen = false;
 
   constructor(plugin: InAppWebViewFlutterPlugin, inAppWebView: InAppWebView) {
     this.plugin = plugin;
@@ -106,8 +118,6 @@ export default class InAppWebViewChromeClient {
   }
   onPrompt = (event: Any, uiObject: Any) => {
     Log.d(TAG, "onPrompt=" + JSON.stringify(event))
-    // TODO
-    // 等API12适配的时候放开
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
       this.inAppWebView.channelDelegate.onJsPrompt(event.url, event.message, event.value, null,
         new InnerJsPromptCallback(event.result, event.message, event.value, uiObject));
@@ -456,12 +466,12 @@ export default class InAppWebViewChromeClient {
     return true;
   }
   onSslErrorEventReceive = (event: Any) => {
-    // TODO
     Log.d(TAG, "onSslErrorEventReceive=" + JSON.stringify(event))
+    this.onReceivedSslErrorEventReceive(event.handler, event.error)
   }
   onClientAuthenticationRequest = (event: Any) => {
-    // TODO
     Log.d(TAG, "onClientAuthenticationRequest=" + JSON.stringify(event))
+    this.onReceivedClientAuthenticationRequest(event.handler, event.host, event.port, event.keyTypes, event.issuers)
   }
   onPermissionRequest = (event: Any) => {
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
@@ -476,7 +486,7 @@ export default class InAppWebViewChromeClient {
   onContextMenuShow = (event: Any) => {
     // TODO
     Log.d(TAG, "onContextMenuShow=" + JSON.stringify(event))
-    return false;
+    return true;
   }
   onContextMenuHide = () => {
     // TODO
@@ -505,7 +515,13 @@ export default class InAppWebViewChromeClient {
     }
   }
   onFullScreenEnter = (event: Any) => {
-    // TODO 设置Ability进入全屏 这里缺少API获取当前window是否全屏状态 获取当前值 在exit时候 需要恢复到原来值。
+    let context = this.inAppWebView.context as common.UIAbilityContext;
+    let windowClass = context.windowStage.getMainWindowSync();
+    let windowProperties = windowClass.getWindowProperties();
+    this.isOriginalLayoutFullScreen = windowProperties.isLayoutFullScreen;
+    this.isOriginalFullScreen = windowProperties.isFullScreen;
+    windowClass.setWindowLayoutFullScreen(true)
+    windowClass.setWindowSystemBarEnable([])
     this.fullScreenExitHandler = event.handler
     Log.d(TAG, "onFullScreenEnter=" + JSON.stringify(event))
     if (this.inAppWebView.channelDelegate != null) {
@@ -515,7 +531,10 @@ export default class InAppWebViewChromeClient {
   }
   onFullScreenExit = () => {
     Log.d(TAG, "onFullScreenExit=")
-    // TODO 设置Ability退出全屏
+    let context = this.inAppWebView.context as common.UIAbilityContext;
+    let windowClass = context.windowStage.getMainWindowSync();
+    windowClass.setWindowLayoutFullScreen(this.isOriginalLayoutFullScreen)
+    windowClass.setWindowSystemBarEnable(this.isOriginalFullScreen ? [] : ['status', 'navigation'])
     if (this.fullScreenExitHandler) {
       this.fullScreenExitHandler.exitFullScreen()
     }
@@ -526,21 +545,50 @@ export default class InAppWebViewChromeClient {
   }
   onWindowNew = (event: Any) => {
     Log.d(TAG, "onWindowNew=" + JSON.stringify(event))
+    let windowId = 0;
+    if (this.plugin != null && this.plugin.inAppWebViewManager != null) {
+      this.plugin.inAppWebViewManager.windowAutoincrementId++;
+      windowId = this.plugin.inAppWebViewManager.windowAutoincrementId;
+    }
+
+    let request = new URLRequest(event.targetUrl, "GET", null, new Map<string, string>());
+    let createWindowAction = new CreateWindowAction(request, true, event.isUserTrigger, false, windowId, event.isAlert);
+    if (this.plugin != null && this.plugin.inAppWebViewManager != null) {
+      this.plugin.inAppWebViewManager.windowWebViewMessages.set(windowId, event.handler);
+    }
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onCreateWindow(createWindowAction,
+        new InnerCreateWindowCallback(this.inAppWebView, windowId));
+    }
   }
   onWindowExit = () => {
     Log.d(TAG, "onWindowExit=")
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onCloseWindow();
+    }
   }
   onSearchResultReceive = (event: Any) => {
     Log.d(TAG, "onSearchResultReceive=" + JSON.stringify(event))
+    // TODO
   }
   onDataResubmitted = (event: Any) => {
     Log.d(TAG, "onDataResubmitted=" + JSON.stringify(event))
+    let callback = new InnerFormResubmissionCallback(event.handler);
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onFormResubmission(this.inAppWebView!.controller!.getUrl(), callback);
+    } else {
+      callback.defaultBehaviour(null);
+    }
   }
   onPageVisible = (event: Any) => {
     Log.d(TAG, "onPageVisible=" + JSON.stringify(event))
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onPageCommitVisible(event.url);
+    }
   }
   onInterceptKeyEvent = (event: Any) => {
     Log.d(TAG, "onInterceptKeyEvent=" + JSON.stringify(event))
+    // TODO
     return false;
   }
   onTouchIconUrlReceived = (event: Any) => {
@@ -565,9 +613,11 @@ export default class InAppWebViewChromeClient {
   }
   onAudioStateChanged = (event: Any) => {
     Log.d(TAG, "onAudioStateChanged=" + JSON.stringify(event))
+    // TODO
   }
   onFirstContentfulPaint = (event: Any) => {
     Log.d(TAG, "onFirstContentfulPaint=" + JSON.stringify(event))
+    // TODO
   }
   onLoadIntercept = (event: Any) => { //对应安卓 shouldOverrideUrlLoading OHOS不知道异步 不知道如何适配了
     // TODO
@@ -588,24 +638,42 @@ export default class InAppWebViewChromeClient {
   }
   onRequestSelected = () => {
     Log.d(TAG, "onRequestSelected=")
+    if(this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onRequestFocus();
+    }
   }
   onScreenCaptureRequest = (event: Any) => {
     Log.d(TAG, "onScreenCaptureRequest=" + JSON.stringify(event))
+    // TODO
   }
   onOverScroll = (event: Any) => {
+    // TODO 没有clampedX clampedY？
     Log.d(TAG, "onOverScroll=" + JSON.stringify(event))
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.canScrollHorizontally({
+        onReceiveValue(canScroll: boolean | null): void {
+          let overScrolledHorizontally: boolean = canScroll!;
+          let overScrolledVertically: boolean = this.inAppWebView.canScrollVertically();
+          this.inAppWebView.channelDelegate.onOverScrolled(event.xOffset, event.yOffset, overScrolledHorizontally, overScrolledVertically);
+        }
+      });
+    }
   }
   onNavigationEntryCommitted = () => {
     Log.d(TAG, "onNavigationEntryCommitted=")
+    // TODO
   }
   onSafeBrowsingCheckResult = () => {
     Log.d(TAG, "onSafeBrowsingCheckResult=")
+    // TODO
   }
   onNativeEmbedLifecycleChange = (callback: NativeEmbedDataInfo) => {
     Log.d(TAG, "onNativeEmbedLifecycleChange=")
+    // TODO
   }
   onNativeEmbedGestureEvent = (callback: NativeEmbedTouchInfo) => {
     Log.d(TAG, "onNativeEmbedGestureEvent=")
+    // TODO
   }
 
   private async onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string,
@@ -654,15 +722,73 @@ export default class InAppWebViewChromeClient {
 
     let certificate: cert.X509Cert | null = null;
     let certificates = await this.inAppWebView!.controller!.getCertificate();
-    if(certificates && certificates.length > 0){
+    if (certificates && certificates.length > 0) {
       certificate = certificates[0];
     }
     let protectionSpace = new URLProtectionSpace(host, protocol, realm, port, null, certificate, null);
-    let challenge = new HttpAuthenticationChallenge(protectionSpace, InAppWebViewChromeClient.previousAuthRequestFailureCount, credentialProposed);
+    let challenge =
+      new HttpAuthenticationChallenge(protectionSpace, InAppWebViewChromeClient.previousAuthRequestFailureCount,
+        credentialProposed);
 
     let callback = new InnerReceivedHttpAuthRequestCallback(this.inAppWebView, handler, host, protocol, realm, port);
     if (this.inAppWebView.channelDelegate != null) {
       this.inAppWebView.channelDelegate.onReceivedHttpAuthRequest(challenge, callback);
+    } else {
+      callback.defaultBehaviour(null);
+    }
+  }
+
+  private onReceivedSslErrorEventReceive(handler: SslErrorHandler, sslError: SslError) {
+    let url = this.inAppWebView!.controller!.getUrl();
+    let host = "";
+    let protocol = "https";
+    let port = 0;
+
+    try {
+      let uriurl = new uri.URI(url);
+      host = uriurl.host;
+      protocol = uriurl.scheme;
+      port = Number.parseInt(uriurl.port);
+    } catch (e) {
+      Log.e(TAG, "", e);
+    }
+
+    // TODO  sslError.getCertificate()没有这方法 用null先适配
+    let protectionSpace = new URLProtectionSpace(host, protocol, null, port, null, null, sslError);
+    let challenge = new ServerTrustChallenge(protectionSpace);
+    let callback = new InnerReceivedServerTrustAuthRequestCallback(handler);
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedServerTrustAuthRequest(challenge, callback);
+    } else {
+      callback.defaultBehaviour(null);
+    }
+  }
+
+  private async onReceivedClientAuthenticationRequest(handler: ClientAuthenticationHandler, host: string,
+    port: number, keyTypes: Array<string>, issuers: Array<string>) {
+    let url = this.inAppWebView!.controller!.getUrl();
+    let protocol = "https";
+
+    if (url != null) {
+      try {
+        let uriurl = new uri.URI(url);
+        protocol = uriurl.scheme;
+      } catch (e) {
+        Log.e(TAG, "", e);
+      }
+    }
+
+    let certificate: cert.X509Cert | null = null;
+    let certificates = await this.inAppWebView!.controller!.getCertificate();
+    if (certificates && certificates.length > 0) {
+      certificate = certificates[0];
+    }
+    let protectionSpace = new URLProtectionSpace(host, protocol, null, port, null, certificate, null);
+    let challenge = new ClientCertChallenge(protectionSpace, issuers, keyTypes);
+
+    let callback = new InnerReceivedClientCertRequestCallback(this.inAppWebView!, handler);
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onReceivedClientCertRequest(challenge, callback);
     } else {
       callback.defaultBehaviour(null);
     }
@@ -1101,7 +1227,8 @@ class InnerReceivedHttpAuthRequestCallback extends ReceivedHttpAuthRequestCallba
   private finalPort: number;
   private inAppWebView: InAppWebView;
 
-  constructor(inAppWebView: InAppWebView, handler: HttpAuthHandler, host: string, protocol: string, realm: string, port: number) {
+  constructor(inAppWebView: InAppWebView, handler: HttpAuthHandler, host: string, protocol: string, realm: string,
+    port: number) {
     super();
     this.handler = handler;
     this.host = host;
@@ -1120,7 +1247,8 @@ class InnerReceivedHttpAuthRequestCallback extends ReceivedHttpAuthRequestCallba
           let password = response.getPassword();
           let permanentPersistence = response.isPermanentPersistence();
           if (permanentPersistence) {
-            CredentialDatabase.getInstance(this.inAppWebView.context).setHttpAuthCredential(this.host, this.finalProtocol, this.realm, this.finalPort, username, password);
+            CredentialDatabase.getInstance(this.inAppWebView.context)
+              .setHttpAuthCredential(this.host, this.finalProtocol, this.realm, this.finalPort, username, password);
           }
           this.handler.confirm(username, password);
           break;
@@ -1146,7 +1274,11 @@ class InnerReceivedHttpAuthRequestCallback extends ReceivedHttpAuthRequestCallba
   }
 
   defaultBehaviour(result: HttpAuthResponse | null): void {
-    this.handler.cancel();
+    if (result == null) {
+      this.handler.cancel();
+    } else {
+      this.nonNullSuccess(result)
+    }
   }
 
   error(errorCode: string, errorMessage: string, errorDetails: Any): void {
@@ -1154,3 +1286,149 @@ class InnerReceivedHttpAuthRequestCallback extends ReceivedHttpAuthRequestCallba
     this.defaultBehaviour(null);
   }
 }
+
+class InnerReceivedServerTrustAuthRequestCallback extends ReceivedServerTrustAuthRequestCallback {
+  private handler: SslErrorHandler;
+
+  constructor(handler: SslErrorHandler) {
+    super();
+    this.handler = handler;
+  }
+
+  nonNullSuccess(response: ServerTrustAuthResponse): boolean {
+    let action = response.getAction();
+    if (action != null) {
+      switch (action) {
+        case 1:
+          this.handler.handleConfirm();
+          break;
+        case 0:
+        default:
+          this.handler.handleCancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(result: ServerTrustAuthResponse | null) {
+    if (result != null) {
+      this.nonNullSuccess(result);
+    } else {
+      this.handler.handleCancel();
+    }
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+}
+
+class InnerReceivedClientCertRequestCallback extends ReceivedClientCertRequestCallback {
+  private handler: ClientAuthenticationHandler;
+  private inAppWebView: InAppWebView;
+
+  constructor(inAppWebView: InAppWebView, handler: ClientAuthenticationHandler) {
+    super();
+    this.inAppWebView = inAppWebView;
+    this.handler = handler;
+  }
+
+  nonNullSuccess(response: ClientCertResponse): boolean {
+    let action = response.getAction();
+    if (action != null && this.inAppWebView.plugin != null) {
+      switch (action) {
+        case 1: {
+          let certificatePath = response.getCertificatePath();
+          let certificatePassword = response.getCertificatePassword();
+          let keyStoreType = response.getKeyStoreType();
+          //TODO  priKeyFile？
+          this.handler.confirm(keyStoreType, certificatePath)
+        }
+          break;
+        case 2:
+          this.handler.ignore();
+          break;
+        case 0:
+        default:
+          this.handler.cancel();
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(result: ClientCertResponse | null) {
+    if (result != null) {
+      this.nonNullSuccess(result);
+    } else {
+      this.handler.cancel();
+    }
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+}
+
+class InnerCreateWindowCallback extends CreateWindowCallback {
+  private finalWindowId: number;
+  private inAppWebView: InAppWebView;
+
+  constructor(inAppWebView: InAppWebView, finalWindowId: number) {
+    super();
+    this.inAppWebView = inAppWebView;
+    this.finalWindowId = finalWindowId;
+  }
+
+  nonNullSuccess(handledByClient: boolean): boolean {
+    return !handledByClient;
+  }
+
+  defaultBehaviour(handledByClient: boolean | null) {
+    if (this.inAppWebView.plugin != null && this.inAppWebView.plugin.inAppWebViewManager != null) {
+      this.inAppWebView.plugin.inAppWebViewManager.windowWebViewMessages.delete(this.finalWindowId);
+    }
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+}
+
+class InnerFormResubmissionCallback extends FormResubmissionCallback {
+  private hanlder: DataResubmissionHandler;
+
+  constructor(hanlder: DataResubmissionHandler) {
+    super();
+    this.hanlder = hanlder;
+  }
+
+  nonNullSuccess(action: number): boolean {
+    switch (action) {
+      case 0:
+        this.hanlder.resend();
+        break;
+      case 1:
+      default:
+        this.hanlder.cancel();
+    }
+    return false;
+  }
+
+  defaultBehaviour(result: number | null) {
+    if (result != null) {
+      this.nonNullSuccess(result);
+    } else {
+      this.hanlder.cancel();
+    }
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+};

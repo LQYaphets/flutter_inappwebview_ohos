@@ -50,6 +50,10 @@ import CustomSchemeResponse from '../types/CustomSchemeResponse';
 import { NavigationActionPolicy } from '../types/NavigationActionPolicy';
 import NavigationAction from '../types/NavigationAction';
 import SslCertificateExt from '../types/SslCertificateExt';
+import ServerTrustAuthResponse from '../types/ServerTrustAuthResponse';
+import ServerTrustChallenge from '../types/ServerTrustChallenge';
+import ClientCertResponse from '../types/ClientCertResponse';
+import ClientCertChallenge from '../types/ClientCertChallenge';
 
 const LOG_TAG = "WebViewChannelDelegate";
 
@@ -492,7 +496,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.getCertificate:
         if (this.webView != null) {
-          result.success(SslCertificateExt.toMap(await this.webView.getCertificate()));
+          result.success(await SslCertificateExt.toMap(await this.webView.getCertificate()));
         } else {
           result.success(null);
         }
@@ -919,6 +923,15 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     channel.invokeMethod("onUpdateVisitedHistory", obj);
   }
 
+  public onRequestFocus() {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) {
+      return;
+    }
+    let obj: Map<string, Any> = new Map<string, Any>();
+    channel.invokeMethod("onRequestFocus", obj);
+  }
+
   public onReceivedError(request: WebResourceRequestExt, error: WebResourceErrorExt): void {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) return;
@@ -937,13 +950,32 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     channel.invokeMethod("onReceivedHttpError", obj);
   }
 
-  public onReceivedHttpAuthRequest(challenge: HttpAuthenticationChallenge, callback: ReceivedHttpAuthRequestCallback) {
+  public async onReceivedHttpAuthRequest(challenge: HttpAuthenticationChallenge, callback: ReceivedHttpAuthRequestCallback) {
     let channel: MethodChannel = this.getChannel();
     if (channel == null) {
       callback.defaultBehaviour(null);
       return;
     }
-    channel.invokeMethod("onReceivedHttpAuthRequest", challenge.toMap(), callback);
+    channel.invokeMethod("onReceivedHttpAuthRequest", await challenge.toMap(), callback);
+  }
+
+  public async onReceivedServerTrustAuthRequest(challenge: ServerTrustChallenge, callback: ReceivedServerTrustAuthRequestCallback) {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    channel.invokeMethod("onReceivedServerTrustAuthRequest", await challenge.toMap(), callback);
+  }
+
+  public async onReceivedClientCertRequest(challenge: ClientCertChallenge,
+    callback: ReceivedClientCertRequestCallback) {
+    let channel: MethodChannel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    channel.invokeMethod("onReceivedClientCertRequest", await challenge.toMap(), callback);
   }
 
   async shouldInterceptRequest(request: WebResourceRequestExt) {
@@ -1017,6 +1049,22 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     obj.set("didCrash", didCrash);
     obj.set("rendererPriorityAtExit", rendererPriorityAtExit);
     channel.invokeMethod("onRenderProcessGone", obj);
+  }
+
+  onPageCommitVisible(url: string) {
+    let channel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("url", url);
+    channel.invokeMethod("onPageCommitVisible", obj);
+  }
+
+  onFormResubmission(url: string, callback: FormResubmissionCallback) {
+    let channel = this.getChannel();
+    if (channel == null) return;
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("url", url);
+    channel.invokeMethod("onFormResubmission", obj, callback);
   }
 }
 
@@ -1110,5 +1158,23 @@ export class CallJsHandlerCallback extends BaseCallbackResultImpl<Any> {
 export class PrintRequestCallback extends BaseCallbackResultImpl<boolean> {
   public decodeResult(obj: Any): boolean {
     return obj;
+  }
+}
+
+export class ReceivedServerTrustAuthRequestCallback extends BaseCallbackResultImpl<ServerTrustAuthResponse> {
+  public decodeResult(obj: Any): ServerTrustAuthResponse | null {
+    return ServerTrustAuthResponse.fromMap(obj);
+  }
+}
+
+export class ReceivedClientCertRequestCallback extends BaseCallbackResultImpl<ClientCertResponse> {
+  public decodeResult(obj: Any): ClientCertResponse | null {
+    return ClientCertResponse.fromMap(obj);
+  }
+}
+
+export class FormResubmissionCallback extends BaseCallbackResultImpl<number> {
+  decodeResult(obj: Any): number | null {
+    return typeof obj == 'number' ? obj as number : null;
   }
 }

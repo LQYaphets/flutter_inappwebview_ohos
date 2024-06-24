@@ -141,7 +141,7 @@ export default interface InAppWebViewInterface {
 
   clearFocus(): void
 
-  getCertificate(): Promise<Array<cert.X509Cert>>
+  getCertificate(): Promise<cert.X509Cert | null>
 
   clearHistory(): void
 

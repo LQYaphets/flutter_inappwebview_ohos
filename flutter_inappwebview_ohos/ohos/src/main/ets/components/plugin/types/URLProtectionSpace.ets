@@ -14,8 +14,8 @@
 */
 
 import { Any } from '@ohos/flutter_ohos'
-import SslCertificate from './SslCertificate'
-import SslError from './SslError'
+import SslCertificateExt from './SslCertificateExt'
+import SslErrorExt from './SslErrorExt'
 import { cert } from '@kit.DeviceCertificateKit'
 
 export default class URLProtectionSpace {
@@ -44,16 +44,15 @@ export default class URLProtectionSpace {
     }
   }
 
-  public toMap(): Map<string, Any> {
-    // TODO
+  public async toMap() {
     let urlProtectionSpaceMap: Map<string, Any> = new Map<string, Any>();
     urlProtectionSpaceMap.set("host", this.host);
     urlProtectionSpaceMap.set("protocol", this.protocol);
     urlProtectionSpaceMap.set("realm", this.realm);
     urlProtectionSpaceMap.set("port", this.port);
-    // urlProtectionSpaceMap.set("sslCertificate", SslCertificateExt.toMap(this.sslCertificate));
+    urlProtectionSpaceMap.set("sslCertificate",  await SslCertificateExt.toMap(this.sslCertificate));
     urlProtectionSpaceMap.set("sslCertificate", null);
-    // urlProtectionSpaceMap.set("sslError", SslErrorExt.toMap(this.sslError));
+    urlProtectionSpaceMap.set("sslError", SslErrorExt.toMap(this.sslError));
     urlProtectionSpaceMap.set("sslError", null);
     urlProtectionSpaceMap.set("authenticationMethod", null);
     urlProtectionSpaceMap.set("distinguishedNames", null);
