@@ -119,9 +119,8 @@ export struct OhosWebView {
       .onFaviconReceived(this.inAppWebView!.inAppWebViewChromeClient?.onFaviconReceived)
       .onAudioStateChanged(this.inAppWebView!.inAppWebViewChromeClient?.onAudioStateChanged)
       .onFirstContentfulPaint(this.inAppWebView!.inAppWebViewChromeClient?.onFirstContentfulPaint)
-      .onLoadIntercept((event) => {
-        return this.inAppWebView!.inAppWebViewChromeClient?.onLoadIntercept(event)
-      })
+      .onLoadIntercept(this.inAppWebView!.inAppWebViewChromeClient?.onLoadIntercept)
+      .onOverrideUrlLoading(this.inAppWebView!.inAppWebViewChromeClient?.onOverrideUrlLoading)
       .onRequestSelected(this.inAppWebView!.inAppWebViewChromeClient?.onRequestSelected)
       .onScreenCaptureRequest(this.inAppWebView!.inAppWebViewChromeClient?.onScreenCaptureRequest)
       .onOverScroll(this.inAppWebView!.inAppWebViewChromeClient?.onOverScroll)

@@ -54,6 +54,7 @@ import ServerTrustAuthResponse from '../types/ServerTrustAuthResponse';
 import ServerTrustChallenge from '../types/ServerTrustChallenge';
 import ClientCertResponse from '../types/ClientCertResponse';
 import ClientCertChallenge from '../types/ClientCertChallenge';
+import SafeBrowsingResponse from '../types/SafeBrowsingResponse';
 
 const LOG_TAG = "WebViewChannelDelegate";
 
@@ -998,15 +999,13 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     return callback.result;
   }
 
-  async shouldOverrideUrlLoading(navigationAction: NavigationAction) {
+  shouldOverrideUrlLoading(navigationAction: NavigationAction, callback: ShouldOverrideUrlLoadingCallback) {
     let channel = this.getChannel();
     if (channel == null) {
-      return NavigationActionPolicy.ALLOW;
+      callback.defaultBehaviour(null);
+      return;
     }
-    let callback = new SyncShouldOverrideUrlLoadingCallback();
     channel.invokeMethod("shouldOverrideUrlLoading", navigationAction.toMap(), callback);
-    await callback.waitResponse()
-    return callback.result;
   }
 
   onCallJsHandler(handlerName: string, args: string, callback: CallJsHandlerCallback) {
@@ -1065,6 +1064,18 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("url", url);
     channel.invokeMethod("onFormResubmission", obj, callback);
+  }
+
+  onSafeBrowsingHit(url: string, threatType: ThreatType, callback: SafeBrowsingHitCallback) {
+    let channel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("url", url);
+    obj.set("threatType", threatType);
+    channel.invokeMethod("onSafeBrowsingHit", obj, callback);
   }
 }
 
@@ -1140,7 +1151,7 @@ class SyncLoadResourceWithCustomSchemeCallback extends SyncBaseCallbackResultImp
   }
 }
 
-export class SyncShouldOverrideUrlLoadingCallback extends SyncBaseCallbackResultImpl<NavigationActionPolicy> {
+export class ShouldOverrideUrlLoadingCallback extends BaseCallbackResultImpl<NavigationActionPolicy> {
   public decodeResult(obj: Any): NavigationActionPolicy {
     if (!(typeof obj == 'number')) {
       return NavigationActionPolicy.CANCEL;
@@ -1176,5 +1187,11 @@ export class ReceivedClientCertRequestCallback extends BaseCallbackResultImpl<Cl
 export class FormResubmissionCallback extends BaseCallbackResultImpl<number> {
   decodeResult(obj: Any): number | null {
     return typeof obj == 'number' ? obj as number : null;
+  }
+}
+
+export class SafeBrowsingHitCallback extends BaseCallbackResultImpl<SafeBrowsingResponse> {
+  public decodeResult(obj: Any): SafeBrowsingResponse | null {
+    return SafeBrowsingResponse.fromMap(obj);
   }
 }
