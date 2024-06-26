@@ -45,7 +45,9 @@ import {
   ReceivedServerTrustAuthRequestCallback,
   ReceivedClientCertRequestCallback,
   CreateWindowCallback,
-  FormResubmissionCallback
+  FormResubmissionCallback,
+  ShouldOverrideUrlLoadingCallback,
+  SafeBrowsingHitCallback
 } from '../WebViewChannelDelegate';
 import JsAlertResponse from '../../types/JsAlertResponse';
 import JsConfirmResponse from '../../types/JsConfirmResponse';
@@ -67,6 +69,7 @@ import ServerTrustChallenge from '../../types/ServerTrustChallenge';
 import ClientCertChallenge from '../../types/ClientCertChallenge';
 import ClientCertResponse from '../../types/ClientCertResponse';
 import CreateWindowAction from '../../types/CreateWindowAction';
+import SafeBrowsingResponse from '../../types/SafeBrowsingResponse';
 import { cert } from '@kit.DeviceCertificateKit'
 import { List } from '@kit.ArkTS';
 import { common } from '@kit.AbilityKit';
@@ -619,21 +622,38 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onFirstContentfulPaint=" + JSON.stringify(event))
     // TODO
   }
-  onLoadIntercept = (event: Any) => { //对应安卓 shouldOverrideUrlLoading OHOS不知道异步 不知道如何适配了
-    // TODO
+  onLoadIntercept = (event: Any) : boolean => {
     Log.d(TAG, "onLoadIntercept=" + event.data.getRequestUrl())
-    // if (this.inAppWebView.customSettings.useShouldOverrideUrlLoading) {
-    //   let request = WebResourceRequestExt.fromWebResourceRequest(event.data);
-    //   return await this.onShouldOverrideUrlLoading(
-    //     this.inAppWebView,
-    //     request.getUrl(),
-    //     request.getMethod(),
-    //     request.getHeaders(),
-    //     request.getForMainFrame(),
-    //     request.isHasGesture(),
-    //     request.getRedirect());
-    // }
-    Log.d(TAG, "onLoadInterceptEnd=" + event.data.getRequestUrl())
+    // TODO
+    return false;
+  }
+  onOverrideUrlLoading =  (request: WebResourceRequest) : boolean => {
+    Log.d(TAG, "onOverrideUrlLoading=" + request.getRequestUrl())
+    if (this.inAppWebView.customSettings.useShouldOverrideUrlLoading) {
+      let headers = new Map<string, string>()
+      request.getRequestHeader().forEach(header => headers.set(header.headerKey, header.headerValue));
+
+      this.onShouldOverrideUrlLoading(
+        this.inAppWebView,
+        request.getRequestUrl(),
+        request.getRequestMethod(),
+        headers,
+        request.isMainFrame(),
+        request.isRequestGesture(),
+        request.isRedirect());
+
+      if (this.inAppWebView.regexToCancelSubFramesLoadingCompiled != null) {
+        if (request.isMainFrame())
+          return true
+        else {
+          return this.inAppWebView.regexToCancelSubFramesLoadingCompiled!.test(request.getRequestUrl());
+        }
+      } else {
+        // There isn't any way to load an URL for a frame that is not the main frame,
+        // so if the request is not for the main frame, the navigation is allowed.
+        return request.isMainFrame();
+      }
+    }
     return false;
   }
   onRequestSelected = () => {
@@ -663,9 +683,15 @@ export default class InAppWebViewChromeClient {
     Log.d(TAG, "onNavigationEntryCommitted=")
     // TODO
   }
-  onSafeBrowsingCheckResult = () => {
+  onSafeBrowsingCheckResult = (threatType: ThreatType) => {
     Log.d(TAG, "onSafeBrowsingCheckResult=")
-    // TODO
+    let resultCallback = new InnerSafeBrowsingHitCallback();
+    if (this.inAppWebView.channelDelegate != null) {
+      let url = this.inAppWebView!.controller!.getUrl();
+      this.inAppWebView.channelDelegate.onSafeBrowsingHit(url, threatType, resultCallback);
+    } else {
+      resultCallback.defaultBehaviour(null);
+    }
   }
   onNativeEmbedLifecycleChange = (callback: NativeEmbedDataInfo) => {
     Log.d(TAG, "onNativeEmbedLifecycleChange=")
@@ -676,20 +702,18 @@ export default class InAppWebViewChromeClient {
     // TODO
   }
 
-  private async onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string,
+  private onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string,
     headers: Map<string, string>,
     isForMainFrame: boolean, hasGesture: boolean, isRedirect: boolean) {
     let request = new URLRequest(url, method, null, headers);
     let navigationAction = new NavigationAction(request, isForMainFrame, hasGesture, isRedirect);
 
-    let result: NavigationActionPolicy | null = NavigationActionPolicy.ALLOW
-    if (webView.channelDelegate != null) {
-      result = await webView.channelDelegate.shouldOverrideUrlLoading(navigationAction);
+    let callback = new InnerShouldOverrideUrlLoadingCallback(this.inAppWebView, url, headers, isForMainFrame)
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.shouldOverrideUrlLoading(navigationAction, callback);
     } else {
-      result = NavigationActionPolicy.ALLOW
+      callback.defaultBehaviour(null);
     }
-    Log.d(TAG, "onLoadInterceptEnd=" + url)
-    return result == NavigationActionPolicy.CANCEL
   }
 
   private async onReceivedHttpAuthRequest(handler: HttpAuthHandler, host: string, realm: string) {
@@ -1432,3 +1456,80 @@ class InnerFormResubmissionCallback extends FormResubmissionCallback {
     this.defaultBehaviour(null);
   }
 };
+
+class InnerShouldOverrideUrlLoadingCallback extends ShouldOverrideUrlLoadingCallback {
+
+  private inAppWebView: InAppWebView;
+  private url: string;
+  private headers: Map<string, string>;
+  private isForMainFrame: boolean;
+
+  constructor(inAppWebView: InAppWebView, url: string, headers: Map<string, string>, isForMainFrame: boolean) {
+    super();
+    this.inAppWebView = inAppWebView;
+    this.url = url;
+    this.headers = headers;
+    this.isForMainFrame = isForMainFrame;
+  }
+
+  nonNullSuccess(result: NavigationActionPolicy) : boolean {
+    switch (result) {
+      case NavigationActionPolicy.ALLOW:
+        this.allowShouldOverrideUrlLoading(this.inAppWebView, this.url, this.headers, this.isForMainFrame);
+        break;
+      case NavigationActionPolicy.CANCEL:
+      default:
+        break;
+    }
+    return false;
+  }
+
+  defaultBehaviour(result: NavigationActionPolicy | null) {
+    this.allowShouldOverrideUrlLoading(this.inAppWebView, this.url, this.headers, this.isForMainFrame);
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+
+  allowShouldOverrideUrlLoading(inAppWebView: InAppWebView, url: string, headers: Map<string, string>,
+    isForMainFrame: boolean) {
+    if (isForMainFrame) {
+      this.inAppWebView.controller.loadUrl(url, this.inAppWebView.toWebHeaders(headers));
+    }
+  }
+};
+
+class InnerSafeBrowsingHitCallback extends SafeBrowsingHitCallback {
+  public nonNullSuccess(response: SafeBrowsingResponse): boolean {
+    let action = response.getAction();
+    if (action != null) {
+      let report = response.isReport();
+      switch (action) {
+        case 0: // TODO  android backToSafety
+          return true;
+          break;
+        case 1: // TODO android proceed
+          return true;
+          break;
+        case 2:
+        default: //TODO android showInterstitial
+          return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultBehaviour(result: SafeBrowsingResponse | null) {
+    if (result != null) {
+      this.nonNullSuccess(result)
+    }
+  }
+
+  error(errorCode: string, errorMessage: string, errorDetails: Any): void {
+    Log.e(TAG, errorCode + ", " + ((errorMessage != null) ? errorMessage : ""));
+    this.defaultBehaviour(null);
+  }
+}
