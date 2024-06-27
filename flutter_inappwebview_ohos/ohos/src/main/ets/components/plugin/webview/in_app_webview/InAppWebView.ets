@@ -37,7 +37,7 @@ import util from '@ohos.util';
 import Util from '../../Util';
 import PluginScriptsUtil from '../../plugin_scripts_js/PluginScriptsUtil';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
-import InAppWebViewChromeClient from './InAppWebViewChromeClient';
+import InAppWebViewClient from './InAppWebViewClient';
 import PluginScript from '../../types/PluginScript';
 import PromisePolyfillJS from '../../plugin_scripts_js/PromisePolyfillJS';
 import ConsoleLogJS from '../../plugin_scripts_js/ConsoleLogJS';
@@ -62,9 +62,8 @@ import window from '@ohos.window';
 import animator, { AnimatorOptions, AnimatorResult } from '@ohos.animator';
 import common from '@ohos.app.ability.common';
 import { FindInteractionController } from '../../find_interaction/FindInteractionController';
-import { InAppWebViewClient } from './InAppWebViewClient';
-import { InAppWebViewClientCompat } from './InAppWebViewClientCompat';
 import PullToRefreshLayout from '../../pull_to_refresh/PullToRefreshLayout';
+import EventConstant from '../../EventConstant'
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -75,8 +74,6 @@ export default class InAppWebView implements InAppWebViewInterface {
   public id: number;
   public windowId: number | null | undefined;
   public inAppWebViewClient: InAppWebViewClient | null = null;
-  public inAppWebViewClientCompat: InAppWebViewClientCompat | null = null;
-  public inAppWebViewChromeClient: InAppWebViewChromeClient | null = null;
   public channelDelegate: WebViewChannelDelegate;
   private javaScriptBridgeInterface: JavaScriptBridgeInterface | null = null;
   public customSettings: InAppWebViewSettings;
@@ -137,41 +134,6 @@ export default class InAppWebView implements InAppWebViewInterface {
     return this.pullToRefreshLayout!!;
   }
 
-  public async createWebClient(inAppBrowserDelegate: InAppBrowserDelegate): Promise<void> {
-    // TODO 应返回 Promise<WebViewClient>
-    let bundleFlags = bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT;
-    let packageInfo = await bundleManager.getBundleInfoForSelf(bundleFlags);
-    if (packageInfo != null) {
-      Log.d(TAG, "Using InAppWebViewClient implementation");
-      //TODO
-      // return new InAppWebViewClient(inAppBrowserDelegate);
-    }
-
-    let isChromiumWebView: boolean = "com.android.webview" == (packageInfo.name) ||
-      "com.google.android.webview" == (packageInfo.name) ||
-      "com.android.chrome" == (packageInfo.name);
-
-    let isChromiumWebViewBugFixed: boolean = false;
-    if (isChromiumWebView) {
-      let versionName = packageInfo.versionName != null ? packageInfo.versionName : "";
-      try {
-        let majorVersion: number = versionName.includes(".") ? Number(versionName.split("\\.")[0]) : 0;
-        isChromiumWebViewBugFixed = majorVersion >= 73;
-      } catch (error) {
-      }
-    }
-
-    if (isChromiumWebViewBugFixed || !isChromiumWebView) {
-      Log.d(TAG, "Using InAppWebViewClientCompat implementation");
-      //TODO
-      // return new InAppWebViewClientCompat(inAppBrowserDelegate);
-    } else {
-      Log.d(TAG, "Using InAppWebViewClient implementation");
-      //TODO
-      // return new InAppWebViewClient(inAppBrowserDelegate);
-    }
-  }
-
   public async prepare() {
     if (this.plugin != null) {
       this.webViewAssetLoaderExt = WebViewAssetLoaderExt.fromMap(this.customSettings.webViewAssetLoader, this.plugin, getContext());
@@ -180,20 +142,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     this.javaScriptBridgeInterface = new JavaScriptBridgeInterface(this);
     //addJavascriptInterface(javaScriptBridgeInterface, JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME);
 
-    this.inAppWebViewChromeClient = new InAppWebViewChromeClient(this.plugin, this);
-    // setWebChromeClient(inAppWebViewChromeClient);
-
-    // WebViewClient webViewClient = createWebViewClient(inAppBrowserDelegate);
-    // if (this.webViewClient instanceof InAppWebViewClientCompat) {
-    //   this.inAppWebViewClientCompat = webViewClient as InAppWebViewClientCompat;
-    //   setWebViewClient(inAppWebViewClientCompat);
-    // } else if (webViewClient instanceof InAppWebViewClient) {
-    //   inAppWebViewClient = (InAppWebViewClient) webViewClient;
-    //   setWebViewClient(inAppWebViewClient);
-    // }
-
-    // this.inAppWebViewRenderProcessClient = new InAppWebViewRenderProcessClient();
-    // WebViewCompat.setWebViewRenderProcessClient(this, inAppWebViewRenderProcessClient);
+    this.inAppWebViewClient = new InAppWebViewClient(this.plugin, this);
 
     if (this.windowId == null || this.windowId == undefined) {
       this.prepareAndAddUserScripts();
@@ -224,6 +173,11 @@ export default class InAppWebView implements InAppWebViewInterface {
 
     await this.waitControllerAttached()
     this.controller.registerJavaScriptProxy(this.javaScriptBridgeInterface, JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME, this.javaScriptBridgeInterface.getMethodList());
+
+    if (this.customSettings.incognito)
+      this.setIncognito(true);
+
+    this.setCacheEnabled(this.customSettings.cacheEnabled);
 
     // settings
     if (this.customSettings.userAgent != null && this.customSettings.userAgent.length > 0) {
@@ -265,11 +219,31 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public setIncognito(enabled: boolean): void {
-    //TODO
+    if (enabled) {
+      web_webview.WebCookieManager.clearAllCookiesSync(true);
+
+      this.setCacheEnabled(false);
+
+      this.controller.clearHistory();
+      this.controller.clearMatches();
+      this.controller.clearSslCache();
+      this.controller.removeCache(true);
+
+      // No form data or autofill enabled
+      // clearFormData();
+      // settings.setSavePassword(false);
+      // settings.setSaveFormData(false);
+    } else {
+      this.setCacheEnabled(true);
+
+      // settings.setSavePassword(true);
+      // settings.setSaveFormData(true);
+    }
   }
 
-  public setCacheEnabled(): void {
-    //TODO
+  public setCacheEnabled(enabled: boolean): void {
+    let context = this.context as common.UIAbilityContext;
+    context.eventHub.emit(EventConstant.EVENT_UPDATE_CACHEENABLE, enabled);
   }
 
   async loadUrl(urlRequest: URLRequest) {
@@ -452,6 +426,13 @@ export default class InAppWebView implements InAppWebViewInterface {
       let userAgentWithApplicationName = userAgent + " " + newCustomSettings.applicationNameForUserAgent;
       this.controller.setCustomUserAgent(userAgentWithApplicationName);
     }
+
+    if (newSettingsMap.has("incognito") && this.customSettings.incognito != newCustomSettings.incognito){
+      this.setIncognito(newCustomSettings.incognito);
+    }
+
+    if (newSettingsMap.has("cacheEnabled") && this.customSettings.cacheEnabled != newCustomSettings.cacheEnabled)
+      this.setCacheEnabled(newCustomSettings.cacheEnabled);
 
     if (this.plugin != null) {
       if (this.webViewAssetLoaderExt != null) {
@@ -717,7 +698,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   getProgress(): number {
-    throw Error("Ohos currently does not support this feature")
+    return this.inAppWebViewClient ? this.inAppWebViewClient!.progress : 0
   }
 
   reload(): void {
@@ -769,19 +750,21 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   onPause(): void {
-    throw Error("Ohos currently does not support this feature")
+    this.controller.pauseAllMedia()
+    this.controller.onInactive()
   }
 
   onResume(): void {
-    throw Error("Ohos currently does not support this feature")
+    this.controller.resumeAllMedia()
+    this.controller.onActive()
   }
 
   pauseTimers(): void {
-    throw Error("Ohos currently does not support this feature")
+    web_webview.WebviewController.pauseAllTimers();
   }
 
   resumeTimers(): void {
-    throw Error("Ohos currently does not support this feature")
+    web_webview.WebviewController.resumeAllTimers();
   }
 
   getContentHeight(): number {
@@ -801,7 +784,15 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   public isSecureContext(resultCallback: ValueCallback<boolean>): void {
-
+    this.evaluateJavascript("window.isSecureContext", null,  {
+      onReceiveValue: (value) => {
+        if (value == null || value.length == 0 || value == "null" || value == "false") {
+          resultCallback.onReceiveValue(false);
+          return;
+        }
+        resultCallback.onReceiveValue(true);
+      }
+    });
   }
 
   zoomBy(zoomFactor: number): void {
@@ -862,7 +853,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   clearFocus(): void {
-    this.controller.onInactive
+    this.controller.onInactive()
   }
 
   async getCertificate() {

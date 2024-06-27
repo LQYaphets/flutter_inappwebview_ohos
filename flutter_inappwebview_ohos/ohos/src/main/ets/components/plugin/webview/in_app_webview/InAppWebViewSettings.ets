@@ -73,6 +73,8 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
   public thirdPartyCookiesEnabled: boolean = true;
   public applicationNameForUserAgent: string | null = "";
   public transparentBackground: boolean = false;
+  public incognito: boolean = false;
+  public cacheEnabled: boolean = true;
 
   parse(settings: Map<string, Any>): ISettings<InAppWebViewInterface> {
     let keys = settings.keys();
@@ -274,6 +276,12 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "transparentBackground":
           this.transparentBackground = value;
           break;
+        case "incognito":
+          this.incognito = value;
+          break;
+        case "cacheEnabled":
+          this.cacheEnabled = value;
+          break;
       }
     }
     return this;
@@ -333,6 +341,8 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     settings.set("thirdPartyCookiesEnabled", this.thirdPartyCookiesEnabled);
     settings.set("applicationNameForUserAgent", this.applicationNameForUserAgent);
     settings.set("transparentBackground", this.transparentBackground);
+    settings.set("incognito", this.incognito);
+    settings.set("cacheEnabled", this.cacheEnabled);
     return settings;
   }
 
