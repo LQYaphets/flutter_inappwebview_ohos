@@ -61,12 +61,12 @@ export class WebMessageChannel implements Disposable {
     if (webView != null) {
       let webMessageChannel: WebMessageChannel = this;
       webView.evaluateJavascript("(function() {" +
-              JavaScriptBridgeJS.WEB_MESSAGE_CHANNELS_VARIABLE_NAME + "['" + webMessageChannel.id + "'] = new MessageChannel();" +
-              "})();", null, {
-          onReceiveValue(value: string | null): void {
-            callback.onReceiveValue(webMessageChannel);
-          }
+      JavaScriptBridgeJS.WEB_MESSAGE_CHANNELS_VARIABLE_NAME + "['" + webMessageChannel.id + "'] = new MessageChannel();" +
+        "})();", null, {
+        onReceiveValue(value: string | null): void {
+          callback.onReceiveValue(webMessageChannel);
         }
+      }
       );
     } else {
       callback.onReceiveValue(this);
@@ -106,7 +106,7 @@ export class WebMessageChannel implements Disposable {
       let data: Any = message.getData();
       try {
         /// 安卓端还会传入WebMessagePortCompat[]类型，目前ohos没有
-        if (data != null) {
+        if (data != null && message.getType() == web_webview.WebMessageType.ARRAY_BUFFER) {
           let webMessageExt: web_webview.WebMessageExt = new web_webview.WebMessageExt()
           webMessageExt.setArrayBuffer(data as ArrayBuffer)
           webMessageExt.setType(web_webview.WebMessageType.ARRAY_BUFFER)
@@ -153,14 +153,12 @@ export class WebMessageChannel implements Disposable {
   }
 
   public dispose(): void {
-    for (let i = 0;  i < this.compatPorts.length; i++) {
-      this.compatPorts.pop();
-    }
     if (this.channelDelegate != null) {
       this.channelDelegate.dispose();
       this.channelDelegate = null;
     }
-    // this.compatPorts.pop();
+    this.compatPorts.forEach(item => item.close())
+    this.compatPorts = []
     this.webView = null;
   }
 }

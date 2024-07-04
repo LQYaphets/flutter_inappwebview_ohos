@@ -15,11 +15,11 @@
 
 import { Any } from '@ohos/flutter_ohos';
 import ISettings from '../ISettings';
-import InAppBrowserActivity from './InAppBrowserActivity';
+import InAppBrowserAbility from './InAppBrowserAbility';
 
 const LOG_TAG = "InAppBrowserSettings"
 
-export default class InAppBrowserSettings implements ISettings<InAppBrowserActivity> {
+export default class InAppBrowserSettings implements ISettings<InAppBrowserAbility> {
 
   public hidden: boolean = false
   public hideToolbarTop: boolean = false
@@ -99,12 +99,12 @@ export default class InAppBrowserSettings implements ISettings<InAppBrowserActiv
     return settings;
   }
 
-  public getRealSettings(inAppBrowserActivity: InAppBrowserActivity): Map<string, Any> {
+  public getRealSettings(InAppBrowserAbility: InAppBrowserAbility): Map<string, Any> {
     let realSettings: Map<string, Any> = this.toMap()
-    realSettings.set("hidden", inAppBrowserActivity.isHidden);
-    // realSettings.set("hideToolbarTop", inAppBrowserActivity.actionBar == null || !inAppBrowserActivity.actionBar.isShowing());
-    // realSettings.set("hideUrlBar", inAppBrowserActivity.menu == null || !inAppBrowserActivity.menu.findItem(R.id.menu_search).isVisible());
-    // realSettings.set("hideProgressBar", inAppBrowserActivity.progressBar == null || inAppBrowserActivity.progressBar.getMax() == 0);
+    realSettings.set("hidden", InAppBrowserAbility.isHidden);
+    // realSettings.set("hideToolbarTop", InAppBrowserAbility.actionBar == null || !InAppBrowserAbility.actionBar.isShowing());
+    // realSettings.set("hideUrlBar", InAppBrowserAbility.menu == null || !InAppBrowserAbility.menu.findItem(R.id.menu_search).isVisible());
+    // realSettings.set("hideProgressBar", InAppBrowserAbility.progressBar == null || InAppBrowserAbility.progressBar.getMax() == 0);
     return realSettings;
   }
 }

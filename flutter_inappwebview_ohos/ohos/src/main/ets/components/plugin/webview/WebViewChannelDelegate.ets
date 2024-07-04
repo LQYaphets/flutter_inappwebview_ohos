@@ -13,9 +13,10 @@
 * limitations under the License.
 */
 
+import web_webview from '@ohos.web.webview';
 import { Any, Log, MethodCall, MethodChannel } from '@ohos/flutter_ohos';
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel';
-import InAppBrowserActivity from '../in_app_browser/InAppBrowserActivity';
+import InAppBrowserAbility from '../in_app_browser/InAppBrowserAbility';
 import ChannelDelegateImpl from '../types/ChannelDelegateImpl';
 import ContentWorld from '../types/ContentWorld';
 import URLRequest from '../types/URLRequest';
@@ -205,12 +206,12 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
           result.success(null);
         break;
       case WebViewChannelDelegateMethods.setSettings:
-        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserAbility) {
+          let InAppBrowserAbility: InAppBrowserAbility = this.webView.getInAppBrowserDelegate() as InAppBrowserAbility;
           let inAppBrowserSettings: InAppBrowserSettings = new InAppBrowserSettings();
           let inAppBrowserSettingsMap: Map<string, Any> = call.argument("settings") as Map<string, Any>;
           inAppBrowserSettings.parse(inAppBrowserSettingsMap);
-          inAppBrowserActivity.setSettings(inAppBrowserSettings, inAppBrowserSettingsMap);
+          InAppBrowserAbility.setSettings(inAppBrowserSettings, inAppBrowserSettingsMap);
         } else if (this.webView != null) {
           let inAppWebViewSettings: InAppWebViewSettings = new InAppWebViewSettings();
           let inAppWebViewSettingsMap: Map<string, Any> = call.argument("settings") as Map<string, Any>;
@@ -220,43 +221,43 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         result.success(true);
         break;
       case WebViewChannelDelegateMethods.getSettings:
-        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
-          result.success(inAppBrowserActivity.getCustomSettings());
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserAbility) {
+          let InAppBrowserAbility: InAppBrowserAbility = this.webView.getInAppBrowserDelegate() as InAppBrowserAbility;
+          result.success(InAppBrowserAbility.getCustomSettings());
         } else {
           result.success((this.webView != null) ? this.webView.getCustomSettings() : null);
         }
         break;
       case WebViewChannelDelegateMethods.close:
-        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
-          inAppBrowserActivity.close(result);
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserAbility) {
+          let InAppBrowserAbility: InAppBrowserAbility = this.webView.getInAppBrowserDelegate() as InAppBrowserAbility;
+          InAppBrowserAbility.close(result);
         } else {
           result.notImplemented();
         }
         break;
       case WebViewChannelDelegateMethods.show:
-        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
-          inAppBrowserActivity.show();
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserAbility) {
+          let InAppBrowserAbility: InAppBrowserAbility = this.webView.getInAppBrowserDelegate() as InAppBrowserAbility;
+          InAppBrowserAbility.show();
           result.success(true);
         } else {
           result.notImplemented();
         }
         break;
       case WebViewChannelDelegateMethods.hide:
-        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
-          inAppBrowserActivity.hide();
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserAbility) {
+          let InAppBrowserAbility: InAppBrowserAbility = this.webView.getInAppBrowserDelegate() as InAppBrowserAbility;
+          InAppBrowserAbility.hide();
           result.success(true);
         } else {
           result.notImplemented();
         }
         break;
       case WebViewChannelDelegateMethods.isHidden:
-        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserActivity) {
-          let inAppBrowserActivity: InAppBrowserActivity = this.webView.getInAppBrowserDelegate() as InAppBrowserActivity;
-          result.success(inAppBrowserActivity.isHidden);
+        if (this.webView != null && this.webView.getInAppBrowserDelegate() instanceof InAppBrowserAbility) {
+          let InAppBrowserAbility: InAppBrowserAbility = this.webView.getInAppBrowserDelegate() as InAppBrowserAbility;
+          result.success(InAppBrowserAbility.isHidden);
         } else {
           result.notImplemented();
         }
@@ -569,68 +570,54 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
         break;
       case WebViewChannelDelegateMethods.createWebMessageChannel:
         if (this.webView != null) {
-          // if (this.webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.CREATE_WEB_MESSAGE_CHANNEL)) {
-          //   result.success(this.webView.createCompatWebMessageChannel().toMap());
-          // } else {
-          //   result.success(null);
-          // }
+          result.success(this.webView.createCompatWebMessageChannel().toMap());
         } else {
           result.success(null);
         }
         break;
       case WebViewChannelDelegateMethods.postWebMessage:
-      // if (this.webView != null && WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
-      //   let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
-      //   let targetOrigin: string = call.argument("targetOrigin");
-      //   let compatPorts: List<WebMessagePortCompat> = new List<WebMessagePortCompat>();
-      //   let portsExt: List<WebMessagePortCompatExt> = message.getPorts();
-      //   if (portsExt != null) {
-      //     for (let portExt of portsExt) {
-      //       let webMessageChannel: WebMessageChannel | undefined = this.webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
-      //       if (webMessageChannel != null) {
-      //         if (this.webView instanceof InAppWebView) {
-      //           // compatPorts.add(webMessageChannel.compatPorts.get(portExt.getIndex()));
-      //         }
-      //       }
-      //     }
-      //   }
-      //   let data: Any = message.getData();
-      //   if (webView instanceof InAppWebView) {
-      //     try {
-      //       if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER) && data != null &&
-      //               message.getType() == WebMessageCompat.TYPE_ARRAY_BUFFER) {
-      //         WebViewCompat.postWebMessage((WebView) webView,
-      //                 new WebMessageCompat((byte[]) data, compatPorts.toArray(new WebMessagePortCompat[0])),
-      //                 Uri.parse(targetOrigin));
-      //       } else {
-      //         WebViewCompat.postWebMessage((WebView) webView,
-      //                 new WebMessageCompat(data != null ? data.toString() : null, compatPorts.toArray(new WebMessagePortCompat[0])),
-      //                 Uri.parse(targetOrigin));
-      //       }
-      //       result.success(true);
-      //     } catch (Exception e) {
-      //       result.error(LOG_TAG, e.getMessage(), null);
-      //     }
-      //   }
-      // } else {
-      //   result.success(true);
-      // }
+        let message: WebMessageCompatExt | null = WebMessageCompatExt.fromMap(call.argument("message") as Map<string, Any>);
+        let targetOrigin: string = call.argument("targetOrigin");
+        let compatPorts: List<web_webview.WebMessagePort> = new List<web_webview.WebMessagePort>();
+        let portsExt: List<WebMessagePortCompatExt> = message!.getPorts();
+        if (portsExt != null) {
+          for (let portExt of portsExt) {
+            let webMessageChannel: WebMessageChannel | undefined = this.webView.getWebMessageChannels().get(portExt.getWebMessageChannelId());
+            if (webMessageChannel != null) {
+              if (this.webView instanceof InAppWebView) {
+                compatPorts.add(webMessageChannel.compatPorts[portExt.getIndex()]);
+              }
+            }
+          }
+        }
+        let data: Any = message!.getData();
+        if (this.webView instanceof InAppWebView) {
+          try {
+            if (data != null && message!.getType() == web_webview.WebMessageType.ARRAY_BUFFER) {
+              // TODO 怎么post arraybuffer
+              // WebViewCompat.postWebMessage((WebView) webView,
+              // new WebMessageCompat((byte[]) data, compatPorts.toArray(new WebMessagePortCompat[0])),
+              // Uri.parse(targetOrigin));
+            } else {
+              this.webView.controller.postMessage(data != null ? data.toString() : null, compatPorts.convertToArray(), targetOrigin)
+            }
+            result.success(true);
+          } catch (e) {
+            result.error(LOG_TAG, e.getMessage(), null);
+          }
+        }
         break;
       case WebViewChannelDelegateMethods.addWebMessageListener:
         if (this.webView != null) {
           let webMessageListenerMap: Map<string, Any> = call.argument("webMessageListener") as Map<string, Any>;
           let webMessageListener: WebMessageListener | null = WebMessageListener.fromMap(this.webView, this.webView.getPlugin()
             .messenger, webMessageListenerMap);
-          // if (this.webView instanceof InAppWebView && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-          //   try {
-          //     this.webView.addWebMessageListener(webMessageListener!);
-          //     result.success(true);
-          //   } catch (e) {
-          //     result.error(LOG_TAG, e.getMessage(), null);
-          //   }
-          // } else {
-          //   result.success(true);
-          // }
+          try {
+            this.webView.addWebMessageListener(webMessageListener!);
+            result.success(true);
+          } catch (e) {
+            result.error(LOG_TAG, e.getMessage(), null);
+          }
         } else {
           result.success(true);
         }
@@ -1077,6 +1064,28 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     obj.set("threatType", threatType);
     channel.invokeMethod("onSafeBrowsingHit", obj, callback);
   }
+
+  onRenderProcessUnresponsive(url: string, callback: RenderProcessUnresponsiveCallback) {
+    let channel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("url", url);
+    channel.invokeMethod("onRenderProcessUnresponsive", obj, callback);
+  }
+
+  onRenderProcessResponsive(url: string, callback: RenderProcessResponsiveCallback) {
+    let channel = this.getChannel();
+    if (channel == null) {
+      callback.defaultBehaviour(null);
+      return;
+    }
+    let obj: Map<string, Any> = new Map<string, Any>();
+    obj.set("url", url);
+    channel.invokeMethod("onRenderProcessResponsive", obj, callback);
+  }
 }
 
 export class JsAlertCallback extends BaseCallbackResultImpl<JsAlertResponse> {
@@ -1193,5 +1202,17 @@ export class FormResubmissionCallback extends BaseCallbackResultImpl<number> {
 export class SafeBrowsingHitCallback extends BaseCallbackResultImpl<SafeBrowsingResponse> {
   public decodeResult(obj: Any): SafeBrowsingResponse | null {
     return SafeBrowsingResponse.fromMap(obj);
+  }
+}
+
+export class RenderProcessUnresponsiveCallback extends BaseCallbackResultImpl<number> {
+  public decodeResult(obj: Any): number | null {
+    return typeof obj == "number" ? obj as number : null;
+  }
+}
+
+export class RenderProcessResponsiveCallback extends BaseCallbackResultImpl<number> {
+  public decodeResult(obj: Any): number | null {
+    return typeof obj == "number" ? obj as number : null;
   }
 }

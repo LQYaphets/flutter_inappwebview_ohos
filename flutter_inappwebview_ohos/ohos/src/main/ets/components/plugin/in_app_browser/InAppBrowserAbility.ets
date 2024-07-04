@@ -13,6 +13,11 @@
 * limitations under the License.
 */
 
+import UIAbility from '@ohos.app.ability.UIAbility';
+import window from '@ohos.window';
+import common from '@ohos.app.ability.common';
+import Want from '@ohos.app.ability.Want';
+import AbilityConstant from '@ohos.app.ability.AbilityConstant';
 import PullToRefreshLayout from '../pull_to_refresh/PullToRefreshLayout'
 import { Disposable } from '../types/Disposable'
 import InAppWebView from '../webview/in_app_webview/InAppWebView'
@@ -27,12 +32,13 @@ import InAppWebViewSettings from '../webview/in_app_webview/InAppWebViewSettings
 import Util from '../Util'
 import { MethodResult } from '@ohos/flutter_ohos/src/main/ets/plugin/common/MethodChannel'
 import { Any } from '@ohos/flutter_ohos'
+import { Log } from '@ohos/flutter_ohos';
 
-const LOG_TAG = "InAppBrowserActivity"
+const LOG_TAG = "InAppBrowserAbility"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappbrowser_"
 
-// export default class InAppBrowserActivity extends AppCompatActivity implements InAppBrowserDelegate, Disposable{
-export default class InAppBrowserActivity implements InAppBrowserDelegate, Disposable{
+//TODO 这种模式不支持，OHOS的har不支持定义Ability
+export default class InAppBrowserAbility extends UIAbility implements InAppBrowserDelegate, Disposable{
 
   public windowId: string | null = null
   public id: string | null = null
@@ -60,9 +66,18 @@ export default class InAppBrowserActivity implements InAppBrowserDelegate, Dispo
   public channelDelegate: InAppBrowserChannelDelegate | null = null
   public menuItems: List<InAppBrowserMenuItem> = new List<InAppBrowserMenuItem>()
 
-  // protected onCreate(savedInstanceState: Bundle): void {
-  //
-  // }
+  onCreate(want: Want, launchParam: AbilityConstant.LaunchParam) {
+
+  }
+
+  onWindowStageCreate(windowStage: window.WindowStage) {
+    windowStage.loadContent('components/plugin/pages/InAppBrowser', (err, data) => {
+      if (err.code) {
+        Log.e(LOG_TAG,  `Failed to load the content. Cause: ${JSON.stringify(err)}`);
+        return;
+      }
+    });
+  }
 
   private prepareView(): void {
     if (this.webView != null) {

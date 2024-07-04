@@ -13,8 +13,6 @@
 * limitations under the License.
 */
 
-import { Log } from '@ohos/flutter_ohos';
-
 @Component
 struct OhosPromptView {
   textValue: string | null = null
@@ -25,7 +23,7 @@ struct OhosPromptView {
   confirm: Function | null = null;
 
   aboutToAppear(): void {
-    Log.d("InAppWebViewChromeClient", "aboutToAppear")
+
   }
 
   build() {
