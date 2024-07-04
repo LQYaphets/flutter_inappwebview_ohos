@@ -966,8 +966,8 @@ export default class InAppWebView implements InAppWebViewInterface {
   }
 
   onAreaChange = (oldValue: Area, newValue: Area) => {
-    this.viewWidth = vp2px(newValue.width as number)
-    this.viewHeight = vp2px(newValue.height as number)
+    this.viewWidth = newValue.width as number;
+    this.viewHeight = newValue.height as number;
   }
 
   toWebHeaders(headers: Map<string, string>): Array<web_webview.WebHeader> {
