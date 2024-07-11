@@ -61,6 +61,7 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin, Ability
     Log.d(TAG, "onAttachedToEngine")
     this.messenger = binding.getBinaryMessenger()
     this.flutterAssets = binding.getFlutterAssets();
+    this.inAppWebViewManager = new InAppWebViewManager( this );
     this.inAppBrowserManager = new InAppBrowserManager(this);
     this.flutterWebViewFactory = new FlutterWebViewFactory(this);
     this.messenger = binding.getBinaryMessenger();
@@ -76,6 +77,10 @@ export default class InAppWebViewFlutterPlugin implements FlutterPlugin, Ability
     if (this.printJobManager != null) {
       this.printJobManager.dispose();
       this.printJobManager = null;
+    }
+    if (this.inAppWebViewManager != null) {
+      this.inAppWebViewManager.dispose();
+      this.inAppWebViewManager = null;
     }
     if (this.inAppBrowserManager != null) {
       this.inAppBrowserManager.dispose();
