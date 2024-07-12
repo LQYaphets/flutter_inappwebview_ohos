@@ -204,7 +204,7 @@ export default class InAppWebViewClient {
     }
   }
   onPageEnd = (event: Any) => {
-    Log.d(TAG, "onPageBegin=" + JSON.stringify(event))
+    Log.d(TAG, "onPageEnd=" + JSON.stringify(event))
     this.inAppWebView.isLoading = false;
     this.loadCustomJavaScriptOnPageFinished(this.inAppWebView);
     InAppWebViewClient.previousAuthRequestFailureCount = 0;

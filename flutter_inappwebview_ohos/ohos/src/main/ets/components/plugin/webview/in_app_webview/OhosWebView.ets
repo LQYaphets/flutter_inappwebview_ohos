@@ -78,7 +78,7 @@ export struct OhosWebView {
   buildWeb() {
     Web(
       {
-        src: "",
+        src: this.inAppWebView?.getLoadUrl(),
         controller: this.controller
       })
       .onControllerAttached(this.inAppWebView!.onControllerAttached)
