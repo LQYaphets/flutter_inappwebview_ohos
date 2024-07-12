@@ -109,6 +109,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   private pullToRefreshLayout: PullToRefreshLayout | null = null;
   private viewWidth = 0;
   private viewHeight= 0;
+  private curUrl: string | Resource = "";
 
   constructor(context: Context, plugin: InAppWebViewFlutterPlugin, id: number, windowId: number | null | undefined,
               customSettings: InAppWebViewSettings, userScripts: Array<UserScript>, contextMenu?: Map<string, Any>) {
@@ -256,6 +257,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     }
     let realUrl = url.startsWith("resources/rawfile/") ? $rawfile(url.replace("resources/rawfile/", "")) : url;
     let headers = urlRequest.getHeaders();
+    this.curUrl = realUrl;
     if (headers != null) {
       this.controller.loadUrl(realUrl, this.toWebHeaders(headers));
       return;
@@ -267,8 +269,13 @@ export default class InAppWebView implements InAppWebViewInterface {
     if (this.plugin == null) {
       return;
     }
+    this.curUrl = assetFilePath;
     await this.waitControllerAttached();
     this.controller.loadUrl(assetFilePath)
+  }
+
+  getLoadUrl(): string | Resource {
+    return this.curUrl
   }
 
   getLoading(): boolean {
