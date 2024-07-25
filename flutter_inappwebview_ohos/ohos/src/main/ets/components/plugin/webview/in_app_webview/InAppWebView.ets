@@ -1014,6 +1014,9 @@ export default class InAppWebView implements InAppWebViewInterface {
     })
   }
 
+  isDebuggingEnabled() {
+    return this.plugin.inAppWebViewManager!.debuggingEnabled
+  }
 
   disposeWebMessageChannels(): void {
     for (let webMessageChannel of this.webMessageChannels.values()) {
