@@ -48,6 +48,9 @@ export struct OhosWebView {
     context.eventHub.on(EventConstant.EVENT_UPDATE_CACHEENABLE, (enable : boolean) => {
       this.cacheEnabled = enable;
     });
+
+    //不知道为什么这个静态方法必须要在aboutToAppear里面设置才能生效？
+    web_webview.WebviewController.setWebDebuggingAccess(this.inAppWebView!.isDebuggingEnabled());
   }
 
   aboutToDisappear(): void {

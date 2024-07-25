@@ -39,6 +39,8 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
 
   public windowAutoincrementId: number = 0
 
+  public debuggingEnabled = false;
+
   constructor(plugin: InAppWebViewFlutterPlugin) {
     super(new MethodChannel(plugin.messenger!, METHOD_CHANNEL_NAME));
     this.plugin = plugin
@@ -88,8 +90,8 @@ export class InAppWebViewManager extends ChannelDelegateImpl {
         break;
       case "setWebContentsDebuggingEnabled":
         {
-          let debuggingEnabled: boolean = call.argument("debuggingEnabled") as boolean;
-          web_webview.WebviewController.setWebDebuggingAccess(debuggingEnabled)
+          this.debuggingEnabled = call.argument("debuggingEnabled") as boolean;
+          web_webview.WebviewController.setWebDebuggingAccess(this.debuggingEnabled)
         }
         result.success(true);
         break;
