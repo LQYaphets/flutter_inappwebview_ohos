@@ -98,7 +98,7 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   public setCookie(url: string, name: string, value: string, domain: string, path: string,
                    expiresDate: number | null, maxAge: number, isSecure: boolean, isHttpOnly: boolean, sameSite: string, result: MethodResult): void {
 
-    if(web_webview.WebCookieManager.isCookieAllowed()) {
+    if(!web_webview.WebCookieManager.isCookieAllowed()) {
       result.success(false);
       return;
     }
@@ -196,7 +196,7 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public deleteCookie(url: string, name: string, domain: string, path: string, result: MethodResult): void {
-    if(web_webview.WebCookieManager.isCookieAllowed()) {
+    if(!web_webview.WebCookieManager.isCookieAllowed()) {
       result.success(false);
       return;
     }
@@ -214,7 +214,7 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public deleteCookies(url: string, domain: string, path: string, result: MethodResult): void {
-    if(web_webview.WebCookieManager.isCookieAllowed()) {
+    if(!web_webview.WebCookieManager.isCookieAllowed()) {
       result.success(false);
       return;
     }
@@ -236,7 +236,7 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public deleteAllCookies(result: MethodResult): void {
-    if(web_webview.WebCookieManager.isCookieAllowed()) {
+    if(!web_webview.WebCookieManager.isCookieAllowed()) {
       result.success(false);
       return;
     }
@@ -250,7 +250,7 @@ export default class MyCookieManager extends ChannelDelegateImpl {
   }
 
   public removeSessionCookies(result: MethodResult): void {
-    if(web_webview.WebCookieManager.isCookieAllowed()) {
+    if(!web_webview.WebCookieManager.isCookieAllowed()) {
       result.success(false);
       return;
     }
