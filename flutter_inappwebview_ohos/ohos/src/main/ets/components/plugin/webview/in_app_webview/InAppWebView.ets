@@ -269,9 +269,10 @@ export default class InAppWebView implements InAppWebViewInterface {
     if (this.plugin == null) {
       return;
     }
-    this.curUrl = assetFilePath;
+    let realUrl = $rawfile("flutter_assets/" + assetFilePath)
+    this.curUrl = realUrl;
     await this.waitControllerAttached();
-    this.controller.loadUrl(assetFilePath)
+    this.controller.loadUrl(realUrl)
   }
 
   getLoadUrl(): string | Resource {
