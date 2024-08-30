@@ -14,5 +14,8 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 FAQ
-In ohos, A blank page is displayed when an abnormal website is accessed.(访问异常网站时，显示空白页面)
+
+In ohos, A blank page is displayed when an abnormal website is accessed.
+
+In ohos, jump maps are not supported.
 
