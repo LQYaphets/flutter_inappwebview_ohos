@@ -812,7 +812,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     }
     let obj: Map<string, Any> = new Map<string, Any>();
     obj.set("origin", origin)
-    channel.invokeMethod("onGeolocationPermissionsShowPrompt", obj);
+    channel.invokeMethod("onGeolocationPermissionsShowPrompt", obj, callback);
   }
 
   public onGeolocationPermissionsHidePrompt(): void {
