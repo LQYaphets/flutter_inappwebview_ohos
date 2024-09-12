@@ -879,7 +879,9 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   async postUrl(url: string, postData: ArrayBuffer | null) {
     await this.waitControllerAttached();
-    this.controller.postUrl(url, postData);
+    const uint8Array: Uint8Array = postData as Uint8Array;
+    const buffer: ArrayBuffer = uint8Array.buffer as ArrayBuffer;
+    this.controller.postUrl(url, buffer);
   }
 
   async loadDataWithBaseURL(baseUrl: string, data: string, mimeType: string, encoding: string, historyUrl: string) {
