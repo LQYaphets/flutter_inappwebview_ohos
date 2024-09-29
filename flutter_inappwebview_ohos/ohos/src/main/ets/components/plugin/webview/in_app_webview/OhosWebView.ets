@@ -84,6 +84,7 @@ export struct OhosWebView {
         src: this.inAppWebView?.getLoadUrl(),
         controller: this.controller
       })
+      .keyboardAvoidMode(WebKeyboardAvoidMode.RESIZE_VISUAL)
       .onControllerAttached(this.inAppWebView!.onControllerAttached)
       .onAlert(this.inAppWebView!.inAppWebViewClient?.onAlert)
       .onBeforeUnload(this.inAppWebView!.inAppWebViewClient?.onBeforeUnload)
