@@ -886,13 +886,9 @@ export default class InAppWebView implements InAppWebViewInterface {
 
   async loadDataWithBaseURL(baseUrl: string, data: string, mimeType: string, encoding: string, historyUrl: string) {
     await this.waitControllerAttached();
-    if (baseUrl && historyUrl) {
-      this.controller.loadData(data, mimeType, encoding, baseUrl, historyUrl)
-    } else if (baseUrl) {
-      this.controller.loadData(data, mimeType, encoding, baseUrl)
-    } else {
-      this.controller.loadData(data, mimeType, encoding)
-    }
+    baseUrl ??= "about:blank";
+    historyUrl ??= "about:blank";
+    this.controller.loadData(data, mimeType, encoding, baseUrl, historyUrl)
   }
 
   getController(): web_webview.WebviewController {
