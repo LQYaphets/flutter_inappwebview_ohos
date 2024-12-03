@@ -1,0 +1,11 @@
+[
+    {
+        "Name": "flutter_inappwebview",
+        "License": "Apache-2.0 License",
+        "License File": "LICENSE",
+        "Version Number": "751a104716b2c5158b5cad58347430d01965f00d",
+        "Owner": "george.lihui@huawei.com",
+        "Upstream URL": "https://github.com/pichillilorenzo/flutter_inappwebview",
+        "Description": "A Flutter plugin that allows you to add an inline webview, to use an headless webview, and to open an in-app browser window."
+    }
+]
