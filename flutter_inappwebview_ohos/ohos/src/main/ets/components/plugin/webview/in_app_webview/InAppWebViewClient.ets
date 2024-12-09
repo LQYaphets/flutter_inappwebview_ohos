@@ -356,7 +356,7 @@ export default class InAppWebViewClient {
         }
       ]
     })
-    return true;
+    return false;
   }
   onResourceLoad = (event: Any) => {
     // TODO 没有找到安卓对于方法
