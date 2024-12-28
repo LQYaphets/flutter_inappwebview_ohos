@@ -85,16 +85,40 @@
 
         <filefilterlist>
             <filefilter name="defaultFilter" desc="Files not to check">
-                <filteritem type="filename" name="*.iml|*.json|*.txt" desc="desc files"/>
+                <filteritem type="filename" name="*.iml|*.json|*.txt|*.sh" desc="desc files"/>
                 <filteritem type="filename" name="*.png|*.ico|*.jpg|*.webp|*.ttf|*.enc|*.mp3" desc="app resource files"/>
                 <filteritem type="filename" name="*.so|*.har" desc="engine二进制文件,不影响兼容性"/>
                 <filteritem type="filename" name="*.tgz" desc="hvigor本地插件,不影响兼容性"/>
+                <filteritem type="filename" name="LICENSE|README.OpenSource|AUTHORS|CHANGELOG|PATENTS" desc="说明文件，不需要添加版权头"/>
+                <filteritem type="filename" name="*.podspec|*.metadata|*.yaml|*.pem|*.all-contributorsrc" desc="编译配置文件,不影响兼容性"/>
                 <filteritem type="filepath" name="*/ohos/har/" desc="hvigor本地插件,不影响兼容性"/>
                 <filteritem type="filepath" name="*/ohos/entry/src/main/resources/rawfile/flutter_assets/" desc="资源文件，不影响兼容性"/>
                 <filteritem type="filepath" name="*/ohos/dta/icudtl.dat" desc="ohos字体库文件，不影响兼容性"/>
                 <filteritem type="filepath" name="*/ohos/hvigor/hvigor-wrapper.js" desc="hvigorw编译程序，不影响兼容性"/>
                 <filteritem type="filepath" name="*/ohos/hvigorw.bat" desc="hvigorw编译程序，不影响兼容性"/>
                 <filteritem type="filepath" name="*/ohos/har/har_product/flutter_embedding.har.profile.10" desc="二进制文件,不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/ios/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/macos/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/android/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/integration_test/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/test_driver/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/lib/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/assets/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/lib/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/android/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/ios/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/macos/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/scripts/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview/example/test_assets/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview_android/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview_ios/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview_macos/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview_web/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview_platform_interface/lib/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="flutter_inappwebview_platform_interface/test/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="tool/env.dart" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="test_node_server/" desc="上游仓库代码，未作修改，不影响兼容性"/>
+                <filteritem type="filepath" name="dev_packages/" desc="上游仓库代码，未作修改，不影响兼容性"/>
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
             </filefilter>
