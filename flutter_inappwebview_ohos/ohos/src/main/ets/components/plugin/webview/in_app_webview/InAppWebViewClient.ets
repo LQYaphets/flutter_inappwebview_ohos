@@ -414,9 +414,7 @@ export default class InAppWebViewClient {
   }
   onPermissionRequest = (event: Any) => {
     if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      this.inAppWebView.channelDelegate.onPermissionRequest(event.request.getOrigin(),
-        event.request.getAccessibleResource(), null,
-        new InnerPermissionRequestCallback(event.request));
+      event.request.grant(event.request.getAccessibleResource());
     } else {
       event.request.deny();
     }
