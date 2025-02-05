@@ -64,6 +64,7 @@ import common from '@ohos.app.ability.common';
 import { FindInteractionController } from '../../find_interaction/FindInteractionController';
 import PullToRefreshLayout from '../../pull_to_refresh/PullToRefreshLayout';
 import EventConstant from '../../EventConstant'
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const TAG = "InAppWebView"
 const METHOD_CHANNEL_NAME_PREFIX = "com.pichillilorenzo/flutter_inappwebview_";
@@ -494,11 +495,17 @@ export default class InAppWebView implements InAppWebViewInterface {
     }
 
     scriptToInject = this.userContentController.generateCodeForScriptEvaluation(scriptToInject, contentWorld);
-    this.controller.runJavaScriptExt(scriptToInject).then(res => {
-      if (resultUuid != null || resultCallback == null)
-        return;
-      resultCallback.onReceiveValue(res.getString());
-    })
+    try {
+      this.controller.runJavaScript(scriptToInject).then(res => {
+        if (resultUuid != null || resultCallback == null)
+          return;
+        resultCallback.onReceiveValue(res);
+      });
+    } catch (error) {
+      let errorCode = (error as BusinessError).code;
+      let errorMsg = (error as BusinessError).message;
+      console.log(`run JavaScript error, ErrorCode:${errorCode}, errorMessage:${errorMsg}`);
+    }
   }
 
   public evaluateJavascript(source: string, contentWorld: ContentWorld | null, resultCallback: ValueCallback<string> | null): void {
