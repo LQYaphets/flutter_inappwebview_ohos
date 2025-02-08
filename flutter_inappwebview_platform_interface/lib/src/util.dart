@@ -15,6 +15,9 @@ class Util {
   static bool get isAndroid =>
       !isWeb && defaultTargetPlatform == TargetPlatform.android;
 
+  static bool get isOhos =>
+      !isWeb && defaultTargetPlatform == TargetPlatform.ohos;
+
   static bool get isIOS =>
       !isWeb && defaultTargetPlatform == TargetPlatform.iOS;
 

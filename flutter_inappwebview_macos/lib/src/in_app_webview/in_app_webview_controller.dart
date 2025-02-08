@@ -1235,6 +1235,7 @@ class MacOSInAppWebViewController extends PlatformInAppWebViewController
 
         if (contextMenu != null) {
           int? androidId = call.arguments["androidId"];
+          int? ohosId = call.arguments["ohosId"];
           String? iosId = call.arguments["iosId"];
           dynamic id = call.arguments["id"];
           String title = call.arguments["title"];
@@ -1243,6 +1244,8 @@ class MacOSInAppWebViewController extends PlatformInAppWebViewController
               id: id,
               // ignore: deprecated_member_use_from_same_package
               androidId: androidId,
+              // ignore: deprecated_member_use_from_same_package
+              ohosId: ohosId,
               // ignore: deprecated_member_use_from_same_package
               iosId: iosId,
               title: title,

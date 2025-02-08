@@ -24,17 +24,24 @@ class ContextMenuItem {
   @Deprecated('Use id instead')
   String? iosId;
 
+  ///Use [id] instead.
+  @Deprecated('Use id instead')
+  int? ohosId;
+
   ///Menu item title.
   String title;
   ContextMenuItem(
       {this.id,
       @Deprecated("Use id instead") this.androidId,
+      @Deprecated("Use id instead") this.ohosId,
       @Deprecated("Use id instead") this.iosId,
       required this.title,
       this.action}) {
     if (Util.isAndroid) {
       this.id = this.id ?? this.androidId;
       assert(this.id is int);
+    } else if (Util.isOhos) {
+      this.id = this.id ?? this.ohosId;
     } else if (Util.isIOS) {
       this.id = this.id ?? this.iosId;
     }
@@ -50,6 +57,7 @@ class ContextMenuItem {
       androidId: map['id'],
       id: map['id'],
       iosId: map['id'],
+      ohosId: map['id'],
       title: map['title'],
     );
     return instance;
@@ -57,7 +65,7 @@ class ContextMenuItem {
 
   @ExchangeableObjectMethod(toMapMergeWith: true)
   Map<String, dynamic> _toMapMergeWith() {
-    return {"androidId": androidId, "iosId": iosId};
+    return {"androidId": androidId, "ohosId": ohosId, "iosId": iosId};
   }
 
   ///Converts instance to a map.
