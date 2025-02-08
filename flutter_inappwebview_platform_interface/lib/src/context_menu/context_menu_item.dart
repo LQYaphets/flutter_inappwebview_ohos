@@ -43,7 +43,7 @@ class ContextMenuItem_ {
       // ignore: deprecated_member_use_from_same_package
       this.id = this.id ?? this.androidId;
       assert(this.id is int);
-    }else if (Util.isOhos) {
+    } else if (Util.isOhos) {
       // ignore: deprecated_member_use_from_same_package
       this.id = this.id ?? this.ohosId;
     } else if (Util.isIOS) {
