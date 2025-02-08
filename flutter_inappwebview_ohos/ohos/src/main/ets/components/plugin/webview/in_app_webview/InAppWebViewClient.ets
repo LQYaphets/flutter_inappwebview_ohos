@@ -318,10 +318,10 @@ export default class InAppWebViewClient {
     }
     if (this.inAppWebView.customSettings.useShouldInterceptRequest) {
       if (this.inAppWebView.channelDelegate != null) {
-        let webResourceResponse = new WebResourceResponse();
         try {
           this.inAppWebView.channelDelegate.shouldInterceptRequest(request).then(response => {
             if (response != null) {
+              let webResourceResponse = new WebResourceResponse();
               webResourceResponse.setResponseData(response.getData())
               webResourceResponse.setResponseMimeType(response.getContentType())
               webResourceResponse.setResponseEncoding(response.getContentEncoding())
@@ -329,15 +329,13 @@ export default class InAppWebViewClient {
               webResourceResponse.setReasonMessage(response.getReasonPhrase())
               webResourceResponse.setResponseHeader(response.getHeaderArray())
               webResourceResponse.setResponseIsReady(true)
-            } else {
-              webResourceResponse.setResponseIsReady(false);
+              return webResourceResponse
             }
+            return null;
           })
         } catch (e) {
           Log.e(TAG, "", e);
-          webResourceResponse.setResponseIsReady(false);
         }
-        return webResourceResponse;
       }
       return null;
     }
