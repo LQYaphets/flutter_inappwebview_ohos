@@ -73,7 +73,7 @@ import ClientCertResponse from '../../types/ClientCertResponse';
 import CreateWindowAction from '../../types/CreateWindowAction';
 import SafeBrowsingResponse from '../../types/SafeBrowsingResponse';
 import { cert } from '@kit.DeviceCertificateKit'
-import { List } from '@kit.ArkTS';
+import { List, util  } from '@kit.ArkTS';
 import { common } from '@kit.AbilityKit';
 
 const TAG = "InAppWebViewClient";
@@ -319,20 +319,22 @@ export default class InAppWebViewClient {
     if (this.inAppWebView.customSettings.useShouldInterceptRequest) {
       if (this.inAppWebView.channelDelegate != null) {
         try {
-          this.inAppWebView.channelDelegate.shouldInterceptRequest(request).then(response => {
-            if (response != null) {
-              let webResourceResponse = new WebResourceResponse();
-              webResourceResponse.setResponseData(response.getData())
-              webResourceResponse.setResponseMimeType(response.getContentType())
-              webResourceResponse.setResponseEncoding(response.getContentEncoding())
-              webResourceResponse.setResponseCode(response.getStatusCode())
-              webResourceResponse.setReasonMessage(response.getReasonPhrase())
-              webResourceResponse.setResponseHeader(response.getHeaderArray())
-              webResourceResponse.setResponseIsReady(true)
-              return webResourceResponse
-            }
-            return null;
-          })
+          let response = this.inAppWebView.channelDelegate.shouldInterceptRequest(request);
+          if (response != null) {
+            const uint8 = new Uint8Array(response.getData());
+            let data = util.TextDecoder.create().decodeToString(uint8);
+            let webResourceResponse = new WebResourceResponse();
+            webResourceResponse.setResponseData(data)
+            webResourceResponse.setResponseMimeType(response.getContentType())
+            webResourceResponse.setResponseEncoding(response.getContentEncoding())
+            webResourceResponse.setResponseCode(response.getStatusCode())
+            webResourceResponse.setReasonMessage(response.getReasonPhrase())
+            webResourceResponse.setResponseHeader(response.getHeaderArray())
+            webResourceResponse.setResponseIsReady(true)
+            return webResourceResponse
+          }
+          Log.i(TAG, 'return null ');
+          return null;
         } catch (e) {
           Log.e(TAG, "", e);
         }

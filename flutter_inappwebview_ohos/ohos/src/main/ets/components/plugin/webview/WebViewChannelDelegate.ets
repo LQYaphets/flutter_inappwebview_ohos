@@ -966,12 +966,12 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
     channel.invokeMethod("onReceivedClientCertRequest", await challenge.toMap(), callback);
   }
 
-  async shouldInterceptRequest(request: WebResourceRequestExt) {
+  shouldInterceptRequest(request: WebResourceRequestExt){
     let channel = this.getChannel();
     if (channel == null) return null;
     let callback = new SyncShouldInterceptRequestCallback();
     channel.invokeMethod("shouldInterceptRequest", request.toMap(), callback);
-    await callback.waitResponse()
+    callback.waitResponse()
     return callback.result;
   }
 
