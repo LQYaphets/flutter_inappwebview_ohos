@@ -15,6 +15,7 @@
 
 import { Any } from '@ohos/flutter_ohos';
 import BaseCallbackResultImpl from './BaseCallbackResultImpl';
+import napi from 'libentry.so';
 
 export default class SyncBaseCallbackResultImpl<T> extends BaseCallbackResultImpl<T> {
   public result: T | null = null;
@@ -40,19 +41,10 @@ export default class SyncBaseCallbackResultImpl<T> extends BaseCallbackResultImp
     }
   }
 
-  waitResponse(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        let intervalId = setInterval(() => {
-          if (this.responsed) {
-            clearInterval(intervalId)
-            resolve()
-          }
-        }, 20)
-      } catch (err) {
-        reject()
-      }
-    })
+  waitResponse(): void {
+    while (!this.responsed) {
+      napi.uvRunNowait();
+    }
   }
 
   error(errorCode: string, errorMessage: string, errorDetails: Any) {
