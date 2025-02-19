@@ -25,7 +25,7 @@ static napi_value UvRunNowait(napi_env env, napi_callback_info info)
 }
 
 EXTERN_C_START
-static napi_value Init(napi_env env, napi_value exports) 
+static napi_value Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
         {"uvRunNowait", nullptr, UvRunNowait, nullptr, nullptr, nullptr, napi_default, nullptr},
