@@ -75,7 +75,7 @@ export default class InAppWebView implements InAppWebViewInterface {
   public id: number;
   public windowId: number | null | undefined;
   public inAppWebViewClient: InAppWebViewClient | null = null;
-  public channelDelegate: WebViewChannelDelegate;
+  public channelDelegate: WebViewChannelDelegate | null = null;
   private javaScriptBridgeInterface: JavaScriptBridgeInterface | null = null;
   public customSettings: InAppWebViewSettings;
   public isLoading: boolean = false
@@ -701,6 +701,26 @@ export default class InAppWebView implements InAppWebViewInterface {
     if (this.webViewAssetLoaderExt != null) {
       this.webViewAssetLoaderExt.dispose();
       this.webViewAssetLoaderExt = null;
+    }
+    if(this.controller){
+      this.controller.deleteJavaScriptRegister(JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME);
+      this.controller.refresh();
+    }
+    if(this.javaScriptBridgeInterface != null){
+      this.javaScriptBridgeInterface.dispose();
+      this.javaScriptBridgeInterface = null;
+    }
+    if(this.findInteractionController != null){
+      this.findInteractionController.dispose();
+      this.findInteractionController = null;
+    }
+    if(this.pullToRefreshLayout != null){
+      this.pullToRefreshLayout.dispose();
+      this.pullToRefreshLayout = null;
+    }
+    if(this.channelDelegate != null){
+      this.channelDelegate.dispose();
+      this.channelDelegate = null;
     }
   }
 

@@ -137,7 +137,7 @@ export class FlutterWebView extends PlatformWebView {
   }
 
   dispose(): void {
-    if (this.keepAliveId != null && this.webView != null) {
+    if (this.keepAliveId == null && this.webView != null) {
       this.webView.dispose();
       this.webView = null;
 
