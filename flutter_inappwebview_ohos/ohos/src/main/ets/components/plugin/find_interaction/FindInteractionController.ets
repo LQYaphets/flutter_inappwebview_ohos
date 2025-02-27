@@ -68,6 +68,9 @@ export class FindInteractionController implements Disposable {
   }
 
   dispose(): void {
-    throw new Error('Method not implemented.');
+    if(this.channelDelegate != null){
+      this.channelDelegate.dispose();
+      this.channelDelegate = null;
+    }
   }
 }

@@ -151,7 +151,7 @@ export default class InAppWebViewClient {
         URLUtil.guessFileName(event.url, event.contentDisposition, event.mimetype),
         null
       );
-      this.inAppWebView.channelDelegate.onDownloadStartRequest(downloadStartRequest)
+      this.inAppWebView.channelDelegate?.onDownloadStartRequest(downloadStartRequest)
     }
   }
   onErrorReceive = (event: Any) => {
