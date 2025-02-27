@@ -421,9 +421,11 @@ export default class InAppWebViewClient {
     Log.d(TAG, "onPermissionRequest=" + JSON.stringify(event))
   }
   onContextMenuShow = (event: Any) => {
-    // TODO
     Log.d(TAG, "onContextMenuShow=" + JSON.stringify(event))
-    return true;
+    if (this.inAppWebView.channelDelegate != null) {
+      this.inAppWebView.channelDelegate.onLongPressHitTestResult(event);
+    }
+    return false;
   }
   onContextMenuHide = () => {
     // TODO

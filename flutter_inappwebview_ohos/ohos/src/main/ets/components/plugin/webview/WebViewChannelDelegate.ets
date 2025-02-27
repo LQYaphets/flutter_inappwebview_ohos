@@ -669,7 +669,7 @@ export default class WebViewChannelDelegate extends ChannelDelegateImpl {
   public onLongPressHitTestResult(hitTestResult: HitTestResult): void {
     let channel: MethodChannel = this.getChannel()
     if (channel == null) return
-    channel.invokeMethod("onLongPressHitTestResult", hitTestResult.toMap())
+    channel.invokeMethod("onLongPressHitTestResult", HitTestResult.fromWebViewHitTestResult(this.webView.getHitTestResult())!.toMap())
   }
 
   public onScrollChanged(x: number, y: number): void {
