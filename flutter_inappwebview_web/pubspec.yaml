@@ -23,7 +23,7 @@ dependencies:
   js: ^0.6.4
   flutter_inappwebview_platform_interface:
     git:
-      url: "https://gitee.com/openharmony-sig/flutter_inappwebview.git"
+      url: "https://gitcode.com/openharmony-sig/flutter_inappwebview.git"
       path: "flutter_inappwebview_platform_interface"
 
 dev_dependencies:
