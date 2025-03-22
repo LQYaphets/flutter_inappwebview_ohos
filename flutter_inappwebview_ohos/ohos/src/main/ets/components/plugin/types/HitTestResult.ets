@@ -19,6 +19,33 @@ import { Any } from '@ohos/flutter_ohos'
 export default class HitTestResult {
   private type: number
   private extra: string | null
+  //对应Flutter端未知内容
+  private static  UNKNOWN_TYPE = 0;
+  //对应Flutter端电话号码
+  private static PHONE_TYPE = 2;
+  //对应Flutter端地理地址
+  private static GEO_TYPE = 3;
+  //对应Flutter端电子邮件地址
+  private static EMAIL_TYPE = 4;
+  //对应Flutter端HTML::img标签
+  private static IMAGE_TYPE = 5;
+  //对应Flutter端超链接，其中src为http
+  private static SRC_ANCHOR_TYPE = 7;
+  //对应Flutter端带有超链接的图片，其中src为http + HTML::img
+  private static SRC_IMAGE_ANCHOR_TYPE = 8;
+  //对应Flutter端可编辑的区域
+  private static EDIT_TEXT_TYPE = 9;
+  //被点击区域的元素类型映射
+  private static mapping: Record<number, number> = {
+    0 : HitTestResult.EDIT_TEXT_TYPE,
+    1 : HitTestResult.EMAIL_TYPE,
+    2 : HitTestResult.SRC_ANCHOR_TYPE,
+    3 : HitTestResult.SRC_IMAGE_ANCHOR_TYPE,
+    4 : HitTestResult.IMAGE_TYPE,
+    5 : HitTestResult.GEO_TYPE,
+    6 : HitTestResult.PHONE_TYPE,
+    7 : HitTestResult.UNKNOWN_TYPE,
+  }
 
   constructor(type: number, extra: string | null) {
     this.type = type
@@ -29,7 +56,7 @@ export default class HitTestResult {
     if (hitTestResult == null) {
       return null;
     }
-    return new HitTestResult(hitTestResult.type, hitTestResult.extra);
+    return new HitTestResult(HitTestResult.mapping[hitTestResult.type] , hitTestResult.extra);
   }
 
   public getType(): number {
