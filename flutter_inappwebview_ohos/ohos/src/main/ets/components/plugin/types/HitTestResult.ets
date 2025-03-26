@@ -19,17 +19,56 @@ import { Any } from '@ohos/flutter_ohos'
 export default class HitTestResult {
   private type: number
   private extra: string | null
+  //对应Flutter端未知内容
+  private static unknownType = 0;
+  //对应Flutter端电话号码
+  private static phoneType = 2;
+  //对应Flutter端地理地址
+  private static geoType = 3;
+  //对应Flutter端电子邮件地址
+  private static emailType = 4;
+  //对应Flutter端HTML::img标签
+  private static imageType = 5;
+  //对应Flutter端超链接，其中src为http
+  private static SRC_ANCHOR_TYPE = 7;
+  //对应Flutter端带有超链接的图片，其中src为http + HTML::img
+  private static srcImageAnchorType = 8;
+  //对应Flutter端可编辑的区域
+  private static editTextType = 9;
 
   constructor(type: number, extra: string | null) {
     this.type = type
     this.extra = extra
   }
 
+  public static getFlutterHitTestResultType(ohosTitTestResultType: web_webview.WebHitTestType): number {
+    switch (ohosTitTestResultType) {
+      case web_webview.WebHitTestType.EditText:
+        return HitTestResult.editTextType;
+      case web_webview.WebHitTestType.Email:
+        return HitTestResult.emailType;
+      case web_webview.WebHitTestType.HttpAnchor:
+        return HitTestResult.SRC_ANCHOR_TYPE;
+      case web_webview.WebHitTestType.HttpAnchorImg:
+        return HitTestResult.srcImageAnchorType;
+      case web_webview.WebHitTestType.Img:
+        return HitTestResult.imageType;
+      case web_webview.WebHitTestType.Map:
+        return HitTestResult.geoType;
+      case web_webview.WebHitTestType.Phone:
+        return HitTestResult.phoneType;
+      case web_webview.WebHitTestType.Unknown:
+        return HitTestResult.unknownType;
+      default:
+        return HitTestResult.unknownType;
+    }
+  }
+
   public static fromWebViewHitTestResult(hitTestResult: web_webview.HitTestValue | null): HitTestResult | null {
     if (hitTestResult == null) {
       return null;
     }
-    return new HitTestResult(hitTestResult.type, hitTestResult.extra);
+    return new HitTestResult(HitTestResult.getFlutterHitTestResultType(hitTestResult.type) , hitTestResult.extra);
   }
 
   public getType(): number {
