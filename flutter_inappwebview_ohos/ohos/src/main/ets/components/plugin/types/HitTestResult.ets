@@ -20,7 +20,7 @@ export default class HitTestResult {
   private type: number
   private extra: string | null
   //对应Flutter端未知内容
-  private static  unknownType = 0;
+  private static unknownType = 0;
   //对应Flutter端电话号码
   private static phoneType = 2;
   //对应Flutter端地理地址
