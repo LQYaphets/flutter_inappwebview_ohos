@@ -73,8 +73,8 @@ import ClientCertResponse from '../../types/ClientCertResponse';
 import CreateWindowAction from '../../types/CreateWindowAction';
 import SafeBrowsingResponse from '../../types/SafeBrowsingResponse';
 import { cert } from '@kit.DeviceCertificateKit'
-import { List, util  } from '@kit.ArkTS';
-import { common } from '@kit.AbilityKit';
+import { ArrayList, List, util  } from '@kit.ArkTS';
+import { common, Permissions,bundleManager,abilityAccessCtrl } from '@kit.AbilityKit';
 
 const TAG = "InAppWebViewClient";
 
@@ -89,6 +89,12 @@ export default class InAppWebViewClient {
   private isOriginalLayoutFullScreen = false;
   private isOriginalFullScreen = false;
   public progress = 0;
+  private permissionValues: Map<string, Permissions> = new Map([
+    [ProtectedResourceType.VIDEO_CAPTURE, 'ohos.permission.CAMERA'],// 视频捕获资源，例如相机。
+    [ProtectedResourceType.AUDIO_CAPTURE, 'ohos.permission.MICROPHONE'],// 音频捕获资源，例如麦克风。
+  // [ProtectedResourceType.MidiSysex, 'ohos.permission.MIDI_SYSEX'],// MIDI SYSEX资源
+  // [ProtectedResourceType.SENSOR, 'ohos.permission.SENSOR'] // 传感器资源，例如加速度传感器。
+  ]);
 
   constructor(plugin: InAppWebViewFlutterPlugin, inAppWebView: InAppWebView) {
     this.plugin = plugin;
@@ -413,8 +419,31 @@ export default class InAppWebViewClient {
     this.onReceivedClientAuthenticationRequest(event.handler, event.host, event.port, event.keyTypes, event.issuers)
   }
   onPermissionRequest = (event: Any) => {
-    if (this.inAppWebView != null && this.inAppWebView.channelDelegate != null) {
-      event.request.grant(event.request.getAccessibleResource());
+    const _this = this;
+    if (_this.inAppWebView != null && _this.inAppWebView.channelDelegate != null) {
+
+      const request = event.request as PermissionRequest;
+      let accessibleResource = request.getAccessibleResource();
+      let permissionList: Array<Permissions> = [];
+      accessibleResource.forEach(item => {
+        if (this.permissionValues.has(item)) {
+          permissionList.push(this.permissionValues.get(item)!);
+        }
+      });
+      _this.requestPermissions(permissionList)
+        .then((res)=>{
+          if(res){
+            _this.inAppWebView.channelDelegate?.onPermissionRequest(request.getOrigin(),  request.getAccessibleResource() ,null
+              ,new InnerPermissionRequestCallback(request))
+          }
+          else{
+            event.request.deny();
+          }
+        })
+        .catch((error: BusinessError)=>{
+          Log.d(TAG, `requestPermissions=${error}`)
+          event.request.deny();
+        })
     } else {
       event.request.deny();
     }
@@ -654,6 +683,95 @@ export default class InAppWebViewClient {
       callback.defaultBehaviour(null);
     }
   }
+
+  // 申请权限
+  private requestPermissions(permissionList:Array<Permissions>):Promise<boolean>{
+    const _this = this;
+    return new Promise(async (resolve, reject) => {
+      try {
+        // 筛选没授权的权限
+        const withoutAuthorizationList = new ArrayList<Permissions>();
+        for (let i = 0; i < permissionList.length; i++) {
+          const item =  permissionList[i];
+          const isAuthorization = await _this.checkPermissionGrant(item);
+          if(!isAuthorization){
+            withoutAuthorizationList.add(item);
+          }
+        }
+
+        if(withoutAuthorizationList.isEmpty()){
+          resolve(true);
+          return;
+        }
+
+        // 请求权限
+        const atManager = abilityAccessCtrl.createAtManager();
+        const permissionsFromUserRes = await atManager.requestPermissionsFromUser(getContext(this),
+          withoutAuthorizationList.convertToArray());
+
+        // 判断请求的权限是否全部授权
+        let allGranted = true;
+        for (let i = 0; i < permissionsFromUserRes.authResults.length; i++) {
+          const authItem = permissionsFromUserRes.authResults[i];
+          if (authItem !== 0) {
+            allGranted = false;
+            break;
+          }
+        }
+        if (allGranted) {
+          resolve(true);
+          return;
+        }
+
+        // 筛选 需要二次授权的权限
+        allGranted = true;
+        for (let i = 0; i < permissionsFromUserRes.authResults.length; i++) {
+          const authItem =  permissionsFromUserRes.authResults[i];
+          // 没授权，没系统弹窗
+          if(authItem!==0 && permissionsFromUserRes.dialogShownResults != null && !permissionsFromUserRes.dialogShownResults[i]){
+            // 引导用户授权
+            const permissionOnSettingRes = await atManager.requestPermissionOnSetting(getContext(this), [permissionList[i]])
+            if (permissionOnSettingRes[0] !== 0) {
+              allGranted = false;
+              break;
+            }
+          }
+        }
+        resolve(allGranted);
+      }catch (error) {
+        Log.e(TAG,`Failed requestPermissions error is ${error}`);
+        reject(error)
+      }
+    });
+  }
+
+  // 检查权限
+  private async  checkPermissionGrant(permission: Permissions): Promise<boolean> {
+    let atManager: abilityAccessCtrl.AtManager = abilityAccessCtrl.createAtManager();
+    let grantStatus: abilityAccessCtrl.GrantStatus = abilityAccessCtrl.GrantStatus.PERMISSION_DENIED;
+
+    // 获取应用程序的accessTokenID。
+    let tokenId: number = 0;
+    try {
+      let bundleInfo: bundleManager.BundleInfo = await bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
+      let appInfo: bundleManager.ApplicationInfo = bundleInfo.appInfo;
+      tokenId = appInfo.accessTokenId;
+    } catch (error) {
+      const err: BusinessError = error as BusinessError;
+      Log.e(TAG,`Failed to get bundle info for self. Code is ${err.code}, message is ${err.message}`);
+    }
+
+    // 校验应用是否被授予权限。
+    try {
+      grantStatus = await atManager.checkAccessToken(tokenId, permission);
+    } catch (error) {
+      const err: BusinessError = error as BusinessError;
+      Log.e(TAG,`Failed to check access token. Code is ${err.code}, message is ${err.message}`);
+    }
+
+    return grantStatus === abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
+  }
+
 
   private onShouldOverrideUrlLoading(webView: InAppWebView, url: string, method: string,
     headers: Map<string, string>,
@@ -1150,7 +1268,7 @@ class InnerPermissionRequestCallback extends PermissionRequestCallback {
     if (action != null) {
       switch (action) {
         case 1:
-          this.request.grant(response.getResources().convertToArray());
+          this.request.grant(this.request.getAccessibleResource());
           break;
         case 0:
         default:
@@ -1170,6 +1288,8 @@ class InnerPermissionRequestCallback extends PermissionRequestCallback {
     this.defaultBehaviour(null);
   }
 }
+
+
 
 class InnerGeolocationPermissionsShowPromptCallback extends GeolocationPermissionsShowPromptCallback {
   private geolocation: JsGeolocation;
@@ -1236,8 +1356,8 @@ class InnerReceivedHttpAuthRequestCallback extends ReceivedHttpAuthRequestCallba
           } else {
             this.handler.cancel();
           }
-        // used custom CredentialDatabase!
-        // handler.useHttpAuthUsernamePassword();
+          // used custom CredentialDatabase!
+          // handler.useHttpAuthUsernamePassword();
           break;
         case 0:
         default:
