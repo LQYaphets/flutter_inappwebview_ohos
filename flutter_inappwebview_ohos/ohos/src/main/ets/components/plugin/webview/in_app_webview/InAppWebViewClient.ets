@@ -730,7 +730,8 @@ export default class InAppWebViewClient {
           // 没授权，没系统弹窗
           if(authItem!==0 && permissionsFromUserRes.dialogShownResults != null && !permissionsFromUserRes.dialogShownResults[i]){
             // 引导用户授权
-            const permissionOnSettingRes = await atManager.requestPermissionOnSetting(getContext(this), [permissionList[i]])
+            const permissionOnSettingRes = await atManager.requestPermissionOnSetting(getContext(this),
+              [permissionsFromUserRes.permissions[i] as Permissions])
             if (permissionOnSettingRes[0] !== 0) {
               allGranted = false;
               break;
