@@ -27,6 +27,8 @@ class PermissionResourceType {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return 'android.webkit.resource.VIDEO_CAPTURE';
+      case TargetPlatform.ohos:
+        return 'TYPE_VIDEO_CAPTURE';
       case TargetPlatform.iOS:
         return 0;
       case TargetPlatform.macOS:
@@ -86,6 +88,8 @@ class PermissionResourceType {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return 'android.webkit.resource.AUDIO_CAPTURE';
+      case TargetPlatform.ohos:
+        return 'TYPE_AUDIO_CAPTURE';
       case TargetPlatform.iOS:
         return 1;
       case TargetPlatform.macOS:
@@ -107,6 +111,8 @@ class PermissionResourceType {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return 'android.webkit.resource.MIDI_SYSEX';
+      case TargetPlatform.ohos:
+        return 'TYPE_MIDI_SYSEX';
       default:
         break;
     }
@@ -122,6 +128,8 @@ class PermissionResourceType {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return 'android.webkit.resource.PROTECTED_MEDIA_ID';
+      case TargetPlatform.ohos:
+        return 'TYPE_PROTECTED_MEDIA_ID';
       default:
         break;
     }
