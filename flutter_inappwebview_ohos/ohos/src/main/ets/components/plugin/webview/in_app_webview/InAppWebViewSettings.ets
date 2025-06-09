@@ -22,6 +22,7 @@ const LOG_TAG = "InAppWebViewSettings";
 export default class InAppWebViewSettings implements ISettings<InAppWebViewInterface> {
   public domStorageAccess: boolean = false;
   public fileAccess: boolean = true;
+  public allowFileAccessFromFileURLs: boolean = false;
   public imageAccess: boolean = true;
   public javaScriptAccess: boolean = true;
   public overScrollMode: OverScrollMode = OverScrollMode.NEVER;
@@ -90,6 +91,10 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
         case "allowFileAccess":
           this.fileAccess = value as boolean;
           break;
+        case "allowFileAccessFromFileURLs":
+          this.allowFileAccessFromFileURLs = value as boolean;
+          break;
+
         case "loadsImagesAutomatically":
           this.imageAccess = value as boolean;
           break;
@@ -291,6 +296,7 @@ export default class InAppWebViewSettings implements ISettings<InAppWebViewInter
     let settings: Map<string, Any> = new Map<string, Any>();
     settings.set("domStorageEnabled", this.domStorageAccess);
     settings.set("allowFileAccess", this.fileAccess);
+    settings.set("allowFileAccessFromFileURLs", this.allowFileAccessFromFileURLs);
     settings.set("loadsImagesAutomatically", this.imageAccess);
     settings.set("javaScriptEnabled", this.javaScriptAccess);
     settings.set("overScrollMode", this.convertOverScrollModeToDart(this.overScrollMode));

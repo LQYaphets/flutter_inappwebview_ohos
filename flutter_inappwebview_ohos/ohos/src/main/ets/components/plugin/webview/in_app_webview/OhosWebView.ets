@@ -20,7 +20,8 @@ import { Params } from '@ohos/flutter_ohos/src/main/ets/plugin/platform/Platform
 import { FlutterWebView } from './FlutterWebView'
 import InAppWebView from './InAppWebView'
 import EventConstant from '../../EventConstant'
-import { JSON } from '@kit.ArkTS';
+import { JSON, List } from '@kit.ArkTS';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 @Component
 export struct OhosWebView {
@@ -86,7 +87,10 @@ export struct OhosWebView {
         renderMode: RenderMode.SYNC_RENDER
       })
       .keyboardAvoidMode(WebKeyboardAvoidMode.RESIZE_VISUAL)
-      .onControllerAttached(this.inAppWebView!.onControllerAttached)
+      .onControllerAttached(()=>{
+        this.setPathAllowingUniversalAccess()
+        this.inAppWebView!.onControllerAttached()
+      })
       .onAlert(this.inAppWebView!.inAppWebViewClient?.onAlert)
       .onBeforeUnload(this.inAppWebView!.inAppWebViewClient?.onBeforeUnload)
       .onConfirm(this.inAppWebView!.inAppWebViewClient?.onConfirm)
@@ -178,6 +182,25 @@ export struct OhosWebView {
       .layoutMode(this.inAppWebView!.customSettings.layoutMode)
       .enableNativeEmbedMode(this.inAppWebView!.customSettings.enableNativeEmbedMode)
       .javaScriptOnDocumentStart(this.startScripts)
+  }
+
+  private  setPathAllowingUniversalAccess(){
+    if(this.inAppWebView!.customSettings.allowFileAccessFromFileURLs){
+      try {
+        const appFilesDirPath = `${getContext().getApplicationContext().filesDir}/flutter`
+        const filesDirPath = `${getContext().filesDir}/flutter`
+        const resourceDirPath = this.getUIContext().getHostContext()?.resourceDir;
+        const accessList = new List<string>()
+        accessList.add(appFilesDirPath)
+        accessList.add(filesDirPath)
+        if(resourceDirPath){
+          accessList.add(resourceDirPath)
+        }
+        this.controller.setPathAllowingUniversalAccess(accessList.convertToArray())
+      }catch (error) {
+        console.info(`setPathAllowingUniversalAccess error Code：${(error as BusinessError).code} ; msg：${(error as BusinessError).message}`)
+      }
+    }
   }
 }
 
