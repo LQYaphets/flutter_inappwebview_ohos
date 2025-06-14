@@ -4,7 +4,7 @@
   <h1 align="center"> <code>flutter_inappwebview</code> </h1>
 </p>
 
-This project is based on [flutter_blue_plus@6.0.0](https://pub.dev/packages/flutter_inappwebview/versions/6.0.0).
+This project is based on [flutter_inappwebview](https://pub.dev/packages/flutter_inappwebview).
 
 ## 1. Installation and Usage
 
@@ -38,7 +38,7 @@ flutter pub get
 
 ### 1.2 Usage
 
-For use cases [example](https://gitcode.com/openharmony-sig/flutter_inappwebview/blob/master/flutter_inappwebview/example/lib/main.dart)
+For use cases [example](/flutter_inappwebview/example/lib/main.dart)
 
 ## 2. Constraints
 
@@ -52,491 +52,509 @@ This document is verified based on the following versions:
 
 ## 3. API
 
-> [!TIP] The **Platform** column indicates the platform where the properties are supported in the original third-party library.
+> [!TIP] If the value of ohos Support is yes, it means that the ohos platform supports this property; no means the opposite; partially means some capabilities of this property are supported. The usage method is the same on different platforms and the effect is the same as that of iOS or Android.
 
-> [!TIP] If the value of **ohos Support** is **yes**, it means that the ohos platform supports this property; **no** means the opposite; **partially** means some capabilities of this property are supported. The usage method is the same on different platforms and the effect is the same as that of iOS or Android.
+### InAppWebView API 
 
-### InAppWebView API
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| key                 | Flutter framework base identifier   | Key      | /     | Key    | yes         |
+| controllerFromPlatform | Callback to get WebView controller from platform | function | PlatformInAppWebViewController controller | void | yes         |
+| windowId            | Window ID identifier               | int      | /     | int    | no           |
+| initialUrlRequest   | Initial URLRequest to load         | WebUri   | /     | WebUri | yes          |
+| initialFile         | Initial local file path to load    | String   | /     | String | yes          |
+| initialData         | Initial HTML data to load          | InAppWebViewInitialData | / | InAppWebViewInitialData | yes          |
+| onWebViewCreated    | WebView creation event callback    | function | InAppWebViewController controller | void | yes          |
+| onLoadStart         | URL loading start event callback   | function | InAppWebViewController controller, WebUri? url | void | partially    |
+| onLoadStop          | URL loading completion callback    | function | InAppWebViewController controller, WebUri? url | void | yes          |
+| onReceivedError     | Loading error reception callback   | function | InAppWebViewController controller, WebUri? url, WebResourceError error | void | partially    |
+| onReceivedHttpError | HTTP error reception callback      | function | InAppWebViewController controller, WebUri? url, WebResourceResponse response | void | partially    |
+| shouldOverrideUrlLoading | URL loading interception callback | function | InAppWebViewController controller, NavigationAction navigationAction | Future<NavigationActionPolicy?> | yes          |
+| onConsoleMessage    | Console message callback           | function | InAppWebViewController controller, ConsoleMessage consoleMessage | void | yes          |
+| onProgressChanged   | Loading progress change callback   | function | InAppWebViewController controller, int progress | void | yes          |
+| onPermissionRequest | Permission request callback (camera/location, etc.) | function | InAppWebViewController controller, PermissionRequest permissionRequest | void | yes          |
+| onSafeBrowsingHit   | Safe browsing interception callback  | function | InAppWebViewController controller, WebUri? url, SafeBrowsingThreatType threatType | void | no           |
+| onZoomScaleChanged  | Zoom scale change callback         | function | InAppWebViewController controller, double scale | void | partially    |
+| gestureRecognizers  | Gesture recognizer collection      | Set<Factory<OneSequenceGestureRecognizer>> | / | Set<Factory<OneSequenceGestureRecognizer>> | yes          |
+| keepAlive           | Whether to keep WebView alive      | InAppWebViewKeepAlive | / | InAppWebViewKeepAlive | no           |
+| onJsAlert           | JavaScript alert dialog callback   | function | InAppWebViewController controller, JsAlertRequest jsAlertRequest | void | partially    |
+| onJsConfirm         | JavaScript confirmation dialog callback | function | InAppWebViewController controller, JsConfirmRequest jsConfirmRequest | void | partially    |
+| onJsPrompt          | JavaScript prompt dialog callback  | function | InAppWebViewController controller, JsPromptRequest jsPromptRequest | void | partially    |
+| onLoadResource      | Resource loading completion callback | function | InAppWebViewController controller, WebResourceResponse response | void | no           |
+| onDownloadStartRequest | File download start callback    | function | InAppWebViewController controller, DownloadStartRequest request | void | no           |
+| onCreateWindow      | Window creation request callback   | function | InAppWebViewController controller, CreateWindowRequest request | void | no           |
+| onCloseWindow       | Window closure request callback    | function | InAppWebViewController controller | void | no           |
+| onFormResubmission  | Form resubmission request          | function | InAppWebViewController controller, FormResubmissionAction action | void | no           |
+| onNavigationResponse| Navigation response handling       | function | InAppWebViewController controller, NavigationResponseAction action | void | no           |
+| onContentSizeChanged| Content size change callback       | function | InAppWebViewController controller, Size contentSize | void | partially    |
+| onOverScrolled      | Overscroll boundary callback       | function | InAppWebViewController controller, int scrollX, bool clampedX, int scrollY, bool clampedY | void | yes          |
+| onEnterFullscreen   | Fullscreen entry callback          | function | InAppWebViewController controller | void | no           |
+| onExitFullscreen    | Fullscreen exit callback           | function | InAppWebViewController controller | void | no           |
+| onPrintRequest      | Print request callback             | function | InAppWebViewController controller | void | no           |
+| onGeolocationPermissionsShowPrompt | Geolocation permission request | function | InAppWebViewController controller, String origin, bool allow | void | partially    |
+| shouldInterceptRequest | Request interception            | function | InAppWebViewController controller, WebResourceRequest request | Future<WebResourceResponse?> | yes          |
+| shouldInterceptAjaxRequest | AJAX request interception    | function | InAppWebViewController controller, AjaxRequest request | Future<AjaxRequestPolicy?> | yes          |
+| onRenderProcessGone | Render process crash callback     | function | InAppWebViewController controller, RenderProcessGoneDetail detail | void | no           |
+| onRenderProcessResponsive | Render process recovery callback | function | InAppWebViewController controller | void | no           |
+| ohosParams          | OHOS-specific configuration parameters | OhosInAppWebViewWidgetCreationParams | / | OhosInAppWebViewWidgetCreationParams | yes          |
+| useHybridComposition | Whether to use hybrid rendering mode | bool | / | bool | yes          |
 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| key                 | Flutter framework base identifier   | Key      | no       | Android/iOS/Mac/Web | yes         |
-| controllerFromPlatform | Callback to get WebView controller from platform | function | yes | Android/iOS/Mac/Web | yes         |
-| windowId            | Window ID identifier               | int      | no       | Android/iOS/Mac   | no           |
-| initialUrlRequest   | Initial URLRequest to load         | WebUri   | no       | Android/iOS/Mac/Web | yes          |
-| initialFile         | Initial local file path to load    | String   | no       | Android/iOS/Mac/Web | yes          |
-| initialData         | Initial HTML data to load          | InAppWebViewInitialData | no | Android/iOS/Mac/Web | yes          |
-| onWebViewCreated    | WebView creation event callback    | function | no       | Android/iOS/Mac/Web | yes          |
-| onLoadStart         | URL loading start event callback   | function | no       | Android/iOS/Mac/Web | partially    |
-| onLoadStop          | URL loading completion callback    | function | no       | Android/iOS/Mac/Web | yes          |
-| onReceivedError     | Loading error reception callback   | function | no       | Android/iOS/Mac/Web | partially    |
-| onReceivedHttpError | HTTP error reception callback      | function | no       | Android/iOS/Mac/Web | partially    |
-| shouldOverrideUrlLoading | URL loading interception callback | function | no | Android/iOS/Mac/Web | yes          |
-| onConsoleMessage    | Console message callback           | function | no       | Android/iOS/Mac/Web | yes          |
-| onProgressChanged   | Loading progress change callback   | function | no       | Android/iOS/Mac/Web | yes          |
-| onPermissionRequest | Permission request callback (camera/location, etc.) | function | no | Android | yes          |
-| onSafeBrowsingHit   | Safe browsing interception callback  | function | no       | Android | no           |
-| onZoomScaleChanged  | Zoom scale change callback         | function | no       | iOS/Mac | partially    |
-| gestureRecognizers  | Gesture recognizer collection      | Set<Factory<OneSequenceGestureRecognizer>> | no | Android/iOS/Mac/Web | yes          |
-| keepAlive           | Whether to keep WebView alive      | InAppWebViewKeepAlive | no | Android/iOS/Mac/Web | no           |
-| onJsAlert           | JavaScript alert dialog callback   | function | no       | Android/iOS/Mac/Web | partially    |
-| onJsConfirm         | JavaScript confirmation dialog callback | function | no | Android/iOS/Mac/Web | partially    |
-| onJsPrompt          | JavaScript prompt dialog callback  | function | no       | Android/iOS/Mac/Web | partially    |
-| onLoadResource      | Resource loading completion callback | function | no | Android/iOS/Mac/Web | no           |
-| onDownloadStartRequest | File download start callback    | function | no       | Android/iOS/Mac/Web | no           |
-| onCreateWindow      | Window creation request callback   | function | no       | Android/iOS/Mac   | no           |
-| onCloseWindow       | Window closure request callback    | function | no       | Android/iOS/Mac   | no           |
-| onFormResubmission  | Form resubmission request          | function | no       | Android/iOS/Mac   | no           |
-| onNavigationResponse| Navigation response handling       | function | no       | Android/iOS/Mac   | no           |
-| onContentSizeChanged| Content size change callback       | function | no       | Android/iOS/Mac/Web | partially    |
-| onOverScrolled      | Overscroll boundary callback       | function | no       | Android/iOS/Mac/Web | yes          |
-| onEnterFullscreen   | Fullscreen entry callback          | function | no       | Android/iOS/Mac/Web | no           |
-| onExitFullscreen    | Fullscreen exit callback           | function | no       | Android/iOS/Mac/Web | no           |
-| onPrintRequest      | Print request callback             | function | no       | Android/iOS/Mac/Web | no           |
-| onPermissionRequest | Permission request callback (camera/location, etc.) | function | no | Android | yes          |
-| onGeolocationPermissionsShowPrompt | Geolocation permission request | function | no | Android/iOS/Mac/Web | partially    |
-| shouldInterceptRequest | Request interception            | function | no       | Android/iOS/Mac/Web | yes          |
-| shouldInterceptAjaxRequest | AJAX request interception    | function | no       | Android/iOS/Mac/Web | yes          |
-| onRenderProcessGone | Render process crash callback     | function | no       | Android/iOS/Mac/Web | no           |
-| onRenderProcessResponsive | Render process recovery callback | function | no | Android/iOS/Mac/Web | no           |
-| ohosParams          | OHOS-specific configuration parameters | OhosInAppWebViewWidgetCreationParams | no | ohos | yes          |
-| useHybridComposition | Whether to use hybrid rendering mode | bool | no | ohos | yes          |
 ---
 
-### InAppWebViewSettings API
+### InAppWebViewSettings API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| javaScriptEnabled | Whether to enable JavaScript execution | bool | no | Android, iOS, MacOS, Web | yes |
-| mediaPlaybackRequiresUserGesture | Whether media playback requires user gesture | bool | no | Android, iOS, MacOS | yes |
-| domStorageEnabled | Whether DOM storage (localStorage/sessionStorage) is enabled | bool | no | Android, iOS, MacOS, Web | yes |
-| userAgent | Custom User-Agent string for WebView | String | no | Android, iOS, MacOS, Web | yes |
-| applicationNameForUserAgent | Application name appended to User-Agent | String | no | Android, iOS, MacOS, Web | yes |
-| javaScriptCanOpenWindowsAutomatically | Whether JavaScript can open new windows automatically | bool | no | Android, iOS, MacOS, Web | partially |
-| useShouldOverrideUrlLoading | Whether to intercept URL loading via shouldOverrideUrlLoading | bool | no | Android, iOS, MacOS, Web | yes |
-| useOnLoadResource | Whether to monitor resource loading events | bool | no | Android, iOS, MacOS, Web | yes |
-| useOnDownloadStart | Whether to handle download start events | bool | no | Android, iOS, MacOS, Web | yes |
-| clearCache | Whether to clear cache before loading | bool | no | Android, iOS, MacOS, Web | no |
-| verticalScrollBarEnabled | Whether vertical scrollbar is enabled | bool | no | Android, iOS, MacOS, Web | yes |
-| horizontalScrollBarEnabled | Whether horizontal scrollbar is enabled | bool | no | Android, iOS, MacOS, Web | yes |
-| supportZoom | Whether zoom control is supported | bool | no | Android, iOS, MacOS, Web | partially |
-| allowFileAccess | Whether file access is allowed | bool | no | Android, iOS, MacOS, Web | yes |
-| allowFileAccessFromFileURLs | Whether to allow file access from file:// URLs | bool | no | Android | partially |
-| allowUniversalAccessFromFileURLs | Whether universal access from file:// URLs is allowed | bool | no | Android | no |
-| blockNetworkImage | Whether network image loading is blocked | bool | no | Android | no |
-| blockNetworkLoads | Whether all network requests are blocked | bool | no | Android | no |
-| contentBlockers | List of content blocking rules applied to WebView | List | no | Android, iOS, MacOS, Web | partially |
-| preferredContentMode | Preferred content rendering mode (e.g., desktop, mobile) | enum | no | Android, iOS, MacOS, Web | partially |
-| minimumFontSize | Minimum font size for displaying web content | int | no | Android | no |
-| minimumLogicalFontSize | Minimum logical font size for web content | int | no | Android | no |
-| layoutAlgorithm | Layout algorithm used for HTML rendering | enum | no | Android | no |
-| mixedContentMode | Controls loading strategy for mixed HTTP/HTTPS content | enum | no | Android, OHOS | partially |
-| geolocationEnabled | Whether geolocation permission is enabled | bool | no | Android, iOS, OHOS | partially |
-| databaseEnabled | Whether database storage is enabled | bool | no | Android, iOS | no |
-| appCacheEnabled | Whether application cache is enabled | bool | no | Android, iOS | no |
-| appCachePath | Path to store application cache data | String | no | Android | no |
-| textZoom | Page text zoom scale (default 100) | int | no | Android, iOS, MacOS, Web | yes |
-| enableNativeEmbedMode | Enables WebView's native embedding mode | bool | no | OHOS | yes |
-| onlineImageAccess | Controls whether online image resources can be accessed | bool | no | OHOS | no |
-| blockNetwork | Whether to block all network requests | bool | no | OHOS | no |
-| darkMode | Sets WebView's dark mode behavior | enum | no | OHOS | yes |
-| fileAccess | Whether file access permissions are enabled | bool | no | OHOS | yes |
-| domStorageAccess | Whether DOM storage access is enabled | bool | no | OHOS | yes |
-| multiWindowAccess | Whether multiple window access is allowed | bool | no | OHOS | partially |
-| initialScale | Initial zoom scale for WebView (0 means default) | int | no | Android, OHOS | yes |
-| needInitialFocus | Whether WebView needs initial focus | bool | no | Android | no |
-| forceDark | Forces dark theme for WebView content | enum | no | Android, OHOS | partially |
-| hardwareAcceleration | Whether hardware acceleration is enabled | bool | no | Android | no |
-| supportMultipleWindows | Whether multiple windows are supported | bool | no | Android, OHOS | partially |
-| setGeolocationEnabled | Enables/disables geolocation support | function | no | Android, iOS | partially |
-| setTextZoom | Sets page text zoom scale (percentage value) | function | no | Android, iOS, MacOS, Web | yes |
-| setJavaScriptEnabled | Enables/disables JavaScript execution | function | no | Android, iOS, MacOS, Web | yes |
-| setDomStorageEnabled | Enables/disables DOM storage | function | no | Android, iOS, MacOS, Web | yes |
-| setSupportZoom | Enables/disables zoom control | function | no | Android, iOS, MacOS, Web | partially |
-| setMixedContentMode | Sets handling method for mixed content (HTTP/HTTPS) | function | no | Android, OHOS | partially |
-| setAllowFileAccess | Enables/disables file system access | function | no | Android, OHOS | yes |
-| setDatabaseEnabled | Enables/disables database storage | function | no | Android, iOS | no |
-| setMinimumFontSize | Sets minimum font size for web content | function | no | Android | no |
-| setLayoutAlgorithm | Sets layout algorithm for HTML rendering | function | no | Android | no |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| javaScriptEnabled | Whether to enable JavaScript execution | bool | bool | void | yes |
+| mediaPlaybackRequiresUserGesture | Whether media playback requires user gesture | bool | bool | void | yes |
+| domStorageEnabled | Whether DOM storage (localStorage/sessionStorage) is enabled | bool | bool | void | yes |
+| userAgent | Custom User-Agent string for WebView | String | String | void | yes |
+| applicationNameForUserAgent | Application name appended to User-Agent | String | String | void | yes |
+| javaScriptCanOpenWindowsAutomatically | Whether JavaScript can open new windows automatically | bool | bool | void | partially |
+| useShouldOverrideUrlLoading | Whether to intercept URL loading via shouldOverrideUrlLoading | bool | bool | void | yes |
+| useOnLoadResource | Whether to monitor resource loading events | bool | bool | void | yes |
+| useOnDownloadStart | Whether to handle download start events | bool | bool | void | yes |
+| clearCache | Whether to clear cache before loading | bool | bool | void | no |
+| verticalScrollBarEnabled | Whether vertical scrollbar is enabled | bool | bool | void | yes |
+| horizontalScrollBarEnabled | Whether horizontal scrollbar is enabled | bool | bool | void | yes |
+| supportZoom | Whether zoom control is supported | bool | bool | void | partially |
+| allowFileAccess | Whether file access is allowed | bool | bool | void | yes |
+| allowFileAccessFromFileURLs | Whether to allow file access from file:// URLs | bool | bool | void | partially |
+| allowUniversalAccessFromFileURLs | Whether universal access from file:// URLs is allowed | bool | bool | void | no |
+| blockNetworkImage | Whether network image loading is blocked | bool | bool | void | no |
+| blockNetworkLoads | Whether all network requests are blocked | bool | bool | void | no |
+| contentBlockers | List of content blocking rules applied to WebView | List | List<String> | void | partially |
+| preferredContentMode | Preferred content rendering mode (e.g., desktop, mobile) | enum | ContentMode | void | partially |
+| minimumFontSize | Minimum font size for displaying web content | int | int | void | no |
+| minimumLogicalFontSize | Minimum logical font size for web content | int | int | void | no |
+| layoutAlgorithm | Layout algorithm used for HTML rendering | enum | LayoutAlgorithm | void | no |
+| mixedContentMode | Controls loading strategy for mixed HTTP/HTTPS content | enum | MixedContentMode | void | partially |
+| geolocationEnabled | Whether geolocation permission is enabled | bool | bool | void | partially |
+| databaseEnabled | Whether database storage is enabled | bool | bool | void | no |
+| appCacheEnabled | Whether application cache is enabled | bool | bool | void | no |
+| appCachePath | Path to store application cache data | String | String | void | no |
+| textZoom | Page text zoom scale (default 100) | int | int | void | yes |
+| enableNativeEmbedMode | Enables WebView's native embedding mode | bool | bool | void | yes |
+| onlineImageAccess | Controls whether online image resources can be accessed | bool | bool | void | no |
+| blockNetwork | Whether to block all network requests | bool | bool | void | no |
+| darkMode | Sets WebView's dark mode behavior | enum | WebDarkMode | void | yes |
+| fileAccess | Whether file access permissions are enabled | bool | bool | void | yes |
+| domStorageAccess | Whether DOM storage access is enabled | bool | bool | void | yes |
+| multiWindowAccess | Whether multiple window access is allowed | bool | bool | void | partially |
+| initialScale | Initial zoom scale for WebView (0 means default) | int | int | void | yes |
+| needInitialFocus | Whether WebView needs initial focus | bool | bool | void | no |
+| forceDark | Forces dark theme for WebView content | enum | WebDarkMode | void | partially |
+| hardwareAcceleration | Whether hardware acceleration is enabled | bool | bool | void | no |
+| supportMultipleWindows | Whether multiple windows are supported | bool | bool | void | partially |
+| setGeolocationEnabled | Enables/disables geolocation support | function | bool | void | partially |
+| setTextZoom | Sets page text zoom scale (percentage value) | function | int | void | yes |
+| setJavaScriptEnabled | Enables/disables JavaScript execution | function | bool | void | yes |
+| setDomStorageEnabled | Enables/disables DOM storage | function | bool | void | yes |
+| setSupportZoom | Enables/disables zoom control | function | bool | void | partially |
+| setMixedContentMode | Sets handling method for mixed content (HTTP/HTTPS) | function | MixedContentMode | void | partially |
+| setAllowFileAccess | Enables/disables file system access | function | bool | void | yes |
+| setDatabaseEnabled | Enables/disables database storage | function | bool | void | no |
+| setMinimumFontSize | Sets minimum font size for web content | function | int | void | no |
+| setLayoutAlgorithm | Sets layout algorithm for HTML rendering | function | LayoutAlgorithm | void | no |
+
 ---
 
-### HeadlessInAppWebView API
+### HeadlessInAppWebView API 
 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| run                 | Runs WebView in headless mode       | function | no       | Android/iOS/Mac/Web | no           |
-| getSize             | Gets size of headless WebView       | function | no       | Android/iOS/Mac/Web | no           |
-| setSize             | Sets size for headless WebView      | function | no       | Android/iOS/Mac/Web | no           |
-| dispose             | Disposes headless WebView           | function | no       | Android/iOS/Mac/Web | no           |
-| initialSize         | Initial size setting                | Size     | no       | Android/iOS/Mac/Web | no           |
-| initialUrlRequest   | Initial URLRequest to load          | WebUri   | no       | Android/iOS/Mac/Web | yes          |
-| initialFile         | Initial local file path to load     | String   | no       | Android/iOS/Mac/Web | yes          |
-| initialData         | Initial HTML data to load           | InAppWebViewInitialData | no | Android/iOS/Mac/Web | yes          |
-| onWebViewCreated    | WebView creation event callback     | function | no       | Android/iOS/Mac/Web | yes          |
-| onLoadStart         | URL loading start event callback    | function | no       | Android/iOS/Mac/Web | partially    |
-| onLoadStop          | URL loading completion callback     | function | no       | Android/iOS/Mac/Web | yes          |
-| onReceivedError     | Loading error reception callback    | function | no       | Android/iOS/Mac/Web | partially    |
-| onConsoleMessage    | Console message callback            | function | no       | Android/iOS/Mac/Web | yes          |
-| shouldOverrideUrlLoading | URL loading interception callback | function | no | Android/iOS/Mac/Web | yes          |
-| onJsAlert           | JavaScript alert dialog callback    | function | no       | Android/iOS/Mac/Web | partially    |
-| onJsConfirm         | JavaScript confirmation dialog callback | function | no | Android/iOS/Mac/Web | partially    |
-| onPermissionRequest | Permission request callback (camera/location, etc.) | function | no | Android | yes          |
-| onDownloadStartRequest | File download start callback     | function | no       | Android/iOS/Mac/Web | no           |
-| onContentSizeChanged| Content size change callback        | function | no       | Android/iOS/Mac/Web | partially    |
-| onRenderProcessGone | Render process crash callback      | function | no       | Android/iOS/Mac/Web | no           |
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| run                 | Runs WebView in headless mode       | function | /     | Future<void> | no           |
+| getSize             | Gets size of headless WebView       | function | /     | Future<Size?> | no           |
+| setSize             | Sets size for headless WebView      | function | Size size | Future<void> | no           |
+| dispose             | Disposes headless WebView           | function | /     | Future<void> | no           |
+| initialSize         | Initial size setting                | Size     | Size  | Size   | no           |
+| initialUrlRequest   | Initial URLRequest to load          | WebUri   | URLRequest? | URLRequest? | yes          |
+| initialFile         | Initial local file path to load     | String   | String? | String? | yes          |
+| initialData         | Initial HTML data to load           | InAppWebViewInitialData | InAppWebViewInitialData? | InAppWebViewInitialData? | yes          |
+| onWebViewCreated    | WebView creation event callback     | function | InAppWebViewController controller | void | yes          |
+| onLoadStart         | URL loading start event callback    | function | InAppWebViewController controller, WebUri? url | void | partially    |
+| onLoadStop          | URL loading completion callback     | function | InAppWebViewController controller, WebUri? url | void | yes          |
+| onReceivedError     | Loading error reception callback    | function | InAppWebViewController controller, WebUri? url, WebResourceError error | void | partially    |
+| onConsoleMessage    | Console message callback            | function | InAppWebViewController controller, ConsoleMessage consoleMessage | void | yes          |
+| shouldOverrideUrlLoading | URL loading interception callback | function | InAppWebViewController controller, NavigationAction navigationAction | Future<NavigationActionPolicy?> | yes          |
+| onJsAlert           | JavaScript alert dialog callback    | function | InAppWebViewController controller, JsAlertRequest jsAlertRequest | void | partially    |
+| onJsConfirm         | JavaScript confirmation dialog callback | function | InAppWebViewController controller, JsConfirmRequest jsConfirmRequest | void | partially    |
+| onPermissionRequest | Permission request callback (camera/location, etc.) | function | InAppWebViewController controller, PermissionRequest permissionRequest | void | yes          |
+| onDownloadStartRequest | File download start callback     | function | InAppWebViewController controller, DownloadStartRequest request | void | no           |
+| onContentSizeChanged| Content size change callback        | function | InAppWebViewController controller, Size contentSize | void | partially    |
+| onRenderProcessGone | Render process crash callback      | function | InAppWebViewController controller, RenderProcessGoneDetail detail | void | no           |
+
 ---
 
-### InAppWebViewController API
+### InAppWebViewController API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| getUrl | Gets the URL of the current page | function | no | Android, iOS, MacOS, Web | yes |
-| getTitle | Gets the title of the current page | function | no | Android, iOS, MacOS, Web | yes |
-| getProgress | Gets the loading progress of the current page (0-100) | function | no | Android, iOS, MacOS, Web | yes |
-| loadUrl | Loads the specified URL in the WebView | function | no | Android, iOS, MacOS, Web | yes |
-| reload | Reloads the WebView | function | no | Android, iOS, MacOS, Web | yes |
-| goBack | Navigates back in the WebView's history | function | no | Android, iOS, MacOS, Web | partially |
-| setSettings | Sets WebView configuration with new settings | function | no | Android, iOS, MacOS, Web | partially |
-| getSettings | Gets current WebView configuration | function | no | Android, iOS, MacOS, Web | partially |
-| evaluateJavascript | Executes a JavaScript expression and returns the result | function | no | Android, iOS, MacOS, Web | yes |
-| loadData | Loads HTML data into the WebView | function | no | Android, iOS, MacOS, Web | yes |
-| postUrl | Loads a specified URL using POST request | function | no | Android, iOS, MacOS | yes |
-| getOriginalUrl | Gets the original request URL of the current page | function | no | Android, iOS, MacOS, Web | yes |
-| getScrollX | Gets horizontal scroll position | function | no | Android, iOS, MacOS, Web | yes |
-| getScrollY | Gets vertical scroll position | function | no | Android, iOS, MacOS, Web | yes |
-| scrollTo | Scrolls to specified coordinates | function | no | Android, iOS, MacOS, Web | yes |
-| scrollBy | Scrolls by specified delta values | function | no | Android, iOS, MacOS, Web | yes |
-| canGoBack | Checks if navigation back in history is possible | function | no | Android, iOS, MacOS, Web | partially |
-| canGoForward | Checks if navigation forward in history is possible | function | no | Android, iOS, MacOS, Web | partially |
-| goForward | Navigates forward in WebView history | function | no | Android, iOS, MacOS, Web | no |
-| pauseTimers | Pauses all timers in WebView | function | no | Android, iOS | no |
-| resumeTimers | Resumes all timers in WebView | function | no | Android, iOS | no |
-| clearCache | Clears cache | function | no | Android, iOS | no |
-| zoomBy | Zooms by specified scale | function | no | Android, iOS | no |
-| getZoomScale | Gets current zoom scale | function | no | Android, iOS | no |
-| getCertificate | Gets SSL certificate information | function | no | Android, iOS | no |
-| createPdf | Creates PDF document | function | no | Android, iOS | no |
-| printCurrentPage | Prints current page | function | no | Android, iOS, MacOS | no |
-| addJavaScriptHandler | Adds JavaScript message handler | function | no | Android, iOS, MacOS | partially |
-| removeJavaScriptHandler | Removes JavaScript message handler | function | no | Android, iOS, MacOS | partially |
-| hasJavaScriptHandler | Checks existence of specified handler | function | no | Android, iOS, MacOS | partially |
-| canScrollVertically | Checks if vertical scrolling is possible | function | no | Android, iOS, MacOS, Web | yes |
-| canScrollHorizontally | Checks if horizontal scrolling is possible | function | no | Android, iOS, MacOS, Web | yes |
-| getHitTestResult | Gets hit test result for touched HTML element | function | no | Android, iOS | no |
-| getSelectedText | Gets selected text in WebView | function | no | Android, iOS, MacOS | no |
-| getContentHeight | Gets page content height | function | no | Android, iOS, MacOS | yes |
-| getContentWidth | Gets page content width | function | no | Android, iOS, MacOS | yes |
-| pause | Pauses the WebView | function | no | Android, iOS | yes |
-| resume | Resumes the WebView | function | no | Android, iOS | yes |
-| pageDown | Scrolls page down | function | no | Android, iOS | yes |
-| pageUp | Scrolls page up | function | no | Android, iOS | yes |
-| setAllMediaPlaybackSuspended | Sets media playback state | function | no | Android, iOS | no |
-| isInFullscreen | Checks if in fullscreen mode | function | no | Android, iOS, MacOS, Web | no |
-| getDefaultUserAgent | Gets default User-Agent | static function | no | Android, iOS, MacOS, Web | yes |
-| clearAllCache | Clears all caches | static function | no | Android, iOS | yes |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| getUrl | Gets the URL of the current page | function | / | Future<WebUri?> | yes |
+| getTitle | Gets the title of the current page | function | / | Future<String?> | yes |
+| getProgress | Gets the loading progress of the current page (0-100) | function | / | Future<int?> | yes |
+| loadUrl | Loads the specified URL in the WebView | function | URLRequest urlRequest, WebUri? allowingReadAccessTo | Future<void> | yes |
+| reload | Reloads the WebView | function | / | Future<void> | yes |
+| goBack | Navigates back in the WebView's history | function | / | Future<void> | partially |
+| setSettings | Sets WebView configuration with new settings | function | InAppWebViewSettings settings | Future<void> | partially |
+| getSettings | Gets current WebView configuration | function | / | Future<InAppWebViewSettings?> | partially |
+| evaluateJavascript | Executes a JavaScript expression and returns the result | function | String source, ContentWorld? contentWorld | Future<dynamic> | yes |
+| loadData | Loads HTML data into the WebView | function | String data, String mimeType = "text/html", String encoding = "utf8", WebUri? baseUrl, WebUri? historyUrl, WebUri? allowingReadAccessTo | Future<void> | yes |
+| postUrl | Loads a specified URL using POST request | function | WebUri url, Uint8List postData | Future<void> | yes |
+| getOriginalUrl | Gets the original request URL of the current page | function | / | Future<WebUri?> | yes |
+| getScrollX | Gets horizontal scroll position | function | / | Future<int?> | yes |
+| getScrollY | Gets vertical scroll position | function | / | Future<int?> | yes |
+| scrollTo | Scrolls to specified coordinates | function | int x, int y, bool animated = false | Future<void> | yes |
+| scrollBy | Scrolls by specified delta values | function | int x, int y, bool animated = false | Future<void> | yes |
+| canGoBack | Checks if navigation back in history is possible | function | / | Future<bool> | partially |
+| canGoForward | Checks if navigation forward in history is possible | function | / | Future<bool> | partially |
+| goForward | Navigates forward in WebView history | function | / | Future<void> | no |
+| pauseTimers | Pauses all timers in WebView | function | / | Future<void> | no |
+| resumeTimers | Resumes all timers in WebView | function | / | Future<void> | no |
+| clearCache | Clears cache | function | / | Future<void> | no |
+| zoomBy | Zooms by specified scale | function | double zoomFactor, bool animated = false | Future<void> | no |
+| getZoomScale | Gets current zoom scale | function | / | Future<double?> | no |
+| getCertificate | Gets SSL certificate information | function | / | Future<SslCertificate?> | no |
+| createPdf | Creates PDF document | function | PDFConfiguration? pdfConfiguration | Future<Uint8List?> | no |
+| printCurrentPage | Prints current page | function | PrintJobSettings? settings | Future<PrintJobController?> | no |
+| addJavaScriptHandler | Adds JavaScript message handler | function | String handlerName, JavaScriptHandlerCallback callback | void | partially |
+| removeJavaScriptHandler | Removes JavaScript message handler | function | String handlerName | JavaScriptHandlerCallback? | partially |
+| hasJavaScriptHandler | Checks existence of specified handler | function | String handlerName | bool | partially |
+| canScrollVertically | Checks if vertical scrolling is possible | function | / | Future<bool> | yes |
+| canScrollHorizontally | Checks if horizontal scrolling is possible | function | / | Future<bool> | yes |
+| getHitTestResult | Gets hit test result for touched HTML element | function | / | Future<InAppWebViewHitTestResult?> | no |
+| getSelectedText | Gets selected text in WebView | function | / | Future<String?> | no |
+| getContentHeight | Gets page content height | function | / | Future<int?> | yes |
+| getContentWidth | Gets page content width | function | / | Future<int?> | yes |
+| pause | Pauses the WebView | function | / | Future<void> | yes |
+| resume | Resumes the WebView | function | / | Future<void> | yes |
+| pageDown | Scrolls page down | function | bool bottom | Future<bool> | yes |
+| pageUp | Scrolls page up | function | bool top | Future<bool> | yes |
+| setAllMediaPlaybackSuspended | Sets media playback state | function | bool suspended | Future<void> | no |
+| isInFullscreen | Checks if in fullscreen mode | function | / | Future<bool> | no |
+| getDefaultUserAgent | Gets default User-Agent | static function | / | Future<String> | yes |
+| clearAllCache | Clears all caches | static function | bool includeDiskFiles = true | Future<void> | yes |
+
 ---
 
-### WebStorage API
+### WebStorage API 
 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| localStorage        | Represents `window.localStorage`      | Object   | no       | Android, iOS, MacOS, Web | yes      |
-| sessionStorage      | Represents `window.sessionStorage`    | Object   | no       | Android, iOS, MacOS, Web | yes      |
-| length              | Returns number of stored items        | function | no       | Android, iOS, MacOS, Web | partially |
-| setItem             | Adds/updates a storage item         | function | no       | Android, iOS, MacOS, Web | yes      |
-| getItem             | Retrieves a storage item            | function | no       | Android, iOS, MacOS, Web | yes      |
-| removeItem          | Removes a storage item              | function | no       | Android, iOS, MacOS, Web | yes      |
-| clear               | Clears all keys from storage        | function | no       | Android, iOS, MacOS, Web | yes      |
-| key                 | Gets key name at specified index    | function | no       | Android, iOS, MacOS, Web | partially |
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| localStorage        | Represents `window.localStorage`      | Object   | /     | LocalStorage | yes      |
+| sessionStorage      | Represents `window.sessionStorage`    | Object   | /     | SessionStorage | yes      |
+| length              | Returns number of stored items        | function | /     | Future<int?> | partially |
+| setItem             | Adds/updates a storage item         | function | String key, dynamic value | Future<void> | yes      |
+| getItem             | Retrieves a storage item            | function | String key | Future<dynamic> | yes      |
+| removeItem          | Removes a storage item              | function | String key | Future<void> | yes      |
+| clear               | Clears all keys from storage        | function | /     | Future<void> | yes      |
+| key                 | Gets key name at specified index    | function | int index | Future<String> | partially |
+
 ---
 
-### WebStorageManager API
+### WebStorageManager API 
 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| getOrigins          | Gets storage usage for specific origins | function | no       | Android, iOS | no        |
-| deleteAllData       | Removes all storage data             | function | no       | Android, iOS | yes       |
-| deleteOrigin        | Removes storage data for specific origin | function | no       | Android, iOS | no        |
-| getQuotaForOrigin   | Gets storage quota for specific origin | function | no       | Android      | no        |
-| getUsageForOrigin   | Gets storage usage for specific origin | function | no       | Android      | no        |
-| fetchDataRecords    | Gets website data records            | function | no       | iOS, MacOS   | no        |
-| removeDataFor       | Removes specified website data records | function | no       | iOS, MacOS   | no        |
-| removeDataModifiedSince | Removes website data modified after specified time | function | no | iOS, MacOS | no        |
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| getOrigins          | Gets storage usage for specific origins | function | / | Future<List<WebStorageOrigin>> | yes |
+| deleteAllData       | Removes all storage data             | function | / | Future<void> | yes |
+| deleteOrigin        | Removes storage data for specific origin | function | String origin | Future<void> | yes |
+| getQuotaForOrigin   | Gets storage quota for specific origin | function | String origin | Future<int> | yes |
+| getUsageForOrigin   | Gets storage usage for specific origin | function | String origin | Future<int> | yes |
+| fetchDataRecords    | Gets website data records            | function | Set<WebsiteDataType> dataTypes | Future<List<WebsiteDataRecord>> | no |
+| removeDataFor       | Removes specified website data records | function | Set<WebsiteDataType> dataTypes, List<WebsiteDataRecord> dataRecords | Future<void> | no |
+| removeDataModifiedSince | Removes website data modified after specified time | function | Set<WebsiteDataType> dataTypes, DateTime date | Future<void> | no |
+
 ---
 
-### PrintJobController API
+### PrintJobController API 
 
-| Name         | Description                     | Type     | Required | Platform       | ohos Support |
-|--------------|---------------------------------|----------|----------|----------------|--------------|
-| cancel       | Cancels an ongoing print job    | function | no       | Android, iOS, MacOS | no           |
-| restart      | Restarts a cancelled print job  | function | no       | Android, iOS, MacOS | no           |
-| dismiss      | Closes print interface          | function | no       | Android, iOS, MacOS | no           |
-| getInfo      | Gets print job information      | function | no       | Android, iOS, MacOS | no           |
-| dispose      | Releases resources              | function | no       | Android, iOS, MacOS | no           |
-| id           | Unique identifier for print job | String   | no       | Android, iOS, MacOS | no           |
-| onComplete   | Print completion callback       | function | no       | Android, iOS, MacOS | no           |
+| Name         | Description                     | Type     | Input                      | Output               | ohos Support |
+|--------------|---------------------------------|----------|----------------------------|----------------------|--------------|
+| cancel       | Cancels an ongoing print job    | function | /                          | Future<void>         | yes           |
+| restart      | Restarts a cancelled print job  | function | /                          | Future<void>         | yes           |
+| dismiss      | Closes print interface          | function | bool animated = true       | Future<void>         | yes           |
+| getInfo      | Gets print job information      | function | /                          | Future<PrintJobInfo?>| yes           |
+| dispose      | Releases resources              | function | /                          | void                 | yes           |
+| id           | Unique identifier for print job | String   | /                          | String               | yes           |
+| onComplete   | Print completion callback       | function | PrintJobCompletionHandler? | void                 | yes           |
+
 ---
 
-### FindInteractionController API
+### FindInteractionController API 
 
-| Name                  | Description                   | Type     | Required | Platform       | ohos Support |
-|-----------------------|-------------------------------|----------|----------|----------------|--------------|
-| findAll               | Finds all matching items        | function | no       | Android, iOS, MacOS, Web | yes      |
-| findNext              | Finds next matching item        | function | no       | Android, iOS, MacOS, Web | yes      |
-| clearMatches          | Clears all match highlights   | function | no       | Android, iOS, MacOS, Web | yes      |
-| setSearchText         | Sets search text value        | function | no       | Android, iOS, MacOS, Web | yes      |
-| getSearchText         | Gets current search text      | function | no       | Android, iOS, MacOS, Web | yes      |
-| isFindNavigatorVisible| Checks if find navigator visible | function | no | Android, iOS, MacOS, Web | partially |
-| presentFindNavigator  | Shows find navigator          | function | no       | Android, iOS, MacOS, Web | partially |
-| dismissFindNavigator  | Hides find navigator          | function | no       | Android, iOS, MacOS, Web | partially |
-| onFindResultReceived  | Find result callback          | function | no       | Android, iOS, MacOS, Web | yes      |
+| Name                  | Description                   | Type     | Input                          | Output               | ohos Support |
+|-----------------------|-------------------------------|----------|--------------------------------|----------------------|--------------|
+| findAll               | Finds all matching items        | function | String? find                   | Future<void>         | yes          |
+| findNext              | Finds next matching item        | function | bool forward = true            | Future<void>         | yes          |
+| clearMatches          | Clears all match highlights   | function | /                              | Future<void>         | yes          |
+| setSearchText         | Sets search text value        | function | String? searchText             | Future<void>         | yes          |
+| getSearchText         | Gets current search text      | function | /                              | Future<String?>       | yes          |
+| isFindNavigatorVisible| Checks if find navigator visible | function | /                              | Future<bool?>        | partially    |
+| presentFindNavigator  | Shows find navigator          | function | /                              | Future<void>         | partially    |
+| dismissFindNavigator  | Hides find navigator          | function | /                              | Future<void>         | partially    |
+| onFindResultReceived  | Find result callback          | function | void Function(controller, int activeMatchOrdinal, int numberOfMatches, bool isDoneCounting)? | void | yes          |
+
 ---
 
 ### ProxyController API
 
-| Name                | Description                    | Type     | Required | Platform    | ohos Support |
-|---------------------|--------------------------------|----------|----------|-------------|--------------|
-| setProxy            | Sets network proxy configuration | function | no       | Android, iOS | no           |
-| clearProxy          | Clears network proxy configuration | function | no | Android, iOS | no           |
-| isProxySet          | Checks if proxy is configured  | function | no       | Android, iOS | no           |
-| getProxy            | Gets current proxy configuration | function | no | Android, iOS | no           |
-| onProxyCheck        | Proxy verification callback    | function | no       | Android, iOS | no           |
+| Name                | Description                    | Type     | Input                      | Output               | ohos Support |
+|---------------------|--------------------------------|----------|----------------------------|----------------------|--------------|
+| setProxyOverride            | Sets network proxy configuration | function | ProxySettings settings     | Future<void>         | yes           |
+| clearProxyOverride          | Clears network proxy configuration | function | /                          | Future<void>         | yes           |
+---
+
+### PullToRefreshController API 
+
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| setEnabled | Enables/disables pull-to-refresh feature | function | bool enabled | Future<void> | yes |
+| beginRefreshing | Manually starts refresh animation | function | / | Future<void> | yes |
+| endRefreshing | Ends refresh animation | function | / | Future<void> | yes |
+| isEnabled | Checks if refresh is enabled | function | / | Future<bool> | yes |
+| isRefreshing | Checks if currently refreshing | function | / | Future<bool> | yes |
+| setColor | Sets refresh indicator color | function | Color color | Future<void> | partially |
+| setBackgroundColor | Sets refresh background color | function | Color color | Future<void> | partially |
+| setDistanceToTriggerSync | Sets trigger distance for refresh | function | int distanceToTriggerSync | Future<void> | no |
+| setSlingshotDistance | Sets elastic rebound distance (iOS-specific) | function | int slingshotDistance | Future<void> | no |
+| setIndicatorSize | Sets indicator size (Android-specific) | function | PullToRefreshSize size | Future<void> | partially |
+| setStyledTitle | Sets refresh title (iOS-specific) | function | AttributedString attributedTitle | Future<void> | no |
 
 ---
 
-### PullToRefreshController API
+### WebViewAssetLoader API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| setEnabled | Enables/disables pull-to-refresh feature | function | no | Android, iOS | yes |
-| beginRefreshing | Manually starts refresh animation | function | no | Android, iOS | yes |
-| endRefreshing | Ends refresh animation | function | no | Android, iOS | yes |
-| isEnabled | Checks if refresh is enabled | function | no | Android, iOS | yes |
-| isRefreshing | Checks if currently refreshing | function | no | Android, iOS | yes |
-| setColor | Sets refresh indicator color | function | no | Android, iOS | partially |
-| setBackgroundColor | Sets refresh background color | function | no | Android, iOS | partially |
-| setDistanceToTriggerSync | Sets trigger distance for refresh | function | no | Android | no |
-| setSlingshotDistance | Sets elastic rebound distance (iOS-specific) | function | no | iOS | no |
-| setIndicatorSize | Sets indicator size (Android-specific) | function | no | Android | partially |
-| setStyledTitle | Sets refresh title (iOS-specific) | function | no | iOS | no |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| handle | Handles resource requests at specified path | function | String path | Future<WebResourceResponse?> | partially |
+| path | Resource path matching rules | String | / | String | yes |
+| type | Path handler type | String | / | String | yes |
+| AssetsPathHandler | Asset file handler | Object | String path | AssetsPathHandler | yes |
+| ResourcesPathHandler | Resource file handler | Object | String path | ResourcesPathHandler | partially |
+| InternalStoragePathHandler | Internal storage handler | Object | String path, String directory | InternalStoragePathHandler | no |
+| CustomPathHandler | Custom path handler | Object | String path | CustomPathHandler | partially |
+
 ---
 
-### WebViewAssetLoader API
+### ContentBlocker API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| handle | Handles resource requests at specified path | function | no | Android, iOS, Web | partially |
-| path | Resource path matching rules | String | no | Android, iOS, Web | yes |
-| type | Path handler type | String | no | Android, iOS, Web | yes |
-| AssetsPathHandler | Asset file handler | Object | no | Android, iOS, Web | yes |
-| ResourcesPathHandler | Resource file handler | Object | no | Android, iOS, Web | partially |
-| InternalStoragePathHandler | Internal storage handler | Object | no | Android, iOS | no |
-| CustomPathHandler | Custom path handler | Object | no | Android, iOS, Web | partially |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| ContentBlocker | Content blocking rule container | Object | ContentBlockerTrigger trigger, ContentBlockerAction action | ContentBlocker | partially |
+| trigger | Trigger rule definition | ContentBlockerTrigger | / | ContentBlockerTrigger | partially |
+| action | Execution action after trigger | ContentBlockerAction | / | ContentBlockerAction | partially |
+| urlFilter | URL matching regular expression | String | String urlFilter | String | yes |
+| urlFilterIsCaseSensitive | URL matching case sensitivity | bool | bool urlFilterIsCaseSensitive = false | bool | yes |
+| resourceType | Resource type filter list | List<ContentBlockerTriggerResourceType> | List<ContentBlockerTriggerResourceType> resourceType = const [] | List<ContentBlockerTriggerResourceType> | no |
+| ifDomain | Domain list for effective rules | List<String> | List<String> ifDomain = const [] | List<String> | yes |
+| unlessDomain | Excluded domain list | List<String> | List<String> unlessDomain = const [] | List<String> | yes |
+| loadType | Loading type filter | List<ContentBlockerTriggerLoadType> | List<ContentBlockerTriggerLoadType> loadType = const [] | List<ContentBlockerTriggerLoadType> | no |
+| ifFrameUrl | iframe URL matching rules | List<String> | List<String> ifFrameUrl = const [] | List<String> | no |
+| unlessTopUrl | Excluded main document URLs | List<String> | List<String> unlessTopUrl = const [] | List<String> | partially |
+| type | Action type (block/display-none, etc.) | enum | ContentBlockerActionType type | ContentBlockerActionType | partially |
+| selector | CSS selector (display-none only) | String | String? selector | String? | no |
+
 ---
 
-### ContentBlocker API
+### InAppWebViewKeepAlive API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| ContentBlocker | Content blocking rule container | Object | no | Android, iOS, MacOS | partially |
-| trigger | Trigger rule definition | ContentBlockerTrigger | no | Android, iOS, MacOS | partially |
-| action | Execution action after trigger | ContentBlockerAction | no | Android, iOS, MacOS | partially |
-| urlFilter | URL matching regular expression | String | yes | Android, iOS, MacOS | yes |
-| urlFilterIsCaseSensitive | URL matching case sensitivity | bool | no | Android, iOS, MacOS | yes |
-| resourceType | Resource type filter list | List<ContentBlockerTriggerResourceType> | no | Android, iOS, MacOS | no |
-| ifDomain | Domain list for effective rules | List<String> | no | Android, iOS, MacOS | yes |
-| unlessDomain | Excluded domain list | List<String> | no | Android, iOS, MacOS | yes |
-| loadType | Loading type filter | List<ContentBlockerTriggerLoadType> | no | Android, iOS, MacOS | no |
-| ifFrameUrl | iframe URL matching rules | List<String> | no | iOS, MacOS | no |
-| unlessTopUrl | Excluded main document URLs | List<String> | no | Android, iOS, MacOS | partially |
-| type | Action type (block/display-none, etc.) | enum | yes | Android, iOS, MacOS | partially |
-| selector | CSS selector (display-none only) | String | no | Android, iOS, MacOS | no |
----
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| InAppWebViewKeepAlive | Creates WebView keep-alive instance | constructor | / | InAppWebViewKeepAlive | yes |
+| id | Gets/sets keep-alive instance ID | String | / | String | yes |
+| javaScriptHandlersMap | JavaScript handler mapping table | Map<String, JavaScriptHandlerCallback> | Map<String, JavaScriptHandlerCallback> javaScriptHandlersMap | / | yes |
+| userScripts | User script collection | Map<UserScriptInjectionTime, List<UserScript>> | Map<UserScriptInjectionTime, List<UserScript>> userScripts | / | yes |
+| webMessageListenerObjNames | Web message listener object names | Set<String> | Set<String> webMessageListenerObjNames | / | yes |
+| injectedScriptsFromURL | Script attributes injected via URL | Map<String, ScriptHtmlTagAttributes> | Map<String, ScriptHtmlTagAttributes> injectedScriptsFromURL | / | yes |
+| webMessageChannels | Web message channel collection | Set<PlatformWebMessageChannel> | Set<PlatformWebMessageChannel> webMessageChannels = Set() | / | yes |
+| webMessageListeners | Web message listener collection | Set<PlatformWebMessageListener> | Set<PlatformWebMessageListener> webMessageListeners = Set() | / | yes |
 
-### InAppWebViewKeepAlive API
-
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| InAppWebViewKeepAlive | Creates WebView keep-alive instance | constructor | no | Android, iOS, Web, MacOS | yes |
-| id | Gets/sets keep-alive instance ID | String | no | Android, iOS, Web, MacOS | yes |
-| javaScriptHandlersMap | JavaScript handler mapping table | Map<String, JavaScriptHandlerCallback> | yes | Android, iOS, Web, MacOS | yes |
-| userScripts | User script collection | Map<UserScriptInjectionTime, List<UserScript>> | yes | Android, iOS, Web, MacOS | yes |
-| webMessageListenerObjNames | Web message listener object names | Set<String> | yes | Android, iOS, Web, MacOS | yes |
-| injectedScriptsFromURL | Script attributes injected via URL | Map<String, ScriptHtmlTagAttributes> | yes | Android, iOS, Web, MacOS | yes |
-| webMessageChannels | Web message channel collection | Set<PlatformWebMessageChannel> | yes | Android, iOS, Web, MacOS | yes |
-| webMessageListeners | Web message listener collection | Set<PlatformWebMessageListener> | yes | Android, iOS, Web, MacOS | yes |
 ---
 
 ### InAppBrowser API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| openUrlRequest | Opens webpage with specified URLRequest | function | no | Android, iOS | yes |
-| openFile | Opens local file | function | no | Android, iOS | partially |
-| openData | Opens HTML data | function | no | Android, iOS | yes |
-| show | Shows browser window | function | no | Android, iOS | yes |
-| hide | Hides browser window | function | no | Android, iOS | yes |
-| close | Closes browser window | function | no | Android, iOS | yes |
-| setSettings | Sets browser configuration | function | no | Android, iOS | partially |
-| getSettings | Gets current configuration | function | no | Android, iOS | partially |
-| addMenuItem | Adds menu item | function | no | Android, iOS | no |
-| removeMenuItem | Removes menu item | function | no | Android, iOS | no |
-| isHidden | Checks if browser is hidden | function | no | Android, iOS | yes |
-| isOpened | Checks if browser is open | function | no | Android, iOS | yes |
-| onBrowserCreated | Browser creation callback | function | no | Android, iOS | yes |
-| onLoadStart | Page loading start callback | function | no | Android, iOS | yes |
-| onLoadStop | Page loading completion callback | function | no | Android, iOS | yes |
-| onLoadError | Loading error callback | function | no | Android, iOS | yes |
-| onProgressChanged | Loading progress change callback | function | no | Android, iOS | yes |
-| onTitleChanged | Page title change callback | function | no | Android, iOS | yes |
-| onExit | Browser exit callback | function | no | Android, iOS | no |
-| onConsoleMessage | Console message callback | function | no | Android, iOS | yes |
-| onReceivedIcon | Website icon reception callback | function | no | Android | no |
-| onPermissionRequest | Permission request callback | function | no | Android | yes |
-| onJsAlert | JavaScript alert callback | function | no | Android, iOS | yes |
-| onJsConfirm | JavaScript confirmation callback | function | no | Android, iOS | yes |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| openUrlRequest | Opens webpage with specified URLRequest | function | URLRequest urlRequest, InAppBrowserClassOptions? options, InAppBrowserClassSettings? settings | Future<void> | yes |
+| openFile | Opens local file | function | String assetFilePath, InAppBrowserClassOptions? options, InAppBrowserClassSettings? settings | Future<void> | partially |
+| openData | Opens HTML data | function | String data, String mimeType = "text/html", String encoding = "utf8", WebUri? baseUrl, WebUri? historyUrl, InAppBrowserClassSettings? settings | Future<void> | yes |
+| show | Shows browser window | function | / | Future<void> | yes |
+| hide | Hides browser window | function | / | Future<void> | yes |
+| close | Closes browser window | function | / | Future<void> | yes |
+| setSettings | Sets browser configuration | function | InAppBrowserClassSettings settings | Future<void> | partially |
+| getSettings | Gets current configuration | function | / | Future<InAppBrowserClassSettings?> | partially |
+| addMenuItem | Adds menu item | function | InAppBrowserMenuItem menuItem | void | no |
+| removeMenuItem | Removes menu item | function | InAppBrowserMenuItem menuItem | bool | no |
+| isHidden | Checks if browser is hidden | function | / | Future<bool> | yes |
+| isOpened | Checks if browser is open | function | / | bool | yes |
+| onBrowserCreated | Browser creation callback | function | / | void | yes |
+| onLoadStart | Page loading start callback | function | WebUri? url | void | yes |
+| onLoadStop | Page loading completion callback | function | WebUri? url | void | yes |
+| onLoadError | Loading error callback | function | WebUri? url, int code, String message | void | yes |
+| onProgressChanged | Loading progress change callback | function | int progress | void | yes |
+| onTitleChanged | Page title change callback | function | String? title | void | yes |
+| onExit | Browser exit callback | function | / | void | no |
+| onConsoleMessage | Console message callback | function | ConsoleMessage consoleMessage | void | yes |
+| onReceivedIcon | Website icon reception callback | function | Uint8List icon | void | no |
+| onPermissionRequest | Permission request callback | function | PermissionRequest permissionRequest | Future<PermissionResponse?> | yes |
+| onJsAlert | JavaScript alert callback | function | JsAlertRequest jsAlertRequest | Future<JsAlertResponse?> | yes |
+| onJsConfirm | JavaScript confirmation callback | function | JsConfirmRequest jsConfirmRequest | Future<JsConfirmResponse?> | yes |
+
 ---
 
 ### ChromeSafariBrowser API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| open | Opens browser with specified URL | function | no | Android | no       |
-| launchUrl | Launches specified URL | function | no | Android | no       |
-| close | Closes browser | function | no | Android | no       |
-| isAvailable | Checks browser availability | static function | no | Android | no       |
-| clearWebsiteData | Clears website data | static function | no | Android | no       |
-| prewarmConnections | Prewarms connections | static function | no | Android | no       |
-| onClosed | Browser closure callback | function | no | Android | no       |
-| onOpened | Browser open callback | function | no | Android | no       |
-| onCompletedInitialLoad | Initial load completion callback | function | no | Android | no       |
-| onNavigationEvent | Navigation event callback | function | no | Android | no       |
-| onPostMessage | postMessage callback | function | no | Android | no       |
-| setActionButton | Sets action button | function | no | Android | no       |
-| setSecondaryToolbar | Sets secondary toolbar | function | no | Android | no       |
-| addMenuItem | Adds menu item | function | no | Android | no       |
-| requestPostMessageChannel | Requests message channel | function | no | Android | no       |
-| validateRelationship | Validates relationship | function | no | Android | no       |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| open | Opens browser with specified URL | function | WebUri? url, Map<String, String>? headers, List<WebUri>? otherLikelyURLs, ChromeSafariBrowserSettings? settings | Future<void> | no |
+| launchUrl | Launches specified URL | function | WebUri url, Map<String, String>? headers, List<WebUri>? otherLikelyURLs | Future<void> | no |
+| close | Closes browser | function | / | Future<void> | no |
+| isAvailable | Checks browser availability | static function | / | Future<bool> | no |
+| clearWebsiteData | Clears website data | static function | / | Future<void> | no |
+| prewarmConnections | Prewarms connections | static function | List<WebUri> URLs | Future<PrewarmingToken?> | no |
+| onClosed | Browser closure callback | function | / | void | no |
+| onOpened | Browser open callback | function | / | void | no |
+| onCompletedInitialLoad | Initial load completion callback | function | bool? didLoadSuccessfully | void | no |
+| onNavigationEvent | Navigation event callback | function | CustomTabsNavigationEventType? navigationEvent | void | no |
+| onPostMessage | postMessage callback | function | String message | void | no |
+| setActionButton | Sets action button | function | ChromeSafariBrowserActionButton actionButton | void | no |
+| setSecondaryToolbar | Sets secondary toolbar | function | ChromeSafariBrowserSecondaryToolbar secondaryToolbar | void | no |
+| addMenuItem | Adds menu item | function | ChromeSafariBrowserMenuItem menuItem | void | no |
+| requestPostMessageChannel | Requests message channel | function | WebUri sourceOrigin, WebUri? targetOrigin | Future<bool> | no |
+| validateRelationship | Validates relationship | function | CustomTabsRelationType relation, WebUri origin | Future<bool> | no |
+
 ---
 
 ### InAppLocalhostServer API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| InAppLocalhostServer | Creates local server instance | constructor | no | Android, iOS | no       |
-| start | Starts local server | function | no | Android, iOS | no       |
-| close | Stops local server | function | no | Android, iOS | no       |
-| isRunning | Checks server running status | function | no | Android, iOS | no       |
-| port | Gets server port number | int | no | Android, iOS | no       |
-| directoryIndex | Gets directory index filename | String | no | Android, iOS | no       |
-| documentRoot | Gets document root directory | String | no | Android, iOS | no       |
-| shared | Checks if instance is shared | bool | no | Android, iOS | no       |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| InAppLocalhostServer | Creates local server instance | constructor | int port = 8080, String directoryIndex = "index.html", String documentRoot = "./", bool shared = false | InAppLocalhostServer | no |
+| start | Starts local server | function | / | Future<void> | no |
+| close | Stops local server | function | / | Future<void> | no |
+| isRunning | Checks server running status | function | / | bool | no |
+| port | Gets server port number | int | / | int | no |
+| directoryIndex | Gets directory index filename | String | / | String | no |
+| documentRoot | Gets document root directory | String | / | String | no |
+| shared | Checks if instance is shared | bool | / | bool | no |
+
 ---
 
 ### CookieManager API 
 
-| Name | Description | Type | Required | Platform | ohos Support |
-|------|-------------|------|----------|-----------|--------------|
-| setCookie | Sets cookie for specified URL | function | yes | Android, iOS | **yes**       |
-| getCookies | Gets all cookies for URL | function | yes | Android, iOS | **yes** |
-| getCookie | Gets cookie by name | function | yes | Android, iOS | **yes** |
-| deleteCookie | Deletes specified cookie | function | yes | Android, iOS | **yes**       |
-| deleteCookies | Deletes all cookies for URL | function | yes | Android, iOS | **yes**       |
-| deleteAllCookies | Deletes all cookies | static function | no | Android, iOS | **yes**      |
-| getAllCookies | Gets all cookies | static function | no | Android, iOS | **yes** |
-| removeSessionCookies | Removes session cookies | static function | no | Android, iOS | **yes**       |
-| IOSCookieManager | iOS-specific cookie manager class (deprecated) | Object | no | iOS | **no**       |
+| Name | Description | Type | Input | Output | ohos Support |
+|------|-------------|------|-------|--------|--------------|
+| setCookie | Sets cookie for specified URL | function | WebUri url, String name, String value, String path = "/", String? domain, int? expiresDate, int? maxAge, bool? isSecure, bool? isHttpOnly, HTTPCookieSameSitePolicy? sameSite, InAppWebViewController? iosBelow11WebViewController, InAppWebViewController? webViewController | Future<bool> | yes |
+| getCookies | Gets all cookies for URL | function | WebUri url, InAppWebViewController? iosBelow11WebViewController, InAppWebViewController? webViewController | Future<List<Cookie>> | yes |
+| getCookie | Gets cookie by name | function | WebUri url, String name, InAppWebViewController? iosBelow11WebViewController, InAppWebViewController? webViewController | Future<Cookie?> | yes |
+| deleteCookie | Deletes specified cookie | function | WebUri url, String name, String path = "/", String? domain, InAppWebViewController? iosBelow11WebViewController, InAppWebViewController? webViewController | Future<bool> | yes |
+| deleteCookies | Deletes all cookies for URL | function | WebUri url, String path = "/", String? domain, InAppWebViewController? iosBelow11WebViewController, InAppWebViewController? webViewController | Future<bool> | yes |
+| deleteAllCookies | Deletes all cookies | static function | / | Future<bool> | yes |
+| getAllCookies | Gets all cookies | static function | / | Future<List<Cookie>> | yes |
+| removeSessionCookies | Removes session cookies | static function | / | Future<bool> | yes |
+| IOSCookieManager | iOS-specific cookie manager class (deprecated) | Object | / | IOSCookieManager | no |
+
 ---
 
-### OhosHttpAuthCredentialDatabase API 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| getAllAuthCredentials | Gets all HTTP authentication credentials | function | no       | ohos        | yes          |
-| getHttpAuthCredentials | Gets HTTP credentials for specified protection space | function | yes      | ohos        | yes          |
-| setHttpAuthCredential | Sets HTTP authentication credentials | function | yes      | ohos        | yes          |
-| removeHttpAuthCredential | Removes specified HTTP authentication credentials | function | yes      | ohos        | yes          |
-| removeHttpAuthCredentials | Removes all credentials for specified protection space | function | yes      | ohos        | yes          |
-| clearAllAuthCredentials | Clears all authentication credentials | function | no       | ohos        | yes          |
-| dispose             | Releases resources                  | function | no       | ohos        | yes          |
+### HttpAuthCredentialDatabase API 
+
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| getAllAuthCredentials | Gets all HTTP authentication credentials | function | / | Future<List<URLProtectionSpaceHttpAuthCredentials>> | yes |
+| getHttpAuthCredentials | Gets HTTP credentials for specified protection space | function | URLProtectionSpace protectionSpace | Future<List<URLCredential>> | yes |
+| setHttpAuthCredential | Sets HTTP authentication credentials | function | URLProtectionSpace protectionSpace, URLCredential credential | Future<void> | yes |
+| removeHttpAuthCredential | Removes specified HTTP authentication credentials | function | URLProtectionSpace protectionSpace, URLCredential credential | Future<void> | yes |
+| removeHttpAuthCredentials | Removes all credentials for specified protection space | function | URLProtectionSpace protectionSpace | Future<void> | yes |
+| clearAllAuthCredentials | Clears all authentication credentials | function | / | Future<void> | yes |
+| dispose             | Releases resources                  | function | / | Future<void> | yes |
+
 ---
 
 ### ContextMenu API 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| onCreateContextMenu | Triggered when context menu is being built | function | no       | Android, iOS | partially    |
-| onHideContextMenu   | Triggered when context menu is hidden | function | no       | Android, iOS | partially    |
-| onContextMenuActionItemClicked | Triggered when context menu item is clicked | function | no       | Android, iOS | partially    |
-| options             | Replaced by settings                | enum     | no       | Android, iOS | no           |
-| settings            | Context menu configuration          | ContextMenuSettings_ | no | Android, iOS | partially    |
-| menuItems           | Custom context menu item list       | List<ContextMenuItem_> | no | Android, iOS | partially    |
+
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| onCreateContextMenu | Triggered when context menu is being built | function | InAppWebViewHitTestResult hitTestResult | void | partially |
+| onHideContextMenu   | Triggered when context menu is hidden | function | / | void | partially |
+| onContextMenuActionItemClicked | Triggered when context menu item is clicked | function | ContextMenuItem contextMenuItem | void | partially |
+| options             | Replaced by settings                | enum     | / | void | no           |
+| settings            | Context menu configuration          | ContextMenuSettings_ | / | ContextMenuSettings? | partially    |
+| menuItems           | Custom context menu item list       | List<ContextMenuItem_> | / | List<ContextMenuItem> | partially    |
+
 ---
 
 ### WebViewFeature API 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| CREATE_WEB_MESSAGE_CHANNEL | WebMessageChannel creation capability | enum     | no       | Android     | partially    |
-| DISABLED_ACTION_MODE_MENU_ITEMS | Disabled ActionMode menu items | enum     | no       | Android     | partially    |
-| FORCE_DARK          | Force dark mode                     | enum     | no       | Android     | partially    |
-| SAFE_BROWSING_ALLOWLIST | Safe browsing allowlist            | enum     | no       | Android     | partially    |
-| SERVICE_WORKER_BASIC_USAGE | ServiceWorker basic functionality | enum     | no       | Android     | partially    |
-| DOCUMENT_START_SCRIPT | Document start script injection    | enum     | no       | Android     | partially    |
-| SUPPRESS_ERROR_PAGE | Suppress error page               | enum     | no       | Android     | partially    |
-| WEB_MESSAGE_LISTENER | Web message listener              | enum     | no       | Android     | partially    |
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| CREATE_WEB_MESSAGE_CHANNEL | WebMessageChannel creation capability | enum     | / | / | partially    |
+| DISABLED_ACTION_MODE_MENU_ITEMS | Disabled ActionMode menu items | enum     | / | / | partially    |
+| FORCE_DARK          | Force dark mode                     | enum     | / | / | partially    |
+| SAFE_BROWSING_ALLOWLIST | Safe browsing allowlist            | enum     | / | / | partially    |
+| SERVICE_WORKER_BASIC_USAGE | ServiceWorker basic functionality | enum     | / | / | partially    |
+| DOCUMENT_START_SCRIPT | Document start script injection    | enum     | / | / | partially    |
+| SUPPRESS_ERROR_PAGE | Suppress error page               | enum     | / | / | partially    |
+| WEB_MESSAGE_LISTENER | Web message listener              | enum     | / | / | partially    |
+
 ---
 
 ### WebAuthenticationSession API 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| create              | Creates Web authentication session  | function | yes      | Android, iOS | no           |
-| canStart            | Checks if session can be started  | function | no       | Android, iOS | no           |
-| start               | Starts Web authentication session | function | no       | Android, iOS | no           |
-| cancel              | Cancels ongoing authentication session | function | no       | Android, iOS | no           |
-| dispose             | Releases session resources          | function | no       | Android, iOS | no           |
-| isAvailable         | Checks device support for Web authentication | function | no | Android, iOS | no           |
-| id                  | Gets session unique identifier    | String   | no       | Android, iOS | no           |
-| url                 | Gets authentication session URL   | WebUri   | no       | Android, iOS | no           |
-| callbackURLScheme   | Gets callback URL scheme          | String   | no       | Android, iOS | no           |
-| initialSettings     | Gets initial session configuration  | WebAuthenticationSessionSettings | no | Android, iOS | no           |
-| onComplete          | Authentication completion handler   | WebAuthenticationSessionCompletionHandler | no | Android, iOS | no           |
+
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| create              | Creates Web authentication session  | function | WebUri url, String? callbackURLScheme, WebAuthenticationSessionCompletionHandler onComplete, WebAuthenticationSessionSettings? initialSettings | Future<WebAuthenticationSession> | no |
+| canStart            | Checks if session can be started  | function | / | Future<bool> | no |
+| start               | Starts Web authentication session | function | / | Future<bool> | no |
+| cancel              | Cancels ongoing authentication session | function | / | Future<void> | no |
+| dispose             | Releases session resources          | function | / | Future<void> | no |
+| isAvailable         | Checks device support for Web authentication | static function | / | Future<bool> | no |
+| id                  | Gets session unique identifier    | String   | / | String | no |
+| url                 | Gets authentication session URL   | WebUri   | / | WebUri | no |
+| callbackURLScheme   | Gets callback URL scheme          | String   | / | String? | no |
+| initialSettings     | Gets initial session configuration  | WebAuthenticationSessionSettings | / | WebAuthenticationSessionSettings? | no |
+| onComplete          | Authentication completion handler   | WebAuthenticationSessionCompletionHandler | / | WebAuthenticationSessionCompletionHandler | no |
+
 ---
 
 ### WebUri API 
-| Name                | Description                         | Type     | Required | Platform    | ohos Support |
-|---------------------|-------------------------------------|----------|----------|-------------|--------------|
-| authority           | Gets URI authority part (host:port format) | String   | no       | all        | yes          |
-| data                | Gets URI data part                | UriData? | no       | all        | yes          |
-| fragment            | Gets URI fragment identifier      | String   | no       | all        | yes          |
-| hasAbsolutePath     | Checks if path is absolute         | bool     | no       | all        | yes          |
-| hasAuthority        | Checks existence of authority       | bool     | no       | all        | yes          |
-| hasEmptyPath        | Checks if path is empty            | bool     | no       | all        | yes          |
-| hasFragment         | Checks existence of fragment        | bool     | no       | all        | yes          |
-| hasPort             | Checks existence of port number     | bool     | no       | all        | yes          |
-| hasQuery            | Checks existence of query parameters | bool     | no       | all        | yes          |
-| hasScheme           | Checks existence of protocol scheme | bool     | no       | all        | yes          |
-| host                | Gets hostname (case-sensitive)      | String   | no       | all        | yes          |
-| isAbsolute          | Checks if URI is absolute         | bool     | no       | all        | yes          |
-| isScheme            | Checks protocol scheme match        | function | yes      | all        | yes          |
-| normalizePath       | Standardizes path (removes redundancy) | function | no       | all        | yes          |
-| origin              | Gets origin (scheme+authority)    | String   | no       | all        | yes          |
-| path                | Gets path (case-sensitive)          | String   | no       | all        | yes          |
-| pathSegments        | Gets path segment list              | List<String> | no | all        | yes          |
-| port                | Gets port number                  | int      | no       | all        | yes          |
-| query               | Gets raw query string             | String   | no       | all        | yes          |
-| queryParameters     | Gets query parameters map (first value only) | Map<String, String> | no | all | yes          |
-| queryParametersAll  | Gets complete query parameters map  | Map<String, List<String>> | no | all | yes          |
-| removeFragment      | Creates new URI with fragment removed | function | no       | all        | yes          |
-| replace             | Replaces URI components           | function | yes      | all        | yes          |
-| resolve             | Resolves relative URI             | function | yes      | all        | yes          |
-| resolveUri          | Resolves relative URI object      | function | yes      | all        | yes          |
-| scheme              | Gets protocol scheme (e.g., http) | String   | no       | all        | yes          |
-| toFilePath          | Converts to file path             | function | no       | all        | yes          |
-| userInfo            | Gets user info component          | String   | no       | all        | yes          |
-| rawValue            | Gets raw unparsed URI string      | String   | no       | all        | yes          |
-| uriValue            | Gets parsed standard URI object    | Uri      | no       | all        | yes          |
-| isValidUri          | Indicates if URI parsing succeeded  | bool     | no       | all        | yes          |
-| forceToStringRawValue | Controls toString() to use raw value | bool     | no       | all        | yes          |
-| normalizePath()     | Returns new standardized path URI   | function | no       | all        | yes          |
-| toString()          | String representation (configurable to use raw value) | function | no | all        | yes          |
+
+| Name                | Description                         | Type     | Input | Output | ohos Support |
+|---------------------|-------------------------------------|----------|-------|--------|--------------|
+| authority           | Gets URI authority part (host:port format) | String   | / | String | yes          |
+| data                | Gets URI data part                | UriData? | / | UriData? | yes          |
+| fragment            | Gets URI fragment identifier      | String   | / | String | yes          |
+| hasAbsolutePath     | Checks if path is absolute         | bool     | / | bool | yes          |
+| hasAuthority        | Checks existence of authority       | bool     | / | bool | yes          |
+| hasEmptyPath        | Checks if path is empty            | bool     | / | bool | yes          |
+| hasFragment         | Checks existence of fragment        | bool     | / | bool | yes          |
+| hasPort             | Checks existence of port number     | bool     | / | bool | yes          |
+| hasQuery            | Checks existence of query parameters | bool     | / | bool | yes          |
+| hasScheme           | Checks existence of protocol scheme | bool     | / | bool | yes          |
+| host                | Gets hostname (case-sensitive)      | String   | / | String | yes          |
+| isAbsolute          | Checks if URI is absolute         | bool     | / | bool | yes          |
+| isScheme            | Checks protocol scheme match        | function | String scheme | bool | yes          |
+| normalizePath       | Standardizes path (removes redundancy) | function | / | Uri | yes          |
+| origin              | Gets origin (scheme+authority)    | String   | / | String | yes          |
+| path                | Gets path (case-sensitive)          | String   | / | String | yes          |
+| pathSegments        | Gets path segment list              | List<String> | / | List<String> | yes          |
+| port                | Gets port number                  | int      | / | int | yes          |
+| query               | Gets raw query string             | String   | / | String | yes          |
+| queryParameters     | Gets query parameters map (first value only) | Map<String, String> | / | Map<String, String> | yes          |
+| queryParametersAll  | Gets complete query parameters map  | Map<String, List<String>> | / | Map<String, List<String>> | yes          |
+| removeFragment      | Creates new URI with fragment removed | function | / | Uri | yes          |
+| replace             | Replaces URI components           | function | String? scheme, String? userInfo, String? host, int? port, String? path, Iterable<String>? pathSegments, String? query, Map<String, dynamic>? queryParameters, String? fragment | Uri | yes          |
+| resolve             | Resolves relative URI             | function | String reference | Uri | yes          |
+| resolveUri          | Resolves relative URI object      | function | Uri reference | Uri | yes          |
+| scheme              | Gets protocol scheme (e.g., http) | String   | / | String | yes          |
+| toFilePath          | Converts to file path             | function | bool? windows | String | yes          |
+| userInfo            | Gets user info component          | String   | / | String | yes          |
+| rawValue            | Gets raw unparsed URI string      | String   | / | String | yes          |
+| uriValue            | Gets parsed standard URI object    | Uri      | / | Uri | yes          |
+| isValidUri          | Indicates if URI parsing succeeded  | bool     | / | bool | yes          |
+| forceToStringRawValue | Controls toString() to use raw value | bool     | / | bool | yes          |
+| normalizePath()     | Returns new standardized path URI   | function | / | Uri | yes          |
+| toString()          | String representation (configurable to use raw value) | function | / | String | yes          |
+
 ---
 
 ## 4. Known Issues
@@ -547,4 +565,4 @@ This document is verified based on the following versions:
 
 ## 6. License
 
-This project is licensed under [The MIT License (MIT)](https://gitcode.com/openharmony-sig/flutter_inappwebview/blob/master/flutter_inappwebview/LICENSE).
+This project is licensed under [The Apache-2.0 license](/LICENSE).
