@@ -161,7 +161,7 @@ export struct OhosWebView {
       .multiWindowAccess(this.inAppWebView!.customSettings.multiWindowAccess)
       .horizontalScrollBarAccess(this.inAppWebView!.customSettings.horizontalScrollBarAccess)
       .verticalScrollBarAccess(this.inAppWebView!.customSettings.verticalScrollBarAccess)
-      .cacheMode(this.cacheEnabled ? this.inAppWebView!.customSettings.cacheMode : CacheMode.None)
+      .cacheMode(this.cacheEnabled ? this.inAppWebView!.customSettings.cacheMode : CacheMode.Online)
       .textZoomRatio(this.inAppWebView!.customSettings.textZoomRatio)
       .initialScale(this.inAppWebView!.customSettings.initialScale)
       .blockNetwork(this.inAppWebView!.customSettings.blockNetwork)
