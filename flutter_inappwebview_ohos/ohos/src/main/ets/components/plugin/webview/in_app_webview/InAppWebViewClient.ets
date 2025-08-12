@@ -305,8 +305,8 @@ export default class InAppWebViewClient {
   }
   onInterceptRequest = (event: Any) => { //对应安卓shouldInterceptRequest
     let request = WebResourceRequestExt.fromWebResourceRequest(event.request);
-    let tUrl: string = event.request.getRequestUrl();
-    Log.d(TAG, "onInterceptRequest=" + tUrl)
+    let tUrl: string = request.getRequestUrl();
+    Log.d(TAG, "onInterceptRequest=debug::" + tUrl)
     // 通过自定义的协议，拦截请求，来加载本地图片，支持场景封面和热点图片
     if (tUrl.startsWith("https://custom-app")) {
       Log.d(TAG, "onInterceptRequest= https://custom-app", tUrl)
