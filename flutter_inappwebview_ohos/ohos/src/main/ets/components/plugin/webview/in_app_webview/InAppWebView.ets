@@ -123,6 +123,7 @@ export default class InAppWebView implements InAppWebViewInterface {
     this.customSettings = customSettings;
     this.contextMenu = contextMenu;
     this.initialUserOnlyScripts = userScripts;
+    this.web_webview.cacheMode = CacheMode.Online;
     // if (plugin != null && plugin.activity != null) {
     //   plugin.activity.registerForContextMenu(this);
     // }
