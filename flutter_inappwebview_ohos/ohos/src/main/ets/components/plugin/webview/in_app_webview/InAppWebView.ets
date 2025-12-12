@@ -141,7 +141,8 @@ export default class InAppWebView implements InAppWebViewInterface {
     if (this.plugin != null) {
       this.webViewAssetLoaderExt = WebViewAssetLoaderExt.fromMap(this.customSettings.webViewAssetLoader, this.plugin, getContext());
     }
-
+    this.controller.removeCache(true);
+    Log.info(TAG, "InAppWebView prepare() == > removeCache(true)");
     this.javaScriptBridgeInterface = new JavaScriptBridgeInterface(this);
     //addJavascriptInterface(javaScriptBridgeInterface, JavaScriptBridgeJS.JAVASCRIPT_BRIDGE_NAME);
 
